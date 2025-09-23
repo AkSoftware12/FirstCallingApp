@@ -25,7 +25,9 @@ class SOSScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1B263B),
+      backgroundColor: Colors.white,
+
+      // backgroundColor: const Color(0xFF1B263B),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -35,7 +37,7 @@ class SOSScreen extends StatelessWidget {
             const Text(
               'Emergency SOS',
               style: TextStyle(
-                color: Colors.white,
+                color: Colors.black,
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
               ),
@@ -43,7 +45,7 @@ class SOSScreen extends StatelessWidget {
             const SizedBox(height: 10),
             const Text(
               'Tap to call emergency services or share location',
-              style: TextStyle(color: Colors.white70, fontSize: 16),
+              style: TextStyle(color: Colors.black, fontSize: 16),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
@@ -66,7 +68,7 @@ class SOSScreen extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size(200, 60),
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                backgroundColor: Colors.white,
+                backgroundColor: Colors.grey.shade200,
                 foregroundColor: Colors.red,
               ),
               child: const Text(

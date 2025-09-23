@@ -19,7 +19,8 @@ class IVRCallScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1B263B),
+      backgroundColor: Colors.white,
+      // backgroundColor: const Color(0xFF1B263B),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -82,11 +83,12 @@ class _IVRCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 8),
       child: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [const Color(0xFF1B263B), const Color(0xFF2A3F5F)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          color: Colors.white,
+          // gradient: LinearGradient(
+          //   colors: [const Color(0xFF1B263B), const Color(0xFF2A3F5F)],
+          //   begin: Alignment.topLeft,
+          //   end: Alignment.bottomRight,
+          // ),
           borderRadius: BorderRadius.circular(16),
         ),
         padding: const EdgeInsets.all(16),
@@ -101,7 +103,7 @@ class _IVRCard extends StatelessWidget {
                 Text(
                   number,
                   style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                    color: Colors.white54,
+                    color: Colors.black,
                     fontSize: 14,
                   ),
                 ),

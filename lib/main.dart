@@ -3,16 +3,29 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:provider/provider.dart';
 import 'package:responsive_builder/responsive_builder.dart';
 import 'package:stream_chat_flutter/stream_chat_flutter.dart';
 import 'package:stream_chat_localizations/stream_chat_localizations.dart';
 
 import 'Ui/BottomNavigationBar/bottomNvaigationBar.dart';
+import 'Ui/Cart/CartProvider/cart_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(MyApp());
+  // Sirf portraitUp (normal) aur portraitDown (ulot ke saath) chahiye toh:
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    // DeviceOrientation.portraitDown, // agar upside-down bhi allow karna ho toh uncomment karo
+  ]);
+  final cartProvider = CartProvider();
+  await cartProvider.loadCart(); // पहले load करना जरूरी है
+  runApp(   ChangeNotifierProvider(
+    create: (_) => CartProvider(),
+    child: const MyApp(),
+  ),);
 }
 
 class MyApp extends StatelessWidget {
@@ -43,6 +56,7 @@ class MyApp extends StatelessWidget {
 
   }
 }
+
 
 
 

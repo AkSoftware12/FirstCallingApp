@@ -52,6 +52,10 @@ dependencies:
   stream_chat_localizations: ^9.16.0
   responsive_builder: ^0.7.1
   gscankit: ^1.0.2
+  image_picker: ^1.2.0
+  animate_do: ^4.2.0
+  add_to_cart_animation: ^2.0.4
+
 
 
 
