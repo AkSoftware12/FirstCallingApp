@@ -22,7 +22,7 @@ class ProductListScreen extends StatelessWidget {
       'price': '999',
       'originalPrice': '1499',
       'discount': '40% OFF',
-      'imageUrl': 'https://i.ibb.co/k2dryBTf/1.jpg',
+      'imageUrl': 'https://i.ibb.co/4RBpR42W/1.jpg',
       'packSize': '(Pack of 2)',
     },
     {
@@ -30,7 +30,7 @@ class ProductListScreen extends StatelessWidget {
       'price': '599',
       'originalPrice': '999',
       'discount': '40% OFF',
-      'imageUrl': 'https://i.ibb.co/kV15NrYQ/2.jpg',
+      'imageUrl': 'https://i.ibb.co/S45YPpsb/2.jpg',
       'packSize': '(Pack of 2)',
     },
     {
@@ -38,7 +38,7 @@ class ProductListScreen extends StatelessWidget {
       'price': '849',
       'originalPrice': '1695',
       'discount': '50% OFF',
-      'imageUrl': 'https://i.ibb.co/VYKc6T4Y/4.jpg',
+      'imageUrl': 'https://i.ibb.co/vxnXrmWN/4.jpg',
       'packSize': '(Pack of 6)',
     },
     {
@@ -46,7 +46,7 @@ class ProductListScreen extends StatelessWidget {
       'price': '599',
       'originalPrice': '999',
       'discount': '40% OFF',
-      'imageUrl': 'https://i.ibb.co/N6j65SYh/3.jpg',
+      'imageUrl': 'https://i.ibb.co/d4xsrhYf/3.jpg',
       'packSize': '(Pack of 2)',
     },
     {

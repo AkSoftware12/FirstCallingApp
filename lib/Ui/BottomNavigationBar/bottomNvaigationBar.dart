@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:add_to_cart_animation/add_to_cart_animation.dart';
 import 'package:firstcallingapp/Ui/Profile/profile.dart';
 import 'package:firstcallingapp/Utils/HexColorCode/HexColor.dart';
@@ -254,12 +256,24 @@ class _HomePageState extends State<BottomNavigationBarScreen> {
   }
 
   void _showResult(String data) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => ResultPage(result: data)),
-    ).then((_) {
+    try {
+      // Parse the scanned data as JSON
+      final Map<String, dynamic> parsedData = jsonDecode(data);
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ResultPage(result: parsedData),
+        ),
+      ).then((_) {
+        _isScanning = false;
+      });
+    } catch (e) {
+      debugPrint("⚠️ JSON parsing error: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Invalid data format")),
+      );
       _isScanning = false;
-    });
+    }
   }
 
 
@@ -883,54 +897,54 @@ class CustomDrawer extends StatelessWidget {
                           MaterialPageRoute(builder: (context)=> ProfileScreen()));
                     },
                   ),
-                  _buildListTile(
-                    context: context,
-                    icon: Icons.add_to_photos,
-                    title: 'Activate New QR Sticker',
-                    onTap: () {},
-                  ),
+                  // _buildListTile(
+                  //   context: context,
+                  //   icon: Icons.add_to_photos,
+                  //   title: 'Activate New QR Sticker',
+                  //   onTap: () {},
+                  // ),
                   _buildListTile(
                     context: context,
                     icon: Icons.shop,
                     title: 'My Orders/Products',
                     onTap: () {},
                   ),
-                  _buildListTile(
-                    context: context,
-                    icon: Icons.share,
-                    title: 'Share Tap',
-                    onTap: () {},
-                  ),
-                  _buildListTile(
-                    context: context,
-                    icon: Icons.account_balance_wallet,
-                    title: 'Wallet',
-                    onTap: () {},
-                  ),
-                  _buildListTile(
-                    context: context,
-                    icon: Icons.touch_app,
-                    title: 'Active/Deactive QR',
-                    onTap: () {},
-                  ),
-                  _buildListTile(
-                    context: context,
-                    icon: Icons.block,
-                    title: 'Block A Number',
-                    onTap: () {},
-                  ),
-                  _buildListTile(
-                    context: context,
-                    icon: Icons.bookmark,
-                    title: 'My Story',
-                    onTap: () {},
-                  ),
-                  _buildListTile(
-                    context: context,
-                    icon: Icons.call,
-                    title: 'Call Log',
-                    onTap: () {},
-                  ),
+                  // _buildListTile(
+                  //   context: context,
+                  //   icon: Icons.share,
+                  //   title: 'Share Tap',
+                  //   onTap: () {},
+                  // ),
+                  // _buildListTile(
+                  //   context: context,
+                  //   icon: Icons.account_balance_wallet,
+                  //   title: 'Wallet',
+                  //   onTap: () {},
+                  // ),
+                  // _buildListTile(
+                  //   context: context,
+                  //   icon: Icons.touch_app,
+                  //   title: 'Active/Deactive QR',
+                  //   onTap: () {},
+                  // ),
+                  // _buildListTile(
+                  //   context: context,
+                  //   icon: Icons.block,
+                  //   title: 'Block A Number',
+                  //   onTap: () {},
+                  // ),
+                  // _buildListTile(
+                  //   context: context,
+                  //   icon: Icons.bookmark,
+                  //   title: 'My Story',
+                  //   onTap: () {},
+                  // ),
+                  // _buildListTile(
+                  //   context: context,
+                  //   icon: Icons.call,
+                  //   title: 'Call Log',
+                  //   onTap: () {},
+                  // ),
                   _buildListTile(
                     context: context,
                     icon: Icons.notifications,

@@ -8,6 +8,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   file_selector_windows
   gal
   media_kit_video
+  permission_handler_windows
   record_windows
   share_plus
   thumblr_windows
