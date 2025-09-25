@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:add_to_cart_animation/add_to_cart_animation.dart';
+import 'package:firstcallingapp/Ui/Login/Login/login.dart';
 import 'package:firstcallingapp/Ui/Profile/profile.dart';
 import 'package:firstcallingapp/Utils/HexColorCode/HexColor.dart';
 import 'package:firstcallingapp/Utils/color.dart';
@@ -13,6 +14,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:gscankit/gscankit.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:stream_chat_flutter/stream_chat_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../Utils/string.dart';
@@ -969,14 +971,23 @@ class CustomDrawer extends StatelessWidget {
                     title: 'Blood Donation',
                     onTap: () {},
                   ),
-                  _buildListTile(
-                    context: context,
-                    icon: Icons.logout,
-                    title: 'Logout',
-                    onTap: () {},
-                    textColor: AppColors.redAccent,
-                    iconColor: AppColors.redAccent,
-                  ),
+              _buildListTile(
+                context: context,
+                icon: Icons.logout,
+                title: 'Logout',
+                textColor: Colors.red,
+                iconColor: Colors.red,
+                onTap: () async {
+                  SharedPreferences prefs = await SharedPreferences.getInstance();
+                  await prefs.clear(); // ✅ Clear all stored data
+
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (_) => LoginScreen()),
+                  );
+
+                },
+              )
                 ],
               ),
             ),

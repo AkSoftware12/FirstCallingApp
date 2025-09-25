@@ -1,7 +1,9 @@
 
 import 'dart:async';
+import 'dart:io';
 import 'dart:math' as math;
 import 'dart:ui';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firstcallingapp/Ui/Login/Login/login.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -13,9 +15,25 @@ import 'package:stream_chat_localizations/stream_chat_localizations.dart';
 
 import 'Ui/BottomNavigationBar/bottomNvaigationBar.dart';
 import 'Ui/Cart/CartProvider/cart_provider.dart';
+import 'Ui/Login/SplashScreen/splash_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  if (Platform.isAndroid) {
+    await Firebase.initializeApp(
+      options: const FirebaseOptions(
+        apiKey: 'AIzaSyASMmPy8mhABFOGTEHmkI-vv559WTiw814',
+        appId: '1:164105009272:android:67e2bc460fd3b44376158d',
+        messagingSenderId: '164105009272',
+        projectId: 'cjm-shimla-parent',
+        storageBucket: "cjm-shimla-parent.firebasestorage.app",
+      ),
+    );
+  } else {
+    // await Firebase.initializeApp(
+    //     options: DefaultFirebaseOptions.currentPlatform);
+  }
+
   // Sirf portraitUp (normal) aur portraitDown (ulot ke saath) chahiye toh:
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
@@ -50,7 +68,7 @@ class MyApp extends StatelessWidget {
           ],
           localizationsDelegates: GlobalStreamChatLocalizations.delegates,
           // home: const BottomNavigationBarScreen(),
-          home:  LoginScreen(),
+          home:  SplashScreen(),
         );
 
       },
