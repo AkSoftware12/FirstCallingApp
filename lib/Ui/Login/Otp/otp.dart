@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:firstcallingapp/BaseUrl/baseurl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -21,11 +22,9 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-
-
-
 class OTPVerificationScreen extends StatefulWidget {
   final String mobileNo;
+
   const OTPVerificationScreen({super.key, required this.mobileNo});
 
   @override
@@ -33,14 +32,15 @@ class OTPVerificationScreen extends StatefulWidget {
 }
 
 class _PhoneLoginScreenState extends State<OTPVerificationScreen> {
-  final List<TextEditingController> _otpControllers = List.generate(6, (_) => TextEditingController());
+  final List<TextEditingController> _otpControllers = List.generate(
+    6,
+    (_) => TextEditingController(),
+  );
   final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
   bool _isLoading = false;
   int _secondsRemaining = 60;
   late Timer _timer;
   bool _canResend = false;
-
-
 
   @override
   void initState() {
@@ -77,7 +77,7 @@ class _PhoneLoginScreenState extends State<OTPVerificationScreen> {
     try {
       final deviceToken = await getDeviceToken(); // Get device token
       final response = await http.post(
-        Uri.parse("http://192.168.1.2/firstcallingapp/api/verifyOtp"),
+        Uri.parse(ApiRoutes.verifyOtp),
         body: {
           "contact": widget.mobileNo,
           "otp": otp,
@@ -96,13 +96,11 @@ class _PhoneLoginScreenState extends State<OTPVerificationScreen> {
           setState(() => _isLoading = false);
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(
-              builder: (_) => BottomNavigationBarScreen(),
-            ),
+            MaterialPageRoute(builder: (_) => BottomNavigationBarScreen()),
           );
         }
       } else {
-        showSuperCoolInvalidOtpDialog(context);
+        showInvalidOtpDialog(context);
       }
     } catch (e) {
       _showError("Error: $e");
@@ -110,80 +108,124 @@ class _PhoneLoginScreenState extends State<OTPVerificationScreen> {
       if (mounted) setState(() => _isLoading = false);
     }
   }
+
   void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
 
-  void showSuperCoolInvalidOtpDialog(BuildContext context) {
+
+
+
+  void showInvalidOtpDialog(BuildContext context) {
     showDialog(
       context: context,
       barrierDismissible: true,
+      barrierColor: Colors.black.withOpacity(0.6), // Darker overlay for focus
       builder: (BuildContext context) {
-        return AnimatedScaleDialog(
-          child: AlertDialog(
+        return AnimatedScale(
+          scale: 1.0,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOutBack,
+          child: Dialog(
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(25),
+              borderRadius: BorderRadius.circular(24), // Softer, modern corners
             ),
-            backgroundColor: Colors.grey[900],
-            elevation: 10,
-            title: Row(
-              children: const [
-                Icon(
-                  Icons.error_outline,
-                  color: Colors.redAccent,
-                  size: 30,
+             backgroundColor: Colors.white, // Transparent for glassmorphism
+            elevation: 0,
+            child: Container(
+              decoration: BoxDecoration(
+                // color: Colors.white.withOpacity(0.1), // Glassmorphism effect
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.2),
+                  width: 1.5,
                 ),
-                SizedBox(width: 10),
-                Text(
-                  'Invalid OTP!',
-                  style: TextStyle(
-                    color: Colors.redAccent,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 22,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    blurRadius: 15,
+                    offset: const Offset(0, 6),
                   ),
-                ),
-              ],
-            ),
-            content: const Text(
-              'Whoops! The OTP you entered isn’t quite right. Try again, champ! 🚀',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: Colors.redAccent,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                ),
-                child: const Text(
-                  'Try Again',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
+                ],
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.grey.shade100,
+                    Colors.grey.shade100,
+                    // Colors.red[100]!.withOpacity(0.5),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
               ),
-            ],
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.error_rounded,
+                        color: Color(0xFFFF0000), // Vibrant red
+                        size: 40,
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        'Invalid OTP!',
+                        style: TextStyle(
+                          color: Color(0xFFFF0000), // Vibrant red
+                          fontWeight: FontWeight.bold,
+                          fontSize: 24,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Your OTP is not correct. Let’s try that again! 🚀',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color:  Color(0xFFFF0000),
+                      fontSize: 16,
+                      height: 1.5, // Comfortable line spacing
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Color(0xFFFF0000), // Vibrant red
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 36,
+                        vertical: 14,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      elevation: 5,
+                      shadowColor: Colors.red[400]!.withOpacity(0.5),
+                      textStyle: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                      ),
+                    ),
+                    child: const Text('OK'),
+                  ),
+                ],
+              ),
+            ),
           ),
         );
       },
     );
   }
-
-
-
   void _onOTPChanged(int index) {
     if (_otpControllers[index].text.length == 1 && index < 5) {
       _focusNodes[index + 1].requestFocus();
@@ -204,11 +246,10 @@ class _PhoneLoginScreenState extends State<OTPVerificationScreen> {
     });
     _startTimer();
     // Simulate resend API call
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('OTP resent!')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('OTP resent!')));
   }
-
 
   @override
   void dispose() {
@@ -222,227 +263,336 @@ class _PhoneLoginScreenState extends State<OTPVerificationScreen> {
     super.dispose();
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
-      body: Stack(
-        children: [
-          // Background with blur
-          ImageFiltered(
-            imageFilter: ImageFilter.blur(sigmaX: 3, sigmaY: 3),
-            child: Image.asset(
-              'assets/loginbg.jpg',
-              fit: BoxFit.cover,
-              width: double.infinity,
-              height: double.infinity,
-            ),
-          ),
-          // Lottie animation
-          // Align(
-          //   alignment: Alignment.topCenter,
-          //   child: Lottie.asset(
-          //     'assets/animation.json',
-          //     width: double.infinity,
-          //     height: MediaQuery.of(context).size.height * 0.35,
-          //     repeat: true,
-          //     animate: true,
-          //   ),
-          // ),
-          // Main content
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              height: MediaQuery.of(context).size.height * 0.65,
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: AppColors.navyBlue,
+        iconTheme: IconThemeData(color: Colors.white),
+      ),
+      body: SafeArea(
+        child: Stack(
+          children: [
+            /// 🔹 Background Gradient
+            Container(
+              height: MediaQuery.of(context).size.height * 0.3,
               decoration: BoxDecoration(
-                color: AppColors.navyBlue,
-                borderRadius: BorderRadius.vertical(
-                  top: Radius.circular(40.sp),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(20),
+                  bottomRight: Radius.circular(20),
+                ),
+                gradient: LinearGradient(
+                  colors: [AppColors.navyBlue, AppColors.navyBlue],
+                  begin: Alignment.topLeft,
+                  end: Alignment.topRight,
                 ),
               ),
-              child: SingleChildScrollView(
-                padding: EdgeInsets.symmetric(horizontal: 20.sp, vertical: 20.sp),
-                child:Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // App Logo
-                    // ClipRRect(
-                    //   borderRadius: BorderRadius.circular(20.sp),
-                    //   child: Image.asset(
-                    //     'assets/applogo.jpg',
-                    //     width: 100.sp,
-                    //     height: 100.sp,
-                    //     fit: BoxFit.cover,
-                    //   ),
-                    // ),
-                    // Text(
-                    //   'First Calling App',
-                    //   style: GoogleFonts.poppins(
-                    //     fontSize: 8.sp,
-                    //     fontWeight: FontWeight.bold,
-                    //     color: Colors.white,
-                    //     letterSpacing: 1.5,
-                    //     shadows: [
-                    //       Shadow(
-                    //         blurRadius: 10.0,
-                    //         color: Colors.black.withOpacity(0.3),
-                    //         offset: const Offset(2.0, 2.0),
-                    //       ),
-                    //     ],
-                    //   ),
-                    // ),
+            ),
 
-                    SizedBox(height: 20.sp),
-                    // Instruction text
-
-                    SizedBox(height: 10.sp),
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+            /// 🔹 Main Content with Scroll
+            Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                /// 🔹 Scrollable Section
+                Expanded(
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 20.sp,
+                      vertical: 20.sp,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Enter OTP',
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'We sent an OTP to your phone',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey[300],
-                          ),
-                        ),
-                        const SizedBox(height: 48),
-                        // OTP Input Fields
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: List.generate(6, (index) {
-                            return SizedBox(
-                              width: 50,
-                              child: TextField(
-                                controller: _otpControllers[index],
-                                focusNode: _focusNodes[index],
-                                keyboardType: TextInputType.number,
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                                inputFormatters: [LengthLimitingTextInputFormatter(1)],
-                                decoration: InputDecoration(
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: BorderSide(color: Colors.grey[300]!),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: BorderSide(color: Colors.blue[600]!, width: 2),
-                                  ),
-                                  filled: true,
-                                  fillColor: Colors.grey[50],
+                        /// Header Text
+                        Padding(
+                          padding: EdgeInsets.only(top: 0.sp, bottom: 20.sp),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Verification Code',
+                                style: GoogleFonts.roboto(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 22.sp,
                                 ),
-                                onChanged: (_) => _onOTPChanged(index),
                               ),
-                            );
-                          }),
+                              SizedBox(height: 10.sp),
+                              RichText(
+                                textAlign: TextAlign.start,
+                                text: TextSpan(
+                                  text:
+                                      'A 6-Digit OTP (One time password) has been sent by WhatsApp to ',
+                                  style: GoogleFonts.roboto(
+                                    color: AppColors.colorWhite,
+                                    fontWeight: FontWeight.w400,
+                                    fontSize: 13.sp,
+                                  ),
+                                  children: [
+                                    TextSpan(
+                                      text: ' +91${widget.mobileNo}',
+                                      style: GoogleFonts.roboto(
+                                        color: Colors.lightBlueAccent,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14.sp,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                        const SizedBox(height: 32),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 50,
-                          child:  AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            decoration: BoxDecoration(
-                              // color: HexColor('d63b7e'),
-                              gradient: LinearGradient(
-                                colors: [
-                                  Colors.blue.shade400,
-                                  Colors.blue.shade400,
-                                ],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                              borderRadius: BorderRadius.circular(12.sp),
-                              // boxShadow: [
-                              //   BoxShadow(
-                              //     color: Colors.blue.withOpacity(0.4),
-                              //     blurRadius: 8,
-                              //     offset: const Offset(0, 4),
-                              //   ),
-                              // ],
-                            ),
-                            child: ElevatedButton(
-                              onPressed: _isLoading ? null : _verifyOTP,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.transparent,
-                                shadowColor: Colors.transparent,
+                        SizedBox(height: 20.sp),
+
+                        /// 🔹 OTP Card + Verify Button
+                        Center(
+                          child: Stack(
+                            alignment: Alignment.topCenter,
+                            clipBehavior: Clip.none,
+                            children: [
+                              Card(
+                                elevation: 4,
+                                color: Colors.white,
+                                margin: EdgeInsets.only(bottom: 40.sp),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12.sp),
+                                  borderRadius: BorderRadius.circular(20.sp),
+                                ),
+                                child: Padding(
+                                  padding: EdgeInsets.all(12.sp),
+                                  child: Column(
+                                    children: [
+                                      SizedBox(height: 20.sp),
+                                      Text(
+                                        'Enter OTP',
+                                        style: TextStyle(
+                                          fontSize: 28,
+                                          fontWeight: FontWeight.bold,
+                                          color: AppColors.navyBlue,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        'We sent an OTP to your phone',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          color: AppColors.navyBlue,
+                                        ),
+                                      ),
+                                      SizedBox(height: 40.sp),
+
+                                      /// 🔹 OTP Inputs
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceEvenly,
+                                        children: List.generate(6, (index) {
+                                          return SizedBox(
+                                            width: 40.sp,
+                                            // height: 45.sp,
+                                            child: TextField(
+                                              controller:
+                                                  _otpControllers[index],
+                                              focusNode: _focusNodes[index],
+                                              keyboardType:
+                                                  TextInputType.number,
+                                              textAlign: TextAlign.center,
+                                              style: TextStyle(
+                                                fontSize: 15.sp,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                              inputFormatters: [
+                                                LengthLimitingTextInputFormatter(
+                                                  1,
+                                                ),
+                                              ],
+                                              decoration: InputDecoration(
+                                                border: OutlineInputBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                ),
+                                                focusedBorder:
+                                                    OutlineInputBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            8,
+                                                          ),
+                                                      borderSide: BorderSide(
+                                                        color:
+                                                            Colors.blue[600]!,
+                                                        width: 2,
+                                                      ),
+                                                    ),
+                                                filled: true,
+                                                fillColor: Colors.grey[50],
+                                              ),
+                                              onChanged: (_) =>
+                                                  _onOTPChanged(index),
+                                            ),
+                                          );
+                                        }),
+                                      ),
+                                      SizedBox(height: 40.sp),
+                                    ],
+                                  ),
                                 ),
                               ),
-                              child: _isLoading
-                                  ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+
+                              /// 🔹 Verify OTP Button (Same as your UI)
+                              Positioned(
+                                bottom: 25,
+                                child: SizedBox(
+                                  width: 150.sp,
+                                  height: 40.sp,
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 200),
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          AppColors.navyBlue,
+                                          Colors.blue.shade400,
+                                        ],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                      ),
+                                      borderRadius: BorderRadius.circular(
+                                        20.sp,
+                                      ),
+                                    ),
+                                    child: ElevatedButton(
+                                      onPressed: _isLoading ? null : _verifyOTP,
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.transparent,
+                                        shadowColor: Colors.transparent,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            20.sp,
+                                          ),
+                                        ),
+                                      ),
+                                      child: _isLoading
+                                          ? SizedBox(
+                                              height: 20.sp,
+                                              width: 20.sp,
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 3,
+                                                valueColor:
+                                                    AlwaysStoppedAnimation<
+                                                      Color
+                                                    >(Colors.white),
+                                              ),
+                                            )
+                                          : Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Text(
+                                                  'Verify OTP',
+                                                  style: GoogleFonts.roboto(
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 14.sp,
+                                                  ),
+                                                ),
+                                                SizedBox(width: 8.sp),
+                                                Icon(
+                                                  Icons.arrow_forward_ios,
+                                                  color: Colors.white,
+                                                  size: 16.sp,
+                                                ),
+                                              ],
+                                            ),
+                                    ),
+                                  ),
                                 ),
-                              )
-                                  :  Text(
-                                'Verify OTP',
-                                style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold,color: Colors.white),
                               ),
-                            ),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 24),
-                        // Timer and Resend
+
+                        /// Resend OTP + Wrong Number
+                        SizedBox(height: 20.sp),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             if (!_canResend)
                               Text(
                                 'Resend in ${_secondsRemaining}s',
-                                style: TextStyle(color: Colors.grey[600]),
+                                style: TextStyle(color:Color(0xFFFF0000),),
                               )
                             else
                               GestureDetector(
                                 onTap: _resendOTP,
                                 child: Text(
                                   'Resend OTP',
-                                  style: TextStyle(color: Colors.blue[600], fontWeight: FontWeight.bold),
+                                  style: TextStyle(
+                                    color: Colors.blue[600],
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
                           ],
                         ),
                         const SizedBox(height: 16),
-                        TextButton(
-                          onPressed: () {
-                            // Handle wrong number
-                            Navigator.of(context).pop();
-                          },
-                          child: Text(
-                            'Wrong number? Change',
-                            style: TextStyle(color: Colors.blue[600]),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(),
+                              child: Text(
+                                'Wrong number? Change',
+                                style: TextStyle(color: Colors.blue[600]),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                /// Footer
+              ],
+            ),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Container(
+                height: 20.sp,
+                color: AppColors.navyBlue,
+                child: Center(
+                  child: RichText(
+                    textAlign: TextAlign.center,
+                    text: TextSpan(
+                      text: 'Provided by  ',
+                      style: GoogleFonts.poppins(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w500,
+                        fontSize: 10.sp,
+                      ),
+                      children: [
+                        TextSpan(
+                          text: 'Ak Software',
+                          style: GoogleFonts.poppins(
+                            color: Colors.lightBlueAccent,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 11.sp,
                           ),
                         ),
                       ],
                     ),
-                    SizedBox(height: 20.sp),
-                    // Terms and conditions
-                  ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+
+          ],
+        ),
       ),
     );
   }
 }
-
 
 // Custom Animated Dialog Widget
 class AnimatedScaleDialog extends StatefulWidget {
@@ -481,9 +631,6 @@ class _AnimatedScaleDialogState extends State<AnimatedScaleDialog>
 
   @override
   Widget build(BuildContext context) {
-    return ScaleTransition(
-      scale: _scaleAnimation,
-      child: widget.child,
-    );
+    return ScaleTransition(scale: _scaleAnimation, child: widget.child);
   }
 }

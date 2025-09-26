@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:ui';
+import 'package:firstcallingapp/BaseUrl/baseurl.dart';
 import 'package:firstcallingapp/Utils/HexColorCode/HexColor.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -35,10 +36,8 @@ class _PhoneLoginScreenState extends State<LoginScreen> {
       final mobileNo = _phoneController.text.trim();
 
       final response = await http.post(
-        Uri.parse("http://192.168.1.2/firstcallingapp/api/login"), // <- API URL
-        body: {
-          "mobile_no": mobileNo,
-        },
+        Uri.parse(ApiRoutes.login), // <- API URL
+        body: {"mobile_no": mobileNo},
       );
 
       final data = jsonDecode(response.body);
@@ -66,9 +65,9 @@ class _PhoneLoginScreenState extends State<LoginScreen> {
   }
 
   void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   void _clearPhoneNumber() {
@@ -85,410 +84,380 @@ class _PhoneLoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Stack(
         children: [
-          // Background with blur
-          ImageFiltered(
-            imageFilter: ImageFilter.blur(sigmaX: 3, sigmaY: 3),
-            child: Image.asset(
-              'assets/loginbg.jpg',
-              fit: BoxFit.cover,
-              width: double.infinity,
-              height: double.infinity,
-            ),
-          ),
-          // Lottie animation
-          // Align(
-          //   alignment: Alignment.topCenter,
-          //   child: Lottie.asset(
-          //     'assets/animation.json',
-          //     width: double.infinity,
-          //     height: MediaQuery.of(context).size.height * 0.35,
-          //     repeat: true,
-          //     animate: true,
-          //   ),
-          // ),
-          // Main content
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              height: MediaQuery.of(context).size.height * 0.65,
-              decoration: BoxDecoration(
-                color: AppColors.navyBlue,
-                borderRadius: BorderRadius.vertical(
-                  top: Radius.circular(40.sp),
+          SingleChildScrollView(
+            child: Stack(
+              children: [
+                Container(
+                  height:
+                      MediaQuery.of(context).size.height *
+                      0.5, // 0.5% of screen height
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20.sp),
+
+                    gradient: LinearGradient(
+                      colors: [AppColors.navyBlue, AppColors.navyBlue],
+                      begin: Alignment.topLeft,
+                      end: Alignment.topRight,
+                    ),
+                  ),
                 ),
-              ),
-              child: SingleChildScrollView(
-                padding: EdgeInsets.symmetric(horizontal: 20.sp, vertical: 20.sp),
-                child: Form(
-                  key: _formKey,
+
+                Padding(
+                  padding:  EdgeInsets.only(left: 20.sp,right: 20.sp,top: 60.sp),
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // App Logo
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(20.sp),
-                        child: Image.asset(
-                          'assets/applogo.jpg',
-                          width: 100.sp,
-                          height: 100.sp,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
                       Text(
-                        'First Calling App',
-                        style: GoogleFonts.poppins(
-                          fontSize: 8.sp,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          letterSpacing: 1.5,
-                          shadows: [
-                            Shadow(
-                              blurRadius: 10.0,
-                              color: Colors.black.withOpacity(0.3),
-                              offset: const Offset(2.0, 2.0),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      SizedBox(height: 20.sp),
-                      // Instruction text
-                      Align(
-                        alignment: Alignment.topLeft,
-                        child: Text(
-                          'Welcome!',
-                          style: GoogleFonts.roboto(
-                            color: AppColors.colorWhite,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 20.sp,
-                          ),
-                          textAlign: TextAlign.start,
-                        ),
-                      ),
-                      SizedBox(height: 10.sp),
-
-                      Text(
-                        'We will send you a One Time Password on this mobile number',
+                        'Lets start with your \nmobile number',
                         style: GoogleFonts.roboto(
-                          color: AppColors.colorWhite,
-                          fontWeight: FontWeight.w500,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 22.sp,
+                        ),
+                        textAlign: TextAlign.start,
+                      ),
+                      SizedBox(
+                        height: 10.sp,
+                      ),
+                      Text(
+                        'A 6-Digit OTP(One time password) will be sent as WhatsApp to the below provided number.',
+                        // 'Enter your phone number to receive a one-time password via WhatsApp.',
+                        style: GoogleFonts.poppins(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w400,
                           fontSize: 12.sp,
                         ),
                         textAlign: TextAlign.start,
                       ),
-                      SizedBox(height: 30.sp),
-
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Center(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.symmetric(horizontal: 20.sp, vertical: 20.sp),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Center(
+                      child: Stack(
+                        alignment: Alignment.bottomCenter,
+                        clipBehavior: Clip.none,
                         children: [
-                          Text(
-                            'Phone number',
-                            style: GoogleFonts.roboto(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 12.sp,
+                          // 🔹 Card with custom notch shape
+                          Card(
+                            elevation: 4,
+                            color: Colors.white,
+                            // width: double.infinity,
+                             margin: EdgeInsets.only(bottom: 30.sp),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20.sp), // 20.sp radius
                             ),
-                          ),
-                          SizedBox(height: 10.sp),
-                          TextFormField(
-                            controller: _phoneController,
-                            keyboardType: TextInputType.phone,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly,
-                              LengthLimitingTextInputFormatter(10),
-                            ],
-                            decoration: InputDecoration(
-                              hintText: 'Enter your phone number',
-                              hintStyle: GoogleFonts.roboto(
-                                color: Colors.black54,
-                                fontWeight: FontWeight.normal,
-                                fontSize: 13.sp,
-                              ),
-                              prefixIcon: Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 8.sp),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Image.asset(
-                                      'assets/flag.png',
-                                      width: 25.sp,
-                                      height: 25.sp,
-                                      fit: BoxFit.contain,
-                                      semanticLabel: 'Indian flag',
+                            child: Padding(
+                              padding:  EdgeInsets.all(12.sp),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(20.sp),
+                                    child: Image.asset(
+                                      'assets/applogo.jpg',
+                                      width: 100.sp,
+                                      height: 100.sp,
+                                      fit: BoxFit.cover,
                                     ),
-                                    SizedBox(width: 5.sp),
-                                    Text(
-                                      '+91',
+                                  ),
+                                  SizedBox(height: 10.sp),
+
+                                  Text(
+                                    'First Calling App',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 8.sp,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.navyBlue,
+                                      letterSpacing: 1.5,
+                                      shadows: [
+                                        Shadow(
+                                          blurRadius: 10.0,
+                                          color: Colors.black.withOpacity(0.3),
+                                          offset: const Offset(2.0, 2.0),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+
+                                  SizedBox(height: 20.sp),
+
+                                  Align(
+                                    alignment: Alignment.topLeft,
+                                    child: Text(
+                                      'Phone number',
                                       style: GoogleFonts.roboto(
-                                        color: Colors.black54,
+                                        color: Colors.grey.shade700,
                                         fontWeight: FontWeight.w600,
-                                        fontSize: 13.sp,
+                                        fontSize: 12.sp,
                                       ),
                                     ),
-                                    SizedBox(width: 8.sp),
-                                    Container(
-                                      width: 1,
-                                      height: 24,
-                                      color: Colors.grey.shade400,
+                                  ),
+                                  SizedBox(height: 10.sp),
+                                  TextFormField(
+                                    controller: _phoneController,
+                                    keyboardType: TextInputType.phone,
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter.digitsOnly,
+                                      LengthLimitingTextInputFormatter(10),
+                                    ],
+                                    decoration: InputDecoration(
+                                      hintText: 'Enter your phone number',
+                                      hintStyle: GoogleFonts.roboto(
+                                        color: Colors.black54,
+                                        fontWeight: FontWeight.normal,
+                                        fontSize: 13.sp,
+                                      ),
+                                      prefixIcon: Padding(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 8.sp,
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Image.asset(
+                                              'assets/flag.png',
+                                              width: 25.sp,
+                                              height: 25.sp,
+                                              fit: BoxFit.contain,
+                                              semanticLabel: 'Indian flag',
+                                            ),
+                                            SizedBox(width: 5.sp),
+                                            Text(
+                                              '+91',
+                                              style: GoogleFonts.roboto(
+                                                color: Colors.black54,
+                                                fontWeight: FontWeight.w600,
+                                                fontSize: 13.sp,
+                                              ),
+                                            ),
+                                            SizedBox(width: 8.sp),
+                                            Container(
+                                              width: 1,
+                                              height: 24,
+                                              color: Colors.grey.shade400,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      suffixIcon: _phoneController.text.isNotEmpty
+                                          ? IconButton(
+                                              icon: const Icon(
+                                                Icons.clear,
+                                                color: Colors.grey,
+                                              ),
+                                              onPressed: _clearPhoneNumber,
+                                            )
+                                          : null,
+                                      filled: true,
+                                      fillColor: Colors.grey.shade100,
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(
+                                          12.sp,
+                                        ),
+                                        borderSide: BorderSide(
+                                          color: AppColors.navyBlue,
+                                          width: 1.5,
+                                        ),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(
+                                          12.sp,
+                                        ),
+                                        borderSide: BorderSide(
+                                          color: AppColors.navyBlue,
+                                          width: 1.5,
+                                        ),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(
+                                          12.sp,
+                                        ),
+                                        borderSide: BorderSide(
+                                          color: AppColors.navyBlue,
+                                          width: 1.5,
+                                        ),
+                                      ),
                                     ),
-                                  ],
-                                ),
+                                    validator: (value) {
+                                      if (value == null || value.length != 10) {
+                                        return 'Please enter a valid 10-digit phone number';
+                                      }
+                                      return null;
+                                    },
+                                    onChanged: (value) => setState(() {}),
+                                  ),
+                                  SizedBox(height: 30.sp),
+
+                                  SizedBox(height: 20.sp),
+                                ],
                               ),
-                              suffixIcon: _phoneController.text.isNotEmpty
-                                  ? IconButton(
-                                icon: const Icon(
-                                  Icons.clear,
-                                  color: Colors.grey,
+                            ),
+                          ),
+
+                          // 🔹 Circular button inside notch
+                          Positioned(
+                            bottom: 10,
+                            child: SizedBox(
+                              width: 150.sp,
+                              height: 40.sp,
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                decoration: BoxDecoration(
+                                  // color: HexColor('d63b7e'),
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      AppColors.navyBlue,
+                                      Colors.blue.shade400,
+                                    ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                  borderRadius: BorderRadius.circular(20.sp),
                                 ),
-                                onPressed: _clearPhoneNumber,
-                              )
-                                  : null,
-                              filled: true,
-                              fillColor: Colors.grey.shade100,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12.sp),
-                                borderSide: BorderSide(
-                                  color: AppColors.navyBlue,
-                                  width: 1.5,
-                                ),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12.sp),
-                                borderSide: BorderSide(
-                                  color: AppColors.navyBlue,
-                                  width: 1.5,
-                                ),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12.sp),
-                                borderSide: BorderSide(
-                                  color: AppColors.navyBlue,
-                                  width: 1.5,
+                                child: ElevatedButton(
+                                  onPressed: _isLoading ? null : _sendOTP,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.transparent,
+                                    shadowColor: Colors.transparent,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(
+                                        20.sp,
+                                      ),
+                                    ),
+                                  ),
+                                  child: _isLoading
+                                      ? SizedBox(
+                                          height: 20.sp,
+                                          width: 20.sp,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 3,
+                                            valueColor:
+                                                AlwaysStoppedAnimation<Color>(
+                                                  Colors.white,
+                                                ),
+                                          ),
+                                        )
+                                      : Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        'Send OTP',
+                                        style: GoogleFonts.roboto(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14.sp,
+                                        ),
+                                      ),
+                                      SizedBox(width: 8.sp),
+                                      Icon(
+                                        Icons.arrow_forward_ios,
+                                        color: Colors.white,
+                                        size: 16.sp,
+                                      ),
+                                    ],
+                                  )
+
                                 ),
                               ),
                             ),
-                            validator: (value) {
-                              if (value == null || value.length != 10) {
-                                return 'Please enter a valid 10-digit phone number';
-                              }
-                              return null;
-                            },
-                            onChanged: (value) => setState(() {}),
                           ),
                         ],
                       ),
-                      // Phone input card
-                      // Card(
-                      //   elevation: 0,
-                      //   color: Colors.white,
-                      //   shape: RoundedRectangleBorder(
-                      //     borderRadius: BorderRadius.circular(20.sp),
-                      //     side: BorderSide(
-                      //       color: Colors.grey.shade300,
-                      //       width: 1.sp,
-                      //     ),
-                      //   ),
-                      //   child: Padding(
-                      //     padding: EdgeInsets.all(20.sp),
-                      //     child: Column(
-                      //       crossAxisAlignment: CrossAxisAlignment.start,
-                      //       children: [
-                      //         Text(
-                      //           'Phone number',
-                      //           style: GoogleFonts.roboto(
-                      //             color: Colors.grey.shade700,
-                      //             fontWeight: FontWeight.w600,
-                      //             fontSize: 12.sp,
-                      //           ),
-                      //         ),
-                      //         SizedBox(height: 10.sp),
-                      //         TextFormField(
-                      //           controller: _phoneController,
-                      //           keyboardType: TextInputType.phone,
-                      //           inputFormatters: [
-                      //             FilteringTextInputFormatter.digitsOnly,
-                      //             LengthLimitingTextInputFormatter(10),
-                      //           ],
-                      //           decoration: InputDecoration(
-                      //             hintText: 'Enter your phone number',
-                      //             hintStyle: GoogleFonts.roboto(
-                      //               color: Colors.black54,
-                      //               fontWeight: FontWeight.normal,
-                      //               fontSize: 13.sp,
-                      //             ),
-                      //             prefixIcon: Padding(
-                      //               padding: EdgeInsets.symmetric(horizontal: 8.sp),
-                      //               child: Row(
-                      //                 mainAxisSize: MainAxisSize.min,
-                      //                 children: [
-                      //                   Image.asset(
-                      //                     'assets/flag.png',
-                      //                     width: 25.sp,
-                      //                     height: 25.sp,
-                      //                     fit: BoxFit.contain,
-                      //                     semanticLabel: 'Indian flag',
-                      //                   ),
-                      //                   SizedBox(width: 5.sp),
-                      //                   Text(
-                      //                     '+91',
-                      //                     style: GoogleFonts.roboto(
-                      //                       color: Colors.black54,
-                      //                       fontWeight: FontWeight.w600,
-                      //                       fontSize: 13.sp,
-                      //                     ),
-                      //                   ),
-                      //                   SizedBox(width: 8.sp),
-                      //                   Container(
-                      //                     width: 1,
-                      //                     height: 24,
-                      //                     color: Colors.grey.shade400,
-                      //                   ),
-                      //                 ],
-                      //               ),
-                      //             ),
-                      //             suffixIcon: _phoneController.text.isNotEmpty
-                      //                 ? IconButton(
-                      //               icon: const Icon(
-                      //                 Icons.clear,
-                      //                 color: Colors.grey,
-                      //               ),
-                      //               onPressed: _clearPhoneNumber,
-                      //             )
-                      //                 : null,
-                      //             filled: true,
-                      //             fillColor: Colors.grey.shade100,
-                      //             border: OutlineInputBorder(
-                      //               borderRadius: BorderRadius.circular(12.sp),
-                      //               borderSide: BorderSide(
-                      //                 color: AppColors.navyBlue,
-                      //                 width: 1.5,
-                      //               ),
-                      //             ),
-                      //             focusedBorder: OutlineInputBorder(
-                      //               borderRadius: BorderRadius.circular(12.sp),
-                      //               borderSide: BorderSide(
-                      //                 color: AppColors.navyBlue,
-                      //                 width: 1.5,
-                      //               ),
-                      //             ),
-                      //             enabledBorder: OutlineInputBorder(
-                      //               borderRadius: BorderRadius.circular(12.sp),
-                      //               borderSide: BorderSide(
-                      //                 color: AppColors.navyBlue,
-                      //                 width: 1.5,
-                      //               ),
-                      //             ),
-                      //           ),
-                      //           validator: (value) {
-                      //             if (value == null || value.length != 10) {
-                      //               return 'Please enter a valid 10-digit phone number';
-                      //             }
-                      //             return null;
-                      //           },
-                      //           onChanged: (value) => setState(() {}),
-                      //         ),
-                      //       ],
-                      //     ),
-                      //   ),
-                      // ),
-                      SizedBox(height: 30.sp),
-                      // Submit button
-                      SizedBox(
-                        width: double.infinity,
-                        height: 50.sp,
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          decoration: BoxDecoration(
-                            // color: HexColor('d63b7e'),
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.blue.shade400,
-                                Colors.blue.shade400,
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            borderRadius: BorderRadius.circular(12.sp),
-                            // boxShadow: [
-                            //   BoxShadow(
-                            //     color: Colors.blue.withOpacity(0.4),
-                            //     blurRadius: 8,
-                            //     offset: const Offset(0, 4),
-                            //   ),
-                            // ],
-                          ),
-                          child: ElevatedButton(
-                            onPressed: _isLoading ? null : _sendOTP,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.transparent,
-                              shadowColor: Colors.transparent,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12.sp),
-                              ),
-                            ),
-                            child: _isLoading
-                                ? SizedBox(
-                              height: 20.sp,
-                              width: 20.sp,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 3,
-                                valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.white),
-                              ),
-                            )
-                                : Text(
-                              'GET STARTED',
+                    ),
+                    SizedBox(height: 20.sp),
 
+                    // Terms and conditions
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 40.sp),
+                      child: RichText(
+                        textAlign: TextAlign.center,
+                        text: TextSpan(
+                          text: 'By using your phone number you accept our ',
+                          style: GoogleFonts.roboto(
+                            color: AppColors.colorBlack,
+                            fontWeight: FontWeight.w500,
+                            fontSize: 11.sp,
+                          ),
+                          children: [
+                            TextSpan(
+                              text: 'Terms & Conditions',
                               style: GoogleFonts.roboto(
-                                color: Colors.white,
+                                color: Colors.red,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 14.sp,
+                                fontSize: 11.sp,
+                                decoration: TextDecoration.underline,
                               ),
+                              recognizer: TapGestureRecognizer()
+                                ..onTap = () {
+                                  print("Terms & Conditions Clicked");
+                                },
                             ),
-                          ),
+                          ],
                         ),
                       ),
-                      SizedBox(height: 20.sp),
-                      // Terms and conditions
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 40.sp),
-                        child: RichText(
-                          textAlign: TextAlign.center,
-                          text: TextSpan(
-                            text: 'By using your phone number you accept our ',
-                            style: GoogleFonts.roboto(
-                              color: AppColors.colorWhite,
-                              fontWeight: FontWeight.w500,
-                              fontSize: 11.sp,
-                            ),
-                            children: [
-                              TextSpan(
-                                text: 'Terms & Conditions',
-                                style: GoogleFonts.roboto(
-                                  color: Colors.red,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 11.sp,
-                                  decoration: TextDecoration.underline,
-                                ),
-                                recognizer: TapGestureRecognizer()
-                                  ..onTap = () {
-                                    print("Terms & Conditions Clicked");
-                                  },
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),
           ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Padding(
+              padding: EdgeInsets.only(bottom: 0.sp),
+              child: Container(
+                height: 50.sp,
+                color: AppColors.navyBlue,
+                child: Center(
+                  child: RichText(
+                    textAlign: TextAlign.center,
+                    text: TextSpan(
+                      text: 'Provided by ',
+                      style: GoogleFonts.poppins(
+                        color: AppColors.colorWhite,
+                        fontWeight: FontWeight.w500,
+                        fontSize: 10.sp,
+                      ),
+                      children: [
+                        TextSpan(
+                          text: 'Ak Software',
+                          style: GoogleFonts.poppins(
+                            color: Colors.lightBlueAccent,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 11.sp,
+                            decoration: TextDecoration.none,
+                          ),
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = () {
+                              print("Ak Software Clicked");
+                            },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          )
         ],
       ),
     );
   }
 }
+

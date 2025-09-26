@@ -1,5 +1,9 @@
 
-// ProductListScreen.dart
+import 'dart:convert';
+import 'package:firstcallingapp/BaseUrl/baseurl.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:carousel_slider/carousel_options.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:firstcallingapp/Utils/HexColorCode/HexColor.dart';
@@ -11,125 +15,95 @@ import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../../Cart/CartModel/cart_model.dart';
 import '../../Cart/CartProvider/cart_provider.dart';
 
-class ProductListScreen extends StatelessWidget {
+class Product {
+  final int? id;
+  final String? name;
+  final int? mrp;
+  final int? sellingPrice;
+  final int? gst;
+  final String? description;
+  final String? imageUrl;
+
+  Product({
+    required this.id,
+    required this.name,
+    required this.mrp,
+    required this.sellingPrice,
+    required this.gst,
+    required this.description,
+    this.imageUrl,
+  });
+
+  factory Product.fromJson(Map<String, dynamic> json) {
+    return Product(
+      id: json['id'],
+      name: json['name'],
+      mrp: json['mrp'],
+      sellingPrice: json['selling_price'],
+      gst: json['gst'],
+      description: json['description'],
+      imageUrl: json['image_url'],
+    );
+  }
+}
+
+class ProductListScreen extends StatefulWidget {
   final void Function(GlobalKey, BuildContext, CartItem, bool isIncrement) onItemClick;
 
   ProductListScreen({super.key, required this.onItemClick});
 
-  final List<Map<String, String>> products = const [
-    {
-      'title': 'Car SAFETY QR',
-      'price': '999',
-      'originalPrice': '1499',
-      'discount': '40% OFF',
-      'imageUrl': 'https://i.ibb.co/4RBpR42W/1.jpg',
-      'packSize': '(Pack of 2)',
-    },
-    {
-      'title': 'PET SAFETY QR',
-      'price': '599',
-      'originalPrice': '999',
-      'discount': '40% OFF',
-      'imageUrl': 'https://i.ibb.co/S45YPpsb/2.jpg',
-      'packSize': '(Pack of 2)',
-    },
-    {
-      'title': 'Mobile SAFETY QR',
-      'price': '849',
-      'originalPrice': '1695',
-      'discount': '50% OFF',
-      'imageUrl': 'https://i.ibb.co/vxnXrmWN/4.jpg',
-      'packSize': '(Pack of 6)',
-    },
-    {
-      'title': 'Key SAFETY QR',
-      'price': '599',
-      'originalPrice': '999',
-      'discount': '40% OFF',
-      'imageUrl': 'https://i.ibb.co/d4xsrhYf/3.jpg',
-      'packSize': '(Pack of 2)',
-    },
-    {
-      'title': 'Bike SAFETY QR',
-      'price': '599',
-      'originalPrice': '999',
-      'discount': '40% OFF',
-      'imageUrl': 'https://i.ibb.co/BV708VdL/5.jpg',
-      'packSize': '(Pack of 2)',
-    },
-    {
-      'title': 'Laptop SAFETY QR',
-      'price': '599',
-      'originalPrice': '999',
-      'discount': '40% OFF',
-      'imageUrl': 'https://i.ibb.co/xKtMmyTx/6.jpg',
-      'packSize': '(Pack of 2)',
-    },
-    {
-      'title': 'Trolley SAFETY QR',
-      'price': '599',
-      'originalPrice': '999',
-      'discount': '40% OFF',
-      'imageUrl': 'https://i.ibb.co/hJyjjHL1/8.jpg',
-      'packSize': '(Pack of 2)',
-    },
-    {
-      'title': 'Smart Doorbell QR',
-      'price': '849',
-      'originalPrice': '1695',
-      'discount': '50% OFF',
-      'imageUrl': 'https://i.ibb.co/xqF4jLFB/7.jpg',
-      'packSize': '(Pack of 6)',
-    },
+  @override
+  State<ProductListScreen> createState() => _ProductListScreenState();
+}
 
-    {
-      'title': 'Bag SAFETY QR',
-      'price': '599',
-      'originalPrice': '999',
-      'discount': '40% OFF',
-      'imageUrl': 'https://i.ibb.co/jvtRydYp/9.jpg',
-      'packSize': '(Pack of 2)',
-    },
-    {
-      'title': 'Luggage SAFETY QR',
-      'price': '849',
-      'originalPrice': '1695',
-      'discount': '50% OFF',
-      'imageUrl': 'https://i.ibb.co/4ZYTB6ZC/10.jpg',
-      'packSize': '(Pack of 6)',
-    },
-    {
-      'title': 'Child SAFETY QR',
-      'price': '849',
-      'originalPrice': '1695',
-      'discount': '50% OFF',
-      'imageUrl': 'https://i.ibb.co/gMNkSYj6/12.jpg',
-      'packSize': '(Pack of 6)',
-    },
-    {
-      'title': 'Smart card SAFETY QR',
-      'price': '849',
-      'originalPrice': '1695',
-      'discount': '50% OFF',
-      'imageUrl': 'https://i.ibb.co/0pJxN6px/11.jpg',
-      'packSize': '(Pack of 6)',
-    },
+class _ProductListScreenState extends State<ProductListScreen> {
+  List<Product> products = [];
+  bool isLoading = true;
 
-  ];
+  Future<void> fetchProducts() async {
+    try {
+      var url = Uri.parse("http://192.168.1.2/firstcallingapp/api/products"); // apna API endpoint
+      var response = await http.get(url);
 
-  final List<String> categories = [
-    'All',
-    'Car',
-    'Bike',
-    'Keys',
-    'Lock',
-    'Mobile',
-    'Pet',
-  ];
+      if (response.statusCode == 200) {
+        var data = json.decode(response.body);
+        List list = data['products'];
+
+        setState(() {
+          products = list.map((e) => Product.fromJson(e)).toList();
+          isLoading = false;
+        });
+      } else {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      debugPrint("Error: $e");
+    }
+  }
+  @override
+  void initState() {
+    super.initState();
+    fetchProducts();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
+    return  isLoading
+        ? Center(
+      child: CupertinoActivityIndicator(
+        radius: 25,
+        color: AppColors.navyBlue,
+      ),
+    )
+
+        :
+
+      SingleChildScrollView(
       padding: EdgeInsets.all(5.sp),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -140,7 +114,7 @@ class ProductListScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                "Category",
+                "Our All Products",
                 style: TextStyle(
                   fontFamily: 'Poppins',
                   fontSize: 15.sp,
@@ -150,38 +124,7 @@ class ProductListScreen extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-              GestureDetector(
-                onTap: () {
-                  print('Click See All Button');
-                },
-                child: SizedBox(
-                  width: 60.sp,
-                  child: Center(
-                    child: Text(
-                      "See All",
-                      style: TextStyle(
-                        fontFamily: 'Poppins',
-                        fontSize: 15.sp,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.grey,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ),
-              ),
             ],
-          ),
-          SizedBox(height: 15.sp),
-          Padding(
-            padding: EdgeInsets.all(0.sp),
-            child: CategoryChips(
-              categories: categories,
-              onCategorySelected: (selectedCategory) {
-                print('Selected category: $selectedCategory');
-              },
-            ),
           ),
           SizedBox(height: 15.sp),
           GridView.count(
@@ -189,19 +132,19 @@ class ProductListScreen extends StatelessWidget {
             shrinkWrap: true,
             padding: EdgeInsets.zero,
             physics: const NeverScrollableScrollPhysics(),
-            childAspectRatio: 0.73,
+            childAspectRatio: 0.8,
             crossAxisSpacing: 8.sp,
             mainAxisSpacing: 8.sp,
             children: products
                 .map(
                   (product) => ProductCard(
-                title: product['title']!,
-                price: product['price']!,
-                originalPrice: product['originalPrice']!,
-                discount: product['discount']!,
-                imageUrl: product['imageUrl']!,
-                packSize: product['packSize']!,
-                onClick: onItemClick,
+                title: product.name.toString(),
+                price: product.mrp.toString(),
+                originalPrice: product.sellingPrice.toString(),
+                discount: '',
+                imageUrl: product.imageUrl.toString(),
+                packSize: '',
+                onClick: widget.onItemClick,
               ),
             )
                 .toList(),
@@ -283,46 +226,27 @@ class ProductCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     Row(
-                      children: [
-                        Text(
-                          '₹$price',
-                          style: TextStyle(
-                            color: AppColors.navyBlue,
-                            fontSize: 14.sp,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          '₹$originalPrice',
-                          style: TextStyle(
-                            color: HexColor('#cf0c14'),
-                            fontSize: 10.sp,
-                            fontWeight: FontWeight.w600,
-                            decoration: TextDecoration.lineThrough,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
                       children: [
-                        Column(
+                        Row(
                           children: [
                             Text(
-                              discount,
+                              '₹$price',
                               style: TextStyle(
-                                color: HexColor('#cf0c14'),
-                                fontSize: 10.sp,
+                                color: AppColors.navyBlue,
+                                fontSize: 14.sp,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
+                            const SizedBox(width: 8),
                             Text(
-                              packSize,
-                              style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                                color: AppColors.navyBlue,
+                              '₹$originalPrice',
+                              style: TextStyle(
+                                color: HexColor('#cf0c14'),
+                                fontSize: 10.sp,
                                 fontWeight: FontWeight.w600,
-                                fontSize: 8.sp,
+                                decoration: TextDecoration.lineThrough,
                               ),
                             ),
                           ],
@@ -436,6 +360,7 @@ class ProductCard extends StatelessWidget {
                             ),
                           ),
                         ),
+
                       ],
                     ),
                   ],
