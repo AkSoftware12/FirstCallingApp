@@ -62,7 +62,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
   Future<void> fetchProducts() async {
     try {
-      var url = Uri.parse("http://192.168.1.2/firstcallingapp/api/products"); // apna API endpoint
+      var url = Uri.parse(ApiRoutes.getAllProducts); // apna API endpoint
       var response = await http.get(url);
 
       if (response.statusCode == 200) {

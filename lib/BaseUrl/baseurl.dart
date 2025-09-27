@@ -6,7 +6,7 @@ class ApiRoutes {
 
 
 // Local App Url
-  static const String baseUrl = "http://192.168.1.2/firstcallingapp/api";
+  static const String baseUrl = "http://192.168.1.9/firstcallingapp/api";
 
 
 
@@ -15,5 +15,8 @@ class ApiRoutes {
   static const String getProfile = "$baseUrl/get-profile";
   static const String getUpdateProfile = "$baseUrl/updateProfile";
   static const String getAllProducts = "$baseUrl/products";
+  static const String addAddress = "$baseUrl/add-address";
+  static const String getAddress = "$baseUrl/get-address";
+  static const String deleteAddress = "$baseUrl/delete-address";
   static const String notifications = "$baseUrl/notifications";
 }
