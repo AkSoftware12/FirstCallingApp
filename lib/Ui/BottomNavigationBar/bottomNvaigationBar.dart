@@ -25,6 +25,7 @@ import '../BottomNavigationScreen/SOS/sos_screen.dart';
 import '../Cart/CartModel/cart_model.dart';
 import '../Cart/CartProvider/cart_provider.dart';
 import '../Cart/CartScreen/cart_screen.dart';
+import '../OrderHistory/order_history.dart';
 import '../QRScanScreen/QRCodeData/qr_code_data.dart';
 import '../QRScanScreen/TorchScreen/torch_screen.dart';
 
@@ -252,6 +253,9 @@ class _HomePageState extends State<BottomNavigationBarScreen> {
     });
   }
 
+
+
+
   bool _isValidUrl(String value) {
     final Uri? uri = Uri.tryParse(value);
     return uri != null && (uri.isScheme("http") || uri.isScheme("https"));
@@ -260,11 +264,11 @@ class _HomePageState extends State<BottomNavigationBarScreen> {
   void _showResult(String data) {
     try {
       // Parse the scanned data as JSON
-      final Map<String, dynamic> parsedData = jsonDecode(data);
+      // final Map<String, dynamic> parsedData = jsonDecode(data);
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => ResultPage(result: parsedData),
+          builder: (context) => ResultPage(data: data,),
         ),
       ).then((_) {
         _isScanning = false;
@@ -277,6 +281,7 @@ class _HomePageState extends State<BottomNavigationBarScreen> {
       _isScanning = false;
     }
   }
+
 
 
   void updateCart(GlobalKey widgetKey, BuildContext context, CartItem item, bool isIncrement) async {
@@ -899,17 +904,22 @@ class CustomDrawer extends StatelessWidget {
                           MaterialPageRoute(builder: (context)=> ProfileScreen()));
                     },
                   ),
-                  // _buildListTile(
-                  //   context: context,
-                  //   icon: Icons.add_to_photos,
-                  //   title: 'Activate New QR Sticker',
-                  //   onTap: () {},
-                  // ),
+                  _buildListTile(
+                    context: context,
+                    icon: Icons.qr_code,
+                    title: 'Activate New QR Sticker',
+                    onTap: () {
+
+                    },
+                  ),
                   _buildListTile(
                     context: context,
                     icon: Icons.shop,
                     title: 'My Orders/Products',
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => OrderHistoryScreen()));
+
+                    },
                   ),
                   // _buildListTile(
                   //   context: context,

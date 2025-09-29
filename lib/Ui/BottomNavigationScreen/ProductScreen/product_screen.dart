@@ -145,6 +145,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
                 imageUrl: product.imageUrl.toString(),
                 packSize: '',
                 onClick: widget.onItemClick,
+                    gst:  product.gst!.toDouble(),
+                    id: product.id.toString(),
               ),
             )
                 .toList(),
@@ -157,9 +159,11 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
 class ProductCard extends StatelessWidget {
   final String title;
+  final String id;
   final String price;
   final String originalPrice;
   final String discount;
+  final double gst;
   final String imageUrl;
   final String packSize;
   final void Function(GlobalKey, BuildContext, CartItem, bool isIncrement) onClick;
@@ -167,12 +171,14 @@ class ProductCard extends StatelessWidget {
   const ProductCard({
     super.key,
     required this.title,
+    required this.id,
     required this.price,
     required this.originalPrice,
     required this.discount,
     required this.imageUrl,
     required this.packSize,
     required this.onClick,
+    required this.gst,
   });
 
   @override
@@ -267,15 +273,19 @@ class ProductCard extends StatelessWidget {
                                       onTap: () {
                                         cart.addItem(
                                           CartItem(
-                                            title: title,
-                                            price: price,
+                                            product_name: title,
+                                            rate: price,
                                             imageUrl: imageUrl,
+                                            product_gst:gst,
+                                            product_id: id
                                           ),
                                         );
                                         final item = CartItem(
-                                          title: title,
-                                          price: price,
-                                          imageUrl: imageUrl,
+                                            product_name: title,
+                                            rate: price,
+                                            imageUrl: imageUrl,
+                                            product_gst:gst,
+                                            product_id: id
                                         );
                                         onClick(widgetKey, context, item,true);
                                       },
@@ -307,7 +317,7 @@ class ProductCard extends StatelessWidget {
                                       GestureDetector(
                                         onTap: () {
                                           final item = cart.items.firstWhere(
-                                                (e) => e.title == title,
+                                                (e) => e.product_name == title,
                                           );
                                           if (item != null) cart.decreaseQty(item);
 
@@ -337,7 +347,7 @@ class ProductCard extends StatelessWidget {
                                       GestureDetector(
                                         onTap: () {
                                           final item = cart.items.firstWhere(
-                                                (e) => e.title == title,
+                                                (e) => e.product_name == title,
                                           );
                                           if (item != null) cart.increaseQty(item);
                                           onClick(widgetKey, context, item,true);

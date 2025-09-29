@@ -40,7 +40,7 @@ class CartProvider with ChangeNotifier {
   }
 
   void addItem(CartItem item) {
-    final index = _items.indexWhere((e) => e.title == item.title);
+    final index = _items.indexWhere((e) => e.product_name == item.product_name);
     if (index >= 0) {
       _items[index].quantity++;
     } else {
@@ -51,7 +51,7 @@ class CartProvider with ChangeNotifier {
   }
 
   void increaseQty(CartItem item) {
-    final index = _items.indexWhere((e) => e.title == item.title);
+    final index = _items.indexWhere((e) => e.product_name == item.product_name);
     if (index >= 0) {
       _items[index].quantity++;
       saveCart();
@@ -60,7 +60,7 @@ class CartProvider with ChangeNotifier {
   }
 
   void decreaseQty(CartItem item) {
-    final index = _items.indexWhere((e) => e.title == item.title);
+    final index = _items.indexWhere((e) => e.product_name == item.product_name);
     if (index >= 0) {
       if (_items[index].quantity > 1) {
         _items[index].quantity--;
@@ -73,10 +73,10 @@ class CartProvider with ChangeNotifier {
   }
   double get totalPrice {
     return _items.fold(
-        0, (sum, item) => sum + (int.parse(item.price.toString()) * item.quantity));
+        0, (sum, item) => sum + (int.parse(item.rate.toString()) * item.quantity));
   }
   int getQuantity(String title) {
-    final index = _items.indexWhere((e) => e.title == title);
+    final index = _items.indexWhere((e) => e.product_name == title);
     if (index >= 0) {
       return _items[index].quantity;
     }

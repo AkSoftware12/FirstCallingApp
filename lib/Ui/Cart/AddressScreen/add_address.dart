@@ -30,6 +30,18 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
   void initState() {
     super.initState();
     _fetchAddresses();
+    _loadSelectedAddress();
+  }
+
+  // Load the saved selected address index from SharedPreferences
+  Future<void> _loadSelectedAddress() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedAddressId = prefs.getString('selected_address_id');
+    if (savedAddressId != null && addresses.isNotEmpty) {
+      setState(() {
+        _selectedAddressIndex = addresses.indexWhere((address) => address['id'].toString() == savedAddressId);
+      });
+    }
   }
 
   Future<void> _fetchAddresses() async {
@@ -54,8 +66,8 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
         if (data['success'] == true) {
           setState(() {
             addresses = List<Map<String, dynamic>>.from(data['address']);
-            _selectedAddressIndex = null;
           });
+          await _loadSelectedAddress();
         } else {
           setState(() {
             _errorMessage = data['message'] ?? 'Failed to fetch addresses';
@@ -77,7 +89,7 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
     }
   }
 
-  Future<void> _addAddress(String address,) async {
+  Future<void> _addAddress(String address) async {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -104,7 +116,6 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
             addresses.add({
               'id': data['address_id'],
               'address': address,
-
             });
           });
         } else {
@@ -150,10 +161,23 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
         if (data['success'] == true) {
           setState(() {
             addresses.removeAt(index);
+            // Check if the deleted address was the selected one
             if (_selectedAddressIndex == index) {
               _selectedAddressIndex = null;
+              // Clear the saved address data from SharedPreferences
+              prefs.remove('selected_address_id');
+              prefs.remove('selected_address');
+              // Clear cart-related address data
+              prefs.remove('cart_selected_address'); // Adjust key if different
             } else if (_selectedAddressIndex != null && _selectedAddressIndex! > index) {
               _selectedAddressIndex = _selectedAddressIndex! - 1;
+            }
+            // If no addresses remain, clear address data to ensure cart reflects this
+            if (addresses.isEmpty) {
+              _selectedAddressIndex = null;
+              prefs.remove('selected_address_id');
+              prefs.remove('selected_address');
+              prefs.remove('cart_selected_address'); // Adjust key if different
             }
           });
         } else {
@@ -284,7 +308,6 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
                     label: "Pincode",
                     icon: Icons.pin_drop_outlined,
                     keyboardType: TextInputType.number,
-
                     onChanged: (value) {
                       setState(() {
                         _isPincodeValid = value.length == 6;
@@ -323,9 +346,7 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
                       onPressed: _isFormValid()
                           ? () {
                         _addAddress(
-                            "${_addressController.text.trim()}, ${_cityController.text.trim()}, ${_stateController.text.trim()}, ${_pincodeController.text.trim()}"
-                        );
-
+                            "${_addressController.text.trim()}, ${_cityController.text.trim()}, ${_stateController.text.trim()}, ${_pincodeController.text.trim()}");
                         Navigator.pop(context);
                       }
                           : null,
@@ -436,7 +457,7 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
           ),
         ),
         content: Text(
-          "Are you sure you want to delete this address?",
+          "Are you sure you want to delete this address? If this address is selected or no addresses remain, it will also be removed from the cart.",
           style: GoogleFonts.poppins(
             fontSize: 14,
             color: Colors.grey.shade700,
@@ -495,10 +516,10 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
         ),
       ),
       floatingActionButton: Padding(
-        padding:  EdgeInsets.only(bottom: 60.sp),
+        padding: EdgeInsets.only(bottom: 60.sp),
         child: FloatingActionButton.extended(
           onPressed: _showBottomSheet,
-          icon:  Icon(Icons.add_circle_outline, size: 20.sp),
+          icon: Icon(Icons.add_circle_outline, size: 20.sp),
           label: Text(
             "Add",
             style: GoogleFonts.poppins(
@@ -514,7 +535,6 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
           ),
         ),
       ),
-
       body: Column(
         children: [
           if (_errorMessage != null)
@@ -583,7 +603,7 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
               ),
             )
                 : ListView.separated(
-              padding:  EdgeInsets.symmetric(vertical: 5.sp),
+              padding: EdgeInsets.symmetric(vertical: 5.sp),
               itemCount: addresses.length,
               separatorBuilder: (context, index) => const SizedBox(height: 8),
               itemBuilder: (context, index) {
@@ -596,12 +616,11 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
                 return FadeInAnimation(
                   delay: Duration(milliseconds: 100 * index),
                   child: Card(
-                    margin:  EdgeInsets.symmetric(horizontal: 8.sp, vertical: 4),
+                    margin: EdgeInsets.symmetric(horizontal: 8.sp, vertical: 4),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
                     elevation: 1,
-                    // shadowColor: AppColors.navyBlue.withOpacity(0.1),
                     child: Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(16),
@@ -622,7 +641,7 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
                           });
                         },
                         child: ListTile(
-                          contentPadding:  EdgeInsets.symmetric(
+                          contentPadding: EdgeInsets.symmetric(
                               horizontal: 0.sp, vertical: 5.sp),
                           leading: Radio<int>(
                             value: index,
@@ -668,7 +687,6 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
             decoration: BoxDecoration(
               color: AppColors.colorWhite,
               borderRadius: BorderRadius.circular(16),
-
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.05),
@@ -679,7 +697,6 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
             ),
             child: Column(
               children: [
-
                 if (addresses.isNotEmpty && _selectedAddressIndex != null)
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
@@ -695,13 +712,16 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
                       shadowColor: Colors.black.withOpacity(0.2),
                     ),
                     onPressed: _selectedAddressIndex != null
-                        ? () {
+                        ? () async {
                       final selectedAddress = addresses[_selectedAddressIndex!];
                       final displayAddress = selectedAddress['city'] != null &&
                           selectedAddress['state'] != null &&
                           selectedAddress['pincode'] != null
                           ? "${selectedAddress['address']}, ${selectedAddress['city']}, ${selectedAddress['state']} - ${selectedAddress['pincode']}"
                           : selectedAddress['address'];
+                      final prefs = await SharedPreferences.getInstance();
+                      await prefs.setString('selected_address', displayAddress);
+                      await prefs.setString('selected_address_id', selectedAddress['id'].toString());
                       Navigator.pop(context, displayAddress);
                     }
                         : null,
