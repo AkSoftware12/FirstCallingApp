@@ -26,6 +26,7 @@ import '../Cart/CartModel/cart_model.dart';
 import '../Cart/CartProvider/cart_provider.dart';
 import '../Cart/CartScreen/cart_screen.dart';
 import '../OrderHistory/order_history.dart';
+import '../QR Check/qr_check_screen.dart';
 import '../QRScanScreen/QRCodeData/qr_code_data.dart';
 import '../QRScanScreen/TorchScreen/torch_screen.dart';
 
@@ -909,6 +910,7 @@ class CustomDrawer extends StatelessWidget {
                     icon: Icons.qr_code,
                     title: 'Activate New QR Sticker',
                     onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => QRActive()));
 
                     },
                   ),
