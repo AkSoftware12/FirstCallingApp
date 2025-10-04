@@ -1,32 +1,24 @@
-import 'dart:convert';
-
 import 'package:add_to_cart_animation/add_to_cart_animation.dart';
 import 'package:firstcallingapp/Ui/Login/Login/login.dart';
 import 'package:firstcallingapp/Ui/Profile/profile.dart';
 import 'package:firstcallingapp/Utils/HexColorCode/HexColor.dart';
 import 'package:firstcallingapp/Utils/color.dart';
-import 'package:firstcallingapp/Utils/textSize.dart';
-import 'package:firstcallingapp/Widgets/CustomText/custom_text.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:gscankit/gscankit.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:stream_chat_flutter/stream_chat_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../Utils/string.dart';
 import '../BottomNavigationScreen/Helpline/helpline.dart';
 import '../BottomNavigationScreen/IVRCall/ivr_call.dart';
 import '../BottomNavigationScreen/ProductScreen/product_screen.dart';
 import '../BottomNavigationScreen/SOS/sos_screen.dart';
 import '../Cart/CartModel/cart_model.dart';
-import '../Cart/CartProvider/cart_provider.dart';
 import '../Cart/CartScreen/cart_screen.dart';
 import '../OrderHistory/order_history.dart';
-import '../QR Check/qr_check_screen.dart';
+import '../QRActivationScreen/qr_check_screen.dart';
 import '../QRScanScreen/QRCodeData/qr_code_data.dart';
 import '../QRScanScreen/TorchScreen/torch_screen.dart';
 

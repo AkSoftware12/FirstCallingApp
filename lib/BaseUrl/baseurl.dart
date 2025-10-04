@@ -6,7 +6,7 @@ class ApiRoutes {
 
 
 // Local App Url
-  static const String baseUrl = "http://192.168.1.20/firstcallingapp/api";
+  static const String baseUrl = "http://192.168.1.13/firstcallingapp/api";
 
 
 
