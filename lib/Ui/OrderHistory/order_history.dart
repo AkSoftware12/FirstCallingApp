@@ -137,6 +137,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
+      print('Token$token');
       final response = await http.get(
         Uri.parse(ApiRoutes.getOrderHistory),
         headers: {

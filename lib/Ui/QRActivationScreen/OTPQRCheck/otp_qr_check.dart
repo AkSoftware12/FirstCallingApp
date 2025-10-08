@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:firstcallingapp/BaseUrl/baseurl.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -87,7 +88,7 @@ class _OTPScreenState extends State<OTPScreen> with SingleTickerProviderStateMix
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
-      final uri = Uri.parse("http://192.168.1.13/firstcallingapp/api/qr/verifyOtp");
+      final uri = Uri.parse(ApiRoutes.qrVerifyOtp);
 
       final response = await http.post(
         uri,

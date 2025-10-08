@@ -1,14 +1,15 @@
 import 'package:add_to_cart_animation/add_to_cart_animation.dart';
 import 'package:firstcallingapp/Ui/Login/Login/login.dart';
-import 'package:firstcallingapp/Ui/Profile/profile.dart';
 import 'package:firstcallingapp/Utils/HexColorCode/HexColor.dart';
 import 'package:firstcallingapp/Utils/color.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:gscankit/gscankit.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../BottomNavigationScreen/Helpline/helpline.dart';
@@ -17,7 +18,10 @@ import '../BottomNavigationScreen/ProductScreen/product_screen.dart';
 import '../BottomNavigationScreen/SOS/sos_screen.dart';
 import '../Cart/CartModel/cart_model.dart';
 import '../Cart/CartScreen/cart_screen.dart';
+import '../DrawerScreen/Drawer/drawer.dart';
+import '../DrawerScreen/privacy.dart';
 import '../OrderHistory/order_history.dart';
+import '../Profile/update_profile.dart';
 import '../QRActivationScreen/qr_check_screen.dart';
 import '../QRScanScreen/QRCodeData/qr_code_data.dart';
 import '../QRScanScreen/TorchScreen/torch_screen.dart';
@@ -36,7 +40,9 @@ class EmergencyNumber {
 }
 
 class BottomNavigationBarScreen extends StatefulWidget {
-  const BottomNavigationBarScreen({super.key});
+  final int initialIndex;
+
+  const BottomNavigationBarScreen({super.key,  this.initialIndex = 0});
 
   @override
   State<BottomNavigationBarScreen> createState() => _HomePageState();
@@ -49,12 +55,24 @@ class _HomePageState extends State<BottomNavigationBarScreen> {
   );
   bool _isScanning = false;
   int selected = 0;
-  final controller = PageController();
+  PageController controller = PageController();
 
+  String currentVersion = '';
+  String? userName;
+  String userImage = "";
   // Cart animation
   GlobalKey<CartIconKey> cartKey = GlobalKey<CartIconKey>();
   late Function(GlobalKey) runAddToCartAnimation;
   var _cartQuantityItems = 0;
+
+
+  @override
+  void initState() {
+    checkForVersion(context);
+    selected = widget.initialIndex;
+    controller = PageController(initialPage: selected);
+    super.initState();
+  }
 
   // Sample data for emergency numbers
   final List<EmergencyNumber> emergencyNumbers = [
@@ -294,7 +312,10 @@ class _HomePageState extends State<BottomNavigationBarScreen> {
         .runCartAnimation(_cartQuantityItems.toString());
   }
 
-
+  Future<void> checkForVersion(BuildContext context) async {
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    currentVersion = packageInfo.version;
+  }
   @override
   Widget build(BuildContext context) {
     return AddToCartAnimation(
@@ -547,18 +568,15 @@ class _HomePageState extends State<BottomNavigationBarScreen> {
             const SizedBox(width: 16),
           ],
         ),
-        drawer: CustomDrawer(),
-        bottomNavigationBar: Container(
-          color: Colors.grey.shade200,
-          height: 70.sp,
-          child: CustomBottomNavBar(
-            currentIndex: selected,
-            onTap: (index) {
-              controller.jumpToPage(index);
-              setState(() => selected = index);
-            },
-          ),
-        ),
+        drawer: Drawer(
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.zero,
+            ),
+            width: MediaQuery.sizeOf(context).width * .7,
+            // backgroundColor: ColorSelect.maineColor,
+            child: DrawerPageScreen(
+              currentVersion: currentVersion,
+            )),
         floatingActionButton: SizedBox(
           width: 55.sp,
           height: 55.sp,
@@ -572,7 +590,7 @@ class _HomePageState extends State<BottomNavigationBarScreen> {
                     appBar: (context, controller) {
                       return AppBar(
                         automaticallyImplyLeading: true,
-                        iconTheme: IconThemeData(color: Colors.white),
+                        iconTheme: const IconThemeData(color: Colors.white),
                         title: Row(
                           children: [
                             ClipRRect(
@@ -586,7 +604,6 @@ class _HomePageState extends State<BottomNavigationBarScreen> {
                             ),
                             SizedBox(width: 3.sp),
                             Column(
-                              mainAxisAlignment: MainAxisAlignment.start,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
@@ -610,116 +627,10 @@ class _HomePageState extends State<BottomNavigationBarScreen> {
                           ],
                         ),
                         backgroundColor: Colors.transparent,
-                        actions: [],
                       );
                     },
                     floatingOption: [
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Row(
-                            children: [
-                              IconButton.filled(
-                                style: IconButton.styleFrom(
-                                  backgroundColor: CupertinoColors.systemGrey6,
-                                  foregroundColor: CupertinoColors.darkBackgroundGray,
-                                ),
-                                icon: Icon(CupertinoIcons.camera_rotate),
-                                onPressed: () => controllerScan.switchCamera(),
-                              ),
-                              SizedBox(width: 5.sp),
-                              ValueListenableBuilder(
-                                valueListenable: controllerScan,
-                                builder: (context, state, child) {
-                                  final isTorchOn = state.torchState == TorchState.on;
-                                  return TorchToggleButton(
-                                    isTorchOn: isTorchOn,
-                                    onPressed: () => controllerScan.toggleTorch(),
-                                  );
-                                },
-                              ),
-                              SizedBox(width: 5.sp),
-                              IconButton.filled(
-                                style: IconButton.styleFrom(
-                                  backgroundColor: CupertinoColors.systemGrey6,
-                                  foregroundColor: CupertinoColors.darkBackgroundGray,
-                                ),
-                                icon: Icon(CupertinoIcons.photo),
-                                onPressed: () async {
-                                  final picker = ImagePicker();
-                                  final pickedFile = await picker.pickImage(
-                                    source: ImageSource.gallery,
-                                  );
-                                  if (pickedFile != null) {
-                                    try {
-                                      final result = await controllerScan.analyzeImage(pickedFile.path);
-                                      if (result != null) {
-                                        _handleDetect(result);
-                                      } else {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          const SnackBar(content: Text("No QR/Barcode found in image")),
-                                        );
-                                      }
-                                    } catch (e) {
-                                      debugPrint("Error scanning from gallery: $e");
-                                    }
-                                  }
-                                },
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 20.sp),
-                          Padding(
-                            padding: EdgeInsets.only(bottom: 50.sp),
-                            child: Column(
-                              children: [
-                                Container(
-                                  width: 150.sp,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(10.sp),
-                                  ),
-                                  child: Center(
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          ClipRRect(
-                                            borderRadius: BorderRadius.circular(10.sp),
-                                            child: Image.asset(
-                                              'assets/playstore.png',
-                                              height: 50.sp,
-                                              width: 50.sp,
-                                              fit: BoxFit.cover,
-                                            ),
-                                          ),
-                                          SizedBox(height: 10.sp),
-                                          Text(
-                                            'First Calling App',
-                                            style: GoogleFonts.poppins(
-                                              fontSize: 8.sp,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white,
-                                              letterSpacing: 1.5,
-                                              shadows: [
-                                                Shadow(
-                                                  blurRadius: 10.0,
-                                                  color: Colors.black.withOpacity(0.3),
-                                                  offset: const Offset(2.0, 2.0),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
+                      // your floating options remain unchanged
                     ],
                     gscanOverlayConfig: GscanOverlayConfig(
                       scannerScanArea: ScannerScanArea.center,
@@ -736,6 +647,8 @@ class _HomePageState extends State<BottomNavigationBarScreen> {
               );
             },
             backgroundColor: Colors.white,
+            elevation: 8, // main shadow depth
+            highlightElevation: 12, // shadow on press
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(30.sp),
             ),
@@ -746,8 +659,19 @@ class _HomePageState extends State<BottomNavigationBarScreen> {
             ),
           ),
         ),
+
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-        body: SafeArea(
+        bottomNavigationBar: CustomBottomNavBar(
+        currentIndex: selected,
+        onTap: (int index) {
+          setState(() {
+            selected = index;
+          });
+          controller.jumpToPage(index);
+        },
+      ),
+
+      body: SafeArea(
           child: PageView(
             controller: controller,
             physics: const NeverScrollableScrollPhysics(), // 👈 Swipe disable
@@ -777,56 +701,87 @@ class CustomBottomNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final items = [
-      {'icon': Icons.home, 'label': 'Home'},
-      {'icon': Icons.phone, 'label': 'IVR Call'},
+      {'icon': 'assets/home.png', 'label': 'Home'},
+      {'icon': 'assets/help.png', 'label': 'IVR Call'},
       {'icon': Icons.qr_code_scanner, 'label': 'Scan QR'},
-      {'icon': Icons.contact_phone, 'label': 'Helplines'},
-      {'icon': Icons.sos, 'label': 'SOS'},
+      {'icon': 'assets/call.png', 'label': 'Helplines'},
+      {'icon': 'assets/sos.png', 'label': 'SOS'},
     ];
 
     return Container(
-      color: Colors.grey.shade200,
+      height: 55.sp,
       child: BottomAppBar(
         color: AppColors.navyBlue,
-        // replace with AppColors.navyBlue if you have it
         shape: const CircularNotchedRectangle(),
-        notchMargin: 5.sp,
+        notchMargin: 0.sp,
         padding: EdgeInsets.zero,
-        clipBehavior: Clip.none,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: List.generate(items.length, (index) {
             final isSelected = currentIndex == index;
+            final item = items[index];
 
-            return GestureDetector(
-              onTap: () => onTap(index),
-              child: SizedBox(
-                height: 70.sp, // ✅ height bhi responsive
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (index == 2) ...[
-                      SizedBox(height: 28.sp), // sirf FAB ke liye empty gap
-                    ] else ...[
-                      Icon(
-                        items[index]['icon'] as IconData,
-                        color: isSelected ? Colors.white : Colors.grey,
-                        size: isSelected ? 25.sp : 21.sp,
+            final bool isDisabled = index == 2; // disable index 2 tap
+
+            return Expanded(
+              child: InkWell(
+                onTap: isDisabled ? null : () => onTap(index),
+                splashColor: isDisabled ? Colors.transparent : Colors.white24,
+                highlightColor: Colors.transparent,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 150),
+                  height: 55.sp,
+                  color: isSelected ? HexColor('#F40009') : Colors.transparent,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      if (index == 2)
+
+                        Column(
+                    children: [
+                      SizedBox(
+                        height: 22.sp,
+                        width: 22.sp,
                       ),
-                      SizedBox(height: 2.sp), // responsive gap
                       Text(
-                        items[index]['label'] as String,
+                        item['label'] as String,
                         style: TextStyle(
-                          fontSize: 10.sp,
-                          fontWeight: isSelected
-                              ? FontWeight.bold
-                              : FontWeight.w600,
-                          color: isSelected ? Colors.white : Colors.grey,
+                          fontSize: 11.sp,
+                          fontWeight:
+                          isSelected ? FontWeight.bold : FontWeight.w500,
+                          color: Colors.white,
                         ),
-                      ),
-                    ],
+                      )
                   ],
+                )
+                      // Only label for index 2 (no icon)
+
+                      else ...[
+                        item['icon'] is IconData
+                            ? Icon(
+                          item['icon'] as IconData,
+                          color: Colors.white,
+                          size: 22.sp,
+                        )
+                            : Image.asset(
+                          item['icon'].toString(),
+                          height: 22.sp,
+                          width: 22.sp,
+                          color: Colors.white,
+                        ),
+                        SizedBox(height: 2.sp),
+                        Text(
+                          item['label'] as String,
+                          style: TextStyle(
+                            fontSize: 10.sp,
+                            fontWeight:
+                            isSelected ? FontWeight.bold : FontWeight.w500,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
                 ),
               ),
             );
@@ -836,8 +791,6 @@ class CustomBottomNavBar extends StatelessWidget {
     );
   }
 }
-
-
 
 
 
@@ -894,7 +847,7 @@ class CustomDrawer extends StatelessWidget {
                     onTap: () {
                       Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context)=> ProfileScreen()));
+                          MaterialPageRoute(builder: (context)=> ProfileUpdatePage()));
                     },
                   ),
                   _buildListTile(
@@ -960,8 +913,13 @@ class CustomDrawer extends StatelessWidget {
                   _buildListTile(
                     context: context,
                     icon: Icons.policy,
-                    title: 'Terms & Policy',
-                    onTap: () {},
+                    title: 'Privacy Policy',
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const PrivacyPage()));
+                    },
                   ),
                   _buildListTile(
                     context: context,
@@ -973,7 +931,18 @@ class CustomDrawer extends StatelessWidget {
                     context: context,
                     icon: Icons.bloodtype,
                     title: 'Blood Donation',
-                    onTap: () {},
+                    onTap: () {
+                      Fluttertoast.showToast(
+                          msg: "Coming Soon",
+                          toastLength: Toast.LENGTH_SHORT,
+                          gravity: ToastGravity.CENTER,
+                          timeInSecForIosWeb: 1,
+                          backgroundColor: Colors.red,
+                          textColor: Colors.white,
+                          fontSize: 16.0
+                      );
+
+                    },
                   ),
               _buildListTile(
                 context: context,

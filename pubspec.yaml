@@ -37,6 +37,14 @@ dependencies:
   lottie: ^3.3.1
   firebase_messaging: ^15.2.7
   firebase_core: ^3.13.0
+  fluttertoast: ^8.2.1
+  notched_card: ^0.1.1
+  flutter_svg: ^2.2.0
+  share_plus: ^11.0.0
+  package_info_plus: ^8.3.0
+
+
+
 
 
 
@@ -48,6 +56,8 @@ dev_dependencies:
     sdk: flutter
 
   flutter_lints: ^5.0.0
+
+
 
 flutter:
 

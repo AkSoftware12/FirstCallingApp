@@ -580,7 +580,7 @@ packages:
     source: hosted
     version: "0.1.3"
   flutter_svg:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: flutter_svg
       sha256: b9c2ad5872518a27507ab432d1fb97e8813b05f0fc693f9d40fad06d073e0678
@@ -597,6 +597,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  fluttertoast:
+    dependency: "direct main"
+    description:
+      name: fluttertoast
+      sha256: "90778fe0497fe3a09166e8cf2e0867310ff434b794526589e77ec03cf08ba8e8"
+      url: "https://pub.dev"
+    source: hosted
+    version: "8.2.14"
   freezed_annotation:
     dependency: transitive
     description:
@@ -941,6 +949,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.5.0"
+  notched_card:
+    dependency: "direct main"
+    description:
+      name: notched_card
+      sha256: a17c9dc70ca13c32af1b479631cd581da1f2663cb009d5cc70d3012b8b49f2a9
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.1"
   octo_image:
     dependency: transitive
     description:
@@ -950,7 +966,7 @@ packages:
     source: hosted
     version: "2.1.0"
   package_info_plus:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: package_info_plus
       sha256: "16eee997588c60225bda0488b6dcfac69280a6b7a3cf02c741895dd370a02968"
@@ -1270,7 +1286,7 @@ packages:
     source: hosted
     version: "2.1.0"
   share_plus:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: share_plus
       sha256: d7dc0630a923883c6328ca31b89aa682bacbf2f8304162d29f7c6aaff03a27a1

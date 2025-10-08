@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:firstcallingapp/BaseUrl/baseurl.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -165,7 +166,7 @@ class _QRActiveState extends State<QRActive> with TickerProviderStateMixin {
 
     try {
       final uri = Uri.parse(
-        "http://192.168.1.13/firstcallingapp/api/qr/check?qr_number=$number",
+        "${ApiRoutes.qrCodeCheck}$number",
       );
 
       final prefs = await SharedPreferences.getInstance();

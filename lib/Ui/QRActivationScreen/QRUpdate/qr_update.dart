@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:firstcallingapp/BaseUrl/baseurl.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -101,14 +102,12 @@ class _UpdateScreenState extends State<UpdateScreen> {
       'family_member2_no': _family2NoController.text,
     };
 
-    // Replace with your actual API endpoint URL
-    const String apiUrl = 'http://192.168.1.13/firstcallingapp/api/qr/update'; // Update this URL
 
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
       final response = await http.post(
-        Uri.parse(apiUrl),
+        Uri.parse(ApiRoutes.qrCodeUpdate),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token', // Added Bearer token for auth
