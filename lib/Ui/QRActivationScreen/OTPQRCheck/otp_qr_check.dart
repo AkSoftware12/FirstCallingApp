@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../Utils/color.dart';
@@ -25,6 +26,9 @@ class _OTPScreenState extends State<OTPScreen> with SingleTickerProviderStateMix
   String _errorMessage = '';
   late AnimationController _shakeController;
   late Animation<Offset> _shakeAnimation;
+
+
+
 
   @override
   void initState() {
@@ -100,6 +104,7 @@ class _OTPScreenState extends State<OTPScreen> with SingleTickerProviderStateMix
         body: jsonEncode({
           "qr_number": widget.qrData['qr_number'],
           "otp": otp,
+          "user_id": widget.qrData['user_id'],
         }),
       );
 
@@ -259,6 +264,13 @@ class _OTPScreenState extends State<OTPScreen> with SingleTickerProviderStateMix
                     color: AppColors.colorBlack,
                   ),
                 ),
+                _buildDetailRow(
+                  'A 6-digit OTP has been sent to ',
+                  widget.qrData['contact_for_otp'].toString(),
+                  context,
+                  isPhone: true,
+                ),
+
                 const SizedBox(height: 30),
                 Row(
                   mainAxisAlignment:
@@ -383,4 +395,59 @@ class _OTPScreenState extends State<OTPScreen> with SingleTickerProviderStateMix
       ),
     );
   }
+  Widget _buildDetailRow(
+      String label,
+      String value,
+      BuildContext context, {
+        bool isPhone = false,
+      }) {
+    String displayValue = value;
+
+    if (isPhone && value.isNotEmpty) {
+      // Check if number is exactly 10 digits
+      if (value.length == 10) {
+        displayValue = '******' + value.substring(value.length - 4);
+      } else {
+        displayValue = value; // if not 10 digits, show as-is
+      }
+    }
+
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 2.sp, horizontal: 0.sp),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.all(0.sp),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    '$label',
+                    style: GoogleFonts.poppins(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.blue.shade700,
+                    ),
+                  ),
+                  Text(
+                    '+91$displayValue',
+                    style: GoogleFonts.poppins(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.blue.shade700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+
 }

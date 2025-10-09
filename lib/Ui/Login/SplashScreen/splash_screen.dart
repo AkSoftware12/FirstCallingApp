@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'package:firstcallingapp/AgentUI/AgentBottomNavigationBar/agentBottomNvaigationBar.dart';
 import 'package:firstcallingapp/Utils/color.dart';
 import 'package:firstcallingapp/Utils/string.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -28,15 +30,29 @@ class _SplashScreenState extends State<SplashScreen> {
     final token = prefs.getString("token");
     final userData = prefs.getString("user");
 
+    print('$userData');
+
     await Future.delayed(const Duration(seconds: 4)); // splash delay
 
     if (mounted) {
       if (token != null && userData != null) {
-        // user already logged in
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => BottomNavigationBarScreen()),
-        );
+        // decode user data
+        final userMap = jsonDecode(userData);
+        final isAgent = int.tryParse(userMap['is_agent'].toString()) ?? 0;
+
+        if (isAgent != 1) {
+          // normal user
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => BottomNavigationBarScreen()),
+          );
+        } else {
+          // agent user
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => AgentBottomNavigationBarScreen()), // 👈 apni agent wali screen yahan lagao
+          );
+        }
       } else {
         // no login found
         Navigator.pushReplacement(
@@ -77,9 +93,9 @@ class _SplashScreenState extends State<SplashScreen> {
             ),
 
             SizedBox(height: 20.sp), // Spacing before loader
-            CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.white), // White loader for contrast
-              strokeWidth: 3.sp, // Adjusted stroke width for consistency
+            CupertinoActivityIndicator(
+              radius: 25,
+              color: Colors.white,
             ),
           ],
         ),

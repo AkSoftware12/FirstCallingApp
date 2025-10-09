@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:firstcallingapp/AgentUI/AgentHomeScreen/agent_home_screen.dart';
 import 'package:firstcallingapp/BaseUrl/baseurl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -13,6 +14,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
+import '../../../AgentUI/AgentBottomNavigationBar/agentBottomNvaigationBar.dart';
 import '../../BottomNavigationBar/bottomNvaigationBar.dart';
 import '../Otp/otp.dart'; // Assuming OTPVerificationScreen is defined here
 import 'package:firstcallingapp/Utils/color.dart';
@@ -92,13 +94,29 @@ class _PhoneLoginScreenState extends State<OTPVerificationScreen> {
         await prefs.setString("token", data["token"]);
         await prefs.setString("user", jsonEncode(data["user"]));
 
+        await _saveProfileToPrefs(jsonEncode(data["user"]['contact']));
+
+        int is_agent = int.parse(data["user"]['is_agent'].toString());
+
+
+        print('$data');
+
         if (mounted) {
           setState(() => _isLoading = false);
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => BottomNavigationBarScreen()),
-          );
+
+          if (is_agent != 1) { // agar agent nahi hai tab hi navigate kare
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => BottomNavigationBarScreen()),
+            );
+          } else {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => AgentBottomNavigationBarScreen()),
+            );
+          }
         }
+
       } else {
         showInvalidOtpDialog(context);
       }
@@ -115,7 +133,10 @@ class _PhoneLoginScreenState extends State<OTPVerificationScreen> {
     ).showSnackBar(SnackBar(content: Text(message)));
   }
 
-
+  Future<void> _saveProfileToPrefs(number) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('user_contact', number ?? '');
+  }
 
 
 

@@ -2,11 +2,11 @@ class ApiRoutes {
 
 
   // Live  App Url
-  static const String baseUrl = "https://firstcallingapp.com/api";
+  // static const String baseUrl = "https://firstcallingapp.com/api";
 
 
 // Local App Url
-//   static const String baseUrl = "http://192.168.1.7/firstcallingapp/api";
+  static const String baseUrl = "http://192.168.1.5/firstcallingapp2/api";
 
 
 
@@ -25,4 +25,6 @@ class ApiRoutes {
   static const String qrCodeUpdate= "$baseUrl/qr/update";
   static const String qrCodeCheck= "$baseUrl/qr/check?qr_number=";
   static const String notifications = "$baseUrl/notifications";
+  static const String agentDashboard = "$baseUrl/agent/dashboard";
+  static const String agentItemList = "$baseUrl/agent/qr-list?type=";
 }

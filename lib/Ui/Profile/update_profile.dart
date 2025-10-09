@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/cupertino.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
@@ -152,10 +153,11 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
       context: context,
       barrierDismissible: false,
       builder: (_) =>  Center(
-        child: CircularProgressIndicator(
+        child: CupertinoActivityIndicator(
+          radius: 25,
           color: AppColors.navyBlue,
-          strokeWidth: 3,
         ),
+
       ),
     );
   }
@@ -343,7 +345,11 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
         ],
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator(color: AppColors.navyBlue))
+          ? Center(child:CupertinoActivityIndicator(
+        radius: 25,
+        color: AppColors.navyBlue,
+      ),
+      )
           : Form(
         key: _formKey,
         child: SingleChildScrollView(

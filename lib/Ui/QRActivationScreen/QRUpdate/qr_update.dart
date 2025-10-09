@@ -243,7 +243,6 @@ class _UpdateScreenState extends State<UpdateScreen> {
               const SizedBox(height: 00),
               _buildSectionTitle("Personal Information"),
               _buildTextField("Name", _nameController),
-              _buildTextField("Date of Birth", _dobController),
               _buildTextField("Address", _addressController),
               _buildTextField("Gender", _genderController),
               _buildTextField("Email", _emailController),

@@ -1,4 +1,5 @@
 import 'package:add_to_cart_animation/add_to_cart_animation.dart';
+import 'package:firstcallingapp/AgentUI/AgentHomeScreen/agent_home_screen.dart';
 import 'package:firstcallingapp/Ui/Login/Login/login.dart';
 import 'package:firstcallingapp/Utils/HexColorCode/HexColor.dart';
 import 'package:firstcallingapp/Utils/color.dart';
@@ -12,20 +13,15 @@ import 'package:image_picker/image_picker.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../BottomNavigationScreen/Helpline/helpline.dart';
-import '../BottomNavigationScreen/IVRCall/ivr_call.dart';
-import '../BottomNavigationScreen/ProductScreen/product_screen.dart';
-import '../BottomNavigationScreen/SOS/sos_screen.dart';
-import '../Cart/CartModel/cart_model.dart';
-import '../Cart/CartScreen/cart_screen.dart';
-import '../DrawerScreen/Drawer/drawer.dart';
-import '../DrawerScreen/privacy.dart';
-import '../OrderHistory/order_history.dart';
-import '../Profile/update_profile.dart';
-import '../QRActivationScreen/qr_check_screen.dart';
-import '../QRScanScreen/QRCodeData/qr_code_data.dart';
-import '../QRScanScreen/TorchScreen/torch_screen.dart';
 
+import '../../Ui/BottomNavigationScreen/Helpline/helpline.dart';
+import '../../Ui/BottomNavigationScreen/IVRCall/ivr_call.dart';
+import '../../Ui/BottomNavigationScreen/SOS/sos_screen.dart';
+import '../../Ui/DrawerScreen/Drawer/drawer.dart';
+import '../../Ui/DrawerScreen/privacy.dart';
+import '../../Ui/Profile/update_profile.dart';
+import '../../Ui/QRScanScreen/QRCodeData/qr_code_data.dart';
+import '../../Ui/QRScanScreen/TorchScreen/torch_screen.dart';
 // Sample data structure for emergency numbers
 class EmergencyNumber {
   final String police;
@@ -39,16 +35,16 @@ class EmergencyNumber {
   });
 }
 
-class BottomNavigationBarScreen extends StatefulWidget {
+class AgentBottomNavigationBarScreen extends StatefulWidget {
   final int initialIndex;
 
-  const BottomNavigationBarScreen({super.key,  this.initialIndex = 0});
+  const AgentBottomNavigationBarScreen({super.key,  this.initialIndex = 0});
 
   @override
-  State<BottomNavigationBarScreen> createState() => _HomePageState();
+  State<AgentBottomNavigationBarScreen> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<BottomNavigationBarScreen> {
+class _HomePageState extends State<AgentBottomNavigationBarScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   MobileScannerController controllerScan = MobileScannerController(
     returnImage: true,
@@ -69,11 +65,17 @@ class _HomePageState extends State<BottomNavigationBarScreen> {
   @override
   void initState() {
     checkForVersion(context);
+    _loadProfileData();
     selected = widget.initialIndex;
     controller = PageController(initialPage: selected);
     super.initState();
   }
-
+  Future<void> _loadProfileData() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      userName = prefs.getString('user_name') ?? 'Agent!';
+    });
+  }
   // Sample data for emergency numbers
   final List<EmergencyNumber> emergencyNumbers = [
     EmergencyNumber(police: '100', ambulance: '102', fire: '112'),
@@ -295,22 +297,6 @@ class _HomePageState extends State<BottomNavigationBarScreen> {
 
 
 
-  void updateCart(GlobalKey widgetKey, BuildContext context, CartItem item, bool isIncrement) async {
-    if (isIncrement) {
-      // Add to cart (increment)
-      await runAddToCartAnimation(widgetKey);
-      _cartQuantityItems++;
-    } else {
-      // Remove from cart (decrement, not less than 0)
-      if (_cartQuantityItems > 0) {
-        _cartQuantityItems--;
-      }
-    }
-
-    // Update cart animation
-    await cartKey.currentState!
-        .runCartAnimation(_cartQuantityItems.toString());
-  }
 
   Future<void> checkForVersion(BuildContext context) async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
@@ -318,270 +304,47 @@ class _HomePageState extends State<BottomNavigationBarScreen> {
   }
   @override
   Widget build(BuildContext context) {
-    return AddToCartAnimation(
-      cartKey: cartKey,
-      height: 25.sp,
-      width: 25.sp,
-      opacity: 0.99,
-      dragAnimation: const DragToCartAnimationOptions(rotation: true),
-      jumpAnimation: const JumpAnimationOptions(),
-      createAddToCartAnimation: (runAddToCartAnimation) {
-        this.runAddToCartAnimation = runAddToCartAnimation;
-      },
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        key: _scaffoldKey,
-        appBar: AppBar(
-          backgroundColor: AppColors.navyBlue,
-          iconTheme: IconThemeData(color: Colors.white),
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              SizedBox(
-                height: 40.sp,
-                child: Image.asset('assets/calling_text.gif'),
-              ),
-            ],
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(20.sp),
-              bottomRight: Radius.circular(20.sp),
+    return Scaffold(
+      backgroundColor: Colors.white,
+      key: _scaffoldKey,
+      appBar: AppBar(
+        backgroundColor: AppColors.navyBlue,
+        iconTheme: IconThemeData(color: Colors.white),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            SizedBox(
+              height: 40.sp,
+              child: Image.asset('assets/calling_text.gif'),
             ),
-          ),
-          leading: Builder(
-            builder: (context) => Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                ),
-                child: IconButton(
-                  icon: Icon(Icons.menu, color: Colors.black),
-                  onPressed: () {
-                    Scaffold.of(context).openDrawer();
-                  },
-                ),
-              ),
-            ),
-          ),
-          actions: [
-            GestureDetector(
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => GscanKit(
-                      controller: controllerScan,
-                      onDetect: _handleDetect,
-                      appBar: (context, controller) {
-                        return AppBar(
-                          automaticallyImplyLeading: true,
-                          iconTheme: IconThemeData(color: Colors.white),
-                          title: Row(
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(25.sp),
-                                child: Image.asset(
-                                  'assets/playstore.png',
-                                  height: 35.sp,
-                                  width: 35.sp,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                              SizedBox(width: 3.sp),
-                              Column(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    "Scan any QR",
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 14.sp,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                  Text(
-                                    "First Calling App",
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 7.sp,
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                          backgroundColor: Colors.transparent,
-                          actions: [],
-                        );
-                      },
-                      floatingOption: [
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            Row(
-                              children: [
-                                IconButton.filled(
-                                  style: IconButton.styleFrom(
-                                    backgroundColor: CupertinoColors.systemGrey6,
-                                    foregroundColor: CupertinoColors.darkBackgroundGray,
-                                  ),
-                                  icon: Icon(CupertinoIcons.camera_rotate),
-                                  onPressed: () => controllerScan.switchCamera(),
-                                ),
-                                SizedBox(width: 5.sp),
-                                ValueListenableBuilder(
-                                  valueListenable: controllerScan,
-                                  builder: (context, state, child) {
-                                    final isTorchOn = state.torchState == TorchState.on;
-                                    return TorchToggleButton(
-                                      isTorchOn: isTorchOn,
-                                      onPressed: () => controllerScan.toggleTorch(),
-                                    );
-                                  },
-                                ),
-                                SizedBox(width: 5.sp),
-                                IconButton.filled(
-                                  style: IconButton.styleFrom(
-                                    backgroundColor: CupertinoColors.systemGrey6,
-                                    foregroundColor: CupertinoColors.darkBackgroundGray,
-                                  ),
-                                  icon: Icon(CupertinoIcons.photo),
-                                  onPressed: () async {
-                                    final picker = ImagePicker();
-                                    final pickedFile = await picker.pickImage(
-                                      source: ImageSource.gallery,
-                                    );
-                                    if (pickedFile != null) {
-                                      try {
-                                        final result = await controllerScan.analyzeImage(pickedFile.path);
-                                        if (result != null) {
-                                          _handleDetect(result);
-                                        } else {
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            const SnackBar(content: Text("No QR/Barcode found in image")),
-                                          );
-                                        }
-                                      } catch (e) {
-                                        debugPrint("Error scanning from gallery: $e");
-                                      }
-                                    }
-                                  },
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 20.sp),
-                            Padding(
-                              padding: EdgeInsets.only(bottom: 50.sp),
-                              child: Column(
-                                children: [
-                                  Container(
-                                    width: 150.sp,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(10.sp),
-                                    ),
-                                    child: Center(
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Column(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            ClipRRect(
-                                              borderRadius: BorderRadius.circular(10.sp),
-                                              child: Image.asset(
-                                                'assets/playstore.png',
-                                                height: 50.sp,
-                                                width: 50.sp,
-                                                fit: BoxFit.cover,
-                                              ),
-                                            ),
-                                            SizedBox(height: 10.sp),
-                                            Text(
-                                              'First Calling App',
-                                              style: GoogleFonts.poppins(
-                                                fontSize: 8.sp,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.white,
-                                                letterSpacing: 1.5,
-                                                shadows: [
-                                                  Shadow(
-                                                    blurRadius: 10.0,
-                                                    color: Colors.black.withOpacity(0.3),
-                                                    offset: const Offset(2.0, 2.0),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                      gscanOverlayConfig: GscanOverlayConfig(
-                        scannerScanArea: ScannerScanArea.center,
-                        scannerBorder: ScannerBorder.visible,
-                        scannerBorderPulseEffect: ScannerBorderPulseEffect.enabled,
-                        borderColor: AppColors.navyBlue,
-                        borderRadius: 24.0,
-                        scannerLineAnimationColor: AppColors.navyBlue,
-                        scannerOverlayBackground: ScannerOverlayBackground.blur,
-                        scannerLineAnimation: ScannerLineAnimation.enabled,
-                      ),
-                    ),
-                  ),
-                );
-              },
-              child: SizedBox(
-                height: 25.sp,
-                width: 25.sp,
-                child: Image.asset('assets/scan.gif'),
-              ),
-            ),
-
-            GestureDetector(
-              onTap: (){
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const CartScreen()),
-                );
-              },
-              child: AddToCartIcon(
-                key: cartKey,
-                icon:  Icon(Icons.shopping_cart),
-                badgeOptions:  BadgeOptions(
-                  active: true,
-                  backgroundColor: Colors.red,
-                  foregroundColor: Colors.white,
-                  fontSize: 10.sp,
-                ),
-              ),
-            ),
-            const SizedBox(width: 16),
           ],
         ),
-        drawer: Drawer(
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.zero,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            bottomLeft: Radius.circular(20.sp),
+            bottomRight: Radius.circular(20.sp),
+          ),
+        ),
+        leading: Builder(
+          builder: (context) => Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+              ),
+              child: IconButton(
+                icon: Icon(Icons.menu, color: Colors.black),
+                onPressed: () {
+                  Scaffold.of(context).openDrawer();
+                },
+              ),
             ),
-            width: MediaQuery.sizeOf(context).width * .7,
-            // backgroundColor: ColorSelect.maineColor,
-            child: DrawerPageScreen(
-              currentVersion: currentVersion,
-            )),
-        floatingActionButton: SizedBox(
-          width: 55.sp,
-          height: 55.sp,
-          child: FloatingActionButton(
-            onPressed: () {
+          ),
+        ),
+        actions: [
+          GestureDetector(
+            onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (context) => GscanKit(
@@ -590,7 +353,7 @@ class _HomePageState extends State<BottomNavigationBarScreen> {
                     appBar: (context, controller) {
                       return AppBar(
                         automaticallyImplyLeading: true,
-                        iconTheme: const IconThemeData(color: Colors.white),
+                        iconTheme: IconThemeData(color: Colors.white),
                         title: Row(
                           children: [
                             ClipRRect(
@@ -604,6 +367,7 @@ class _HomePageState extends State<BottomNavigationBarScreen> {
                             ),
                             SizedBox(width: 3.sp),
                             Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
@@ -627,6 +391,7 @@ class _HomePageState extends State<BottomNavigationBarScreen> {
                           ],
                         ),
                         backgroundColor: Colors.transparent,
+                        actions: [],
                       );
                     },
                     floatingOption: [
@@ -737,7 +502,6 @@ class _HomePageState extends State<BottomNavigationBarScreen> {
                         ],
                       ),
                     ],
-
                     gscanOverlayConfig: GscanOverlayConfig(
                       scannerScanArea: ScannerScanArea.center,
                       scannerBorder: ScannerBorder.visible,
@@ -752,22 +516,110 @@ class _HomePageState extends State<BottomNavigationBarScreen> {
                 ),
               );
             },
-            backgroundColor: Colors.white,
-            elevation: 8, // main shadow depth
-            highlightElevation: 12, // shadow on press
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(30.sp),
-            ),
             child: SizedBox(
-              height: 30.sp,
-              width: 30.sp,
-              child: Image.asset("assets/scan.gif"),
+              height: 25.sp,
+              width: 25.sp,
+              child: Image.asset('assets/scan.gif'),
             ),
           ),
-        ),
 
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-        bottomNavigationBar: CustomBottomNavBar(
+          const SizedBox(width: 16),
+        ],
+      ),
+      drawer: Drawer(
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.zero,
+          ),
+          width: MediaQuery.sizeOf(context).width * .7,
+          // backgroundColor: ColorSelect.maineColor,
+          child: DrawerPageScreen(
+            currentVersion: currentVersion,
+          )),
+      floatingActionButton: SizedBox(
+        width: 55.sp,
+        height: 55.sp,
+        child: FloatingActionButton(
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => GscanKit(
+                  controller: controllerScan,
+                  onDetect: _handleDetect,
+                  appBar: (context, controller) {
+                    return AppBar(
+                      automaticallyImplyLeading: true,
+                      iconTheme: const IconThemeData(color: Colors.white),
+                      title: Row(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(25.sp),
+                            child: Image.asset(
+                              'assets/playstore.png',
+                              height: 35.sp,
+                              width: 35.sp,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                          SizedBox(width: 3.sp),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Scan any QR",
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14.sp,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              Text(
+                                "First Calling App",
+                                style: GoogleFonts.poppins(
+                                  fontSize: 7.sp,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      backgroundColor: Colors.transparent,
+                    );
+                  },
+                  floatingOption: [
+                    // your floating options remain unchanged
+                  ],
+                  gscanOverlayConfig: GscanOverlayConfig(
+                    scannerScanArea: ScannerScanArea.center,
+                    scannerBorder: ScannerBorder.visible,
+                    scannerBorderPulseEffect: ScannerBorderPulseEffect.enabled,
+                    borderColor: AppColors.navyBlue,
+                    borderRadius: 24.0,
+                    scannerLineAnimationColor: AppColors.navyBlue,
+                    scannerOverlayBackground: ScannerOverlayBackground.blur,
+                    scannerLineAnimation: ScannerLineAnimation.enabled,
+                  ),
+                ),
+              ),
+            );
+          },
+          backgroundColor: Colors.white,
+          elevation: 8, // main shadow depth
+          highlightElevation: 12, // shadow on press
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30.sp),
+          ),
+          child: SizedBox(
+            height: 30.sp,
+            width: 30.sp,
+            child: Image.asset("assets/scan.gif"),
+          ),
+        ),
+      ),
+
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: CustomBottomNavBar(
         currentIndex: selected,
         onTap: (int index) {
           setState(() {
@@ -778,17 +630,16 @@ class _HomePageState extends State<BottomNavigationBarScreen> {
       ),
 
       body: SafeArea(
-          child: PageView(
-            controller: controller,
-            physics: const NeverScrollableScrollPhysics(), // 👈 Swipe disable
-            children: [
-              ProductListScreen(onItemClick: updateCart), // Updated to pass listClick
-              const IVRCallScreen(),
-              const IVRCallScreen(),
-              const HelplineScreen(),
-              const SOSScreen(),
-            ],
-          ),
+        child: PageView(
+          controller: controller,
+          physics: const NeverScrollableScrollPhysics(), // 👈 Swipe disable
+          children: [
+            AgentScreen( name: userName!,), // Updated to pass listClick
+            const IVRCallScreen(),
+            const IVRCallScreen(),
+            const HelplineScreen(),
+            const SOSScreen(),
+          ],
         ),
       ),
     );
@@ -956,60 +807,7 @@ class CustomDrawer extends StatelessWidget {
                           MaterialPageRoute(builder: (context)=> ProfileUpdatePage()));
                     },
                   ),
-                  _buildListTile(
-                    context: context,
-                    icon: Icons.qr_code,
-                    title: 'Activate New QR Sticker',
-                    onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => QRActive()));
 
-                    },
-                  ),
-                  _buildListTile(
-                    context: context,
-                    icon: Icons.shop,
-                    title: 'My Orders/Products',
-                    onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => OrderHistoryScreen()));
-
-                    },
-                  ),
-                  // _buildListTile(
-                  //   context: context,
-                  //   icon: Icons.share,
-                  //   title: 'Share Tap',
-                  //   onTap: () {},
-                  // ),
-                  // _buildListTile(
-                  //   context: context,
-                  //   icon: Icons.account_balance_wallet,
-                  //   title: 'Wallet',
-                  //   onTap: () {},
-                  // ),
-                  // _buildListTile(
-                  //   context: context,
-                  //   icon: Icons.touch_app,
-                  //   title: 'Active/Deactive QR',
-                  //   onTap: () {},
-                  // ),
-                  // _buildListTile(
-                  //   context: context,
-                  //   icon: Icons.block,
-                  //   title: 'Block A Number',
-                  //   onTap: () {},
-                  // ),
-                  // _buildListTile(
-                  //   context: context,
-                  //   icon: Icons.bookmark,
-                  //   title: 'My Story',
-                  //   onTap: () {},
-                  // ),
-                  // _buildListTile(
-                  //   context: context,
-                  //   icon: Icons.call,
-                  //   title: 'Call Log',
-                  //   onTap: () {},
-                  // ),
                   _buildListTile(
                     context: context,
                     icon: Icons.notifications,

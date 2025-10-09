@@ -42,6 +42,8 @@ class _PhoneLoginScreenState extends State<LoginScreen> {
 
       final data = jsonDecode(response.body);
 
+      print('User$data');
+
       if (data["success"] == true) {
         if (mounted) {
           setState(() => _isLoading = false);

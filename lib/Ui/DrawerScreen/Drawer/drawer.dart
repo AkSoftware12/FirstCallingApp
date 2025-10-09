@@ -48,7 +48,7 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
   Future<void> _loadProfileData() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      userName = prefs.getString('user_name') ?? 'Default Name';
+      userName = prefs.getString('user_name') ?? 'User Name';
       userPhotoUrl = prefs.getString('user_photo_url') ?? '';
       userContact = prefs.getString('user_contact') ?? '';
     });

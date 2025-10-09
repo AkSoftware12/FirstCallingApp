@@ -193,6 +193,8 @@ class _QRActiveState extends State<QRActive> with TickerProviderStateMixin {
           final product = data["product"];
           int isPaid = qr["is_paid"];
 
+          print('Qr Data $qr');
+
           if (isPaid == 1) {
             setState(() {
               _statusMessage = "OTP verification required. Navigating to OTP screen.";

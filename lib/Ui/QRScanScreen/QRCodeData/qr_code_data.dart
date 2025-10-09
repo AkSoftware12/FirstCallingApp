@@ -621,15 +621,13 @@ class _ResultPageState extends State<ResultPage> {
     bool isPhone = false,
   }) {
     String displayValue = value;
-    if (isPhone && value.isNotEmpty) {
-      if (value.length > 4) {
-        displayValue =
-            value.substring(0, 2) +
-            '*' * (value.length - 4) +
-            value.substring(value.length - 2);
-      } else if (value.length >= 2) {
-        displayValue = value; // If 4 or fewer digits, show as is
-      }
+    if (value.length > 4) {
+      displayValue =
+          value.substring(0, 2) +
+              '*' * (value.length - 4) +
+              value.substring(value.length - 2);
+    } else if (value.length >= 2) {
+      displayValue = value; // If 4 or fewer digits, show as is
     }
 
     return Padding(

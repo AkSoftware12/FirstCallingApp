@@ -1,19 +1,12 @@
 
 import 'dart:async';
 import 'dart:io';
-import 'dart:math' as math;
 import 'dart:ui';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firstcallingapp/Ui/Login/Login/login.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
-import 'package:responsive_builder/responsive_builder.dart';
-import 'package:stream_chat_flutter/stream_chat_flutter.dart';
-import 'package:stream_chat_localizations/stream_chat_localizations.dart';
-
-import 'Ui/BottomNavigationBar/bottomNvaigationBar.dart';
 import 'Ui/Cart/CartProvider/cart_provider.dart';
 import 'Ui/Login/SplashScreen/splash_screen.dart';
 
@@ -66,7 +59,7 @@ class MyApp extends StatelessWidget {
             Locale('en'),
             Locale('hi'),
           ],
-          localizationsDelegates: GlobalStreamChatLocalizations.delegates,
+          // localizationsDelegates: GlobalStreamChatLocalizations.delegates,
           // home: const BottomNavigationBarScreen(),
           home:  SplashScreen(),
         );
