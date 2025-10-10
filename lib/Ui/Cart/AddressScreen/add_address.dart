@@ -225,151 +225,156 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) {
-        return Container(
-          margin: const EdgeInsets.all(0),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(24),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 10,
-                offset: const Offset(0, 5),
+        return SafeArea(
+          child: Container(
+            margin: const EdgeInsets.all(0),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(24),
+                topRight: Radius.circular(24),
               ),
-            ],
-          ),
-          child: AnimatedPadding(
-            duration: const Duration(milliseconds: 200),
-            padding: EdgeInsets.only(
-              left: 20,
-              right: 20,
-              top: 20,
-              bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 5),
+                ),
+              ],
             ),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "Add New Address",
-                        style: GoogleFonts.poppins(
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.black87,
+            child: AnimatedPadding(
+              duration: const Duration(milliseconds: 200),
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 20,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Add New Address",
+                          style: GoogleFonts.poppins(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.black87,
+                          ),
                         ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.close, color: Colors.grey),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                    ],
-                  ),
-                  if (_errorMessage != null)
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.red.shade50,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.red.shade200),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.error_outline, color: Colors.red.shade700),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              _errorMessage!,
-                              style: GoogleFonts.poppins(
-                                color: Colors.red.shade700,
-                                fontSize: 14,
+                        IconButton(
+                          icon: const Icon(Icons.close, color: Colors.grey),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                      ],
+                    ),
+                    if (_errorMessage != null)
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.red.shade50,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.red.shade200),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.error_outline, color: Colors.red.shade700),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                _errorMessage!,
+                                style: GoogleFonts.poppins(
+                                  color: Colors.red.shade700,
+                                  fontSize: 14,
+                                ),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  _buildTextField(
-                    controller: _addressController,
-                    label: "Full Address",
-                    icon: Icons.home_outlined,
-                    maxLines: 3,
-                    errorText: _addressController.text.trim().isEmpty &&
-                        _addressController.text.isNotEmpty
-                        ? "Address cannot be empty"
-                        : null,
-                  ),
-                  const SizedBox(height: 16),
-                  _buildTextField(
-                    controller: _pincodeController,
-                    label: "Pincode",
-                    icon: Icons.pin_drop_outlined,
-                    keyboardType: TextInputType.number,
-                    onChanged: (value) {
-                      setState(() {
-                        _isPincodeValid = value.length == 6;
-                      });
-                    },
-                    errorText: !_isPincodeValid ? "Enter a valid 6-digit pincode" : null,
-                  ),
-                  const SizedBox(height: 16),
-                  _buildTextField(
-                    controller: _cityController,
-                    label: "City",
-                    icon: Icons.location_city_outlined,
-                  ),
-                  const SizedBox(height: 16),
-                  _buildTextField(
-                    controller: _stateController,
-                    label: "State",
-                    icon: Icons.map_outlined,
-                  ),
-                  const SizedBox(height: 24),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          ],
                         ),
-                        backgroundColor: _isFormValid()
-                            ? AppColors.navyBlue
-                            : Colors.blue.shade200,
-                        foregroundColor: Colors.white,
-                        elevation: _isFormValid() ? 8 : 0,
-                        shadowColor: Colors.black.withOpacity(0.2),
                       ),
-                      onPressed: _isFormValid()
-                          ? () {
-                        _addAddress(
-                            "${_addressController.text.trim()}, ${_cityController.text.trim()}, ${_stateController.text.trim()}, ${_pincodeController.text.trim()}");
-                        Navigator.pop(context);
-                      }
+                    _buildTextField(
+                      controller: _addressController,
+                      label: "Full Address",
+                      icon: Icons.home_outlined,
+                      maxLines: 3,
+                      errorText: _addressController.text.trim().isEmpty &&
+                          _addressController.text.isNotEmpty
+                          ? "Address cannot be empty"
                           : null,
-                      child: _isLoading
-                          ? const SizedBox(
-                        height: 24,
-                        width: 24,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2.5,
+                    ),
+                    const SizedBox(height: 16),
+                    _buildTextField(
+                      controller: _pincodeController,
+                      label: "Pincode",
+                      icon: Icons.pin_drop_outlined,
+                      keyboardType: TextInputType.number,
+                      onChanged: (value) {
+                        setState(() {
+                          _isPincodeValid = value.length == 6;
+                        });
+                      },
+                      errorText: !_isPincodeValid ? "Enter a valid 6-digit pincode" : null,
+                    ),
+                    const SizedBox(height: 16),
+                    _buildTextField(
+                      controller: _cityController,
+                      label: "City",
+                      icon: Icons.location_city_outlined,
+                    ),
+                    const SizedBox(height: 16),
+                    _buildTextField(
+                      controller: _stateController,
+                      label: "State",
+                      icon: Icons.map_outlined,
+                    ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          backgroundColor: _isFormValid()
+                              ? AppColors.navyBlue
+                              : Colors.blue.shade200,
+                          foregroundColor: Colors.white,
+                          elevation: _isFormValid() ? 8 : 0,
+                          shadowColor: Colors.black.withOpacity(0.2),
                         ),
-                      )
-                          : Text(
-                        "Save Address",
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.5,
+                        onPressed: _isFormValid()
+                            ? () {
+                          _addAddress(
+                              "${_addressController.text.trim()}, ${_cityController.text.trim()}, ${_stateController.text.trim()}, ${_pincodeController.text.trim()}");
+                          Navigator.pop(context);
+                        }
+                            : null,
+                        child: _isLoading
+                            ? const SizedBox(
+                          height: 24,
+                          width: 24,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2.5,
+                          ),
+                        )
+                            : Text(
+                          "Save Address",
+                          style: GoogleFonts.poppins(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.5,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -535,209 +540,211 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
           ),
         ),
       ),
-      body: Column(
-        children: [
-          if (_errorMessage != null)
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.red.shade50,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.red.shade200),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.error_outline, color: Colors.red.shade700),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        _errorMessage!,
-                        style: GoogleFonts.poppins(
-                          color: Colors.red.shade700,
-                          fontSize: 14,
+      body: SafeArea(
+        child: Column(
+          children: [
+            if (_errorMessage != null)
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.red.shade200),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.error_outline, color: Colors.red.shade700),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _errorMessage!,
+                          style: GoogleFonts.poppins(
+                            color: Colors.red.shade700,
+                            fontSize: 14,
+                          ),
                         ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            Expanded(
+              child: _isLoading
+                  ? Center(
+                child: CircularProgressIndicator(
+                  color: Colors.blue.shade700,
+                  strokeWidth: 3,
+                ),
+              )
+                  : addresses.isEmpty
+                  ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.location_off_outlined,
+                      size: 80,
+                      color: Colors.grey.shade400,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      "No addresses added yet!",
+                      style: GoogleFonts.poppins(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey.shade700,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      "Tap below to add a new address.",
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        color: Colors.grey.shade500,
                       ),
                     ),
                   ],
                 ),
+              )
+                  : ListView.separated(
+                padding: EdgeInsets.symmetric(vertical: 5.sp),
+                itemCount: addresses.length,
+                separatorBuilder: (context, index) => const SizedBox(height: 8),
+                itemBuilder: (context, index) {
+                  final address = addresses[index];
+                  final displayAddress = address['city'] != null &&
+                      address['state'] != null &&
+                      address['pincode'] != null
+                      ? "${address['address']}, ${address['city']}, ${address['state']} - ${address['pincode']}"
+                      : address['address'];
+                  return FadeInAnimation(
+                    delay: Duration(milliseconds: 100 * index),
+                    child: Card(
+                      margin: EdgeInsets.symmetric(horizontal: 8.sp, vertical: 4),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      elevation: 1,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16),
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.white,
+                              Colors.grey.shade50,
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                        ),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(16),
+                          onTap: () {
+                            setState(() {
+                              _selectedAddressIndex = index;
+                            });
+                          },
+                          child: ListTile(
+                            contentPadding: EdgeInsets.symmetric(
+                                horizontal: 0.sp, vertical: 5.sp),
+                            leading: Radio<int>(
+                              value: index,
+                              groupValue: _selectedAddressIndex,
+                              onChanged: (value) {
+                                setState(() {
+                                  _selectedAddressIndex = value;
+                                });
+                              },
+                              activeColor: AppColors.navyBlue,
+                            ),
+                            title: Text(
+                              displayAddress,
+                              style: GoogleFonts.poppins(
+                                fontSize: 12.sp,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.black87,
+                              ),
+                              maxLines: 10,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            trailing: IconButton(
+                              icon: Icon(
+                                Icons.delete_outline,
+                                color: Colors.red.shade600,
+                                size: 24,
+                              ),
+                              onPressed: () {
+                                _showDeleteConfirmationDialog(
+                                    address['id'].toString(), index);
+                              },
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
-          Expanded(
-            child: _isLoading
-                ? Center(
-              child: CircularProgressIndicator(
-                color: Colors.blue.shade700,
-                strokeWidth: 3,
-              ),
-            )
-                : addresses.isEmpty
-                ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.location_off_outlined,
-                    size: 80,
-                    color: Colors.grey.shade400,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    "No addresses added yet!",
-                    style: GoogleFonts.poppins(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey.shade700,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "Tap below to add a new address.",
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      color: Colors.grey.shade500,
-                    ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: AppColors.colorWhite,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, -2),
                   ),
                 ],
               ),
-            )
-                : ListView.separated(
-              padding: EdgeInsets.symmetric(vertical: 5.sp),
-              itemCount: addresses.length,
-              separatorBuilder: (context, index) => const SizedBox(height: 8),
-              itemBuilder: (context, index) {
-                final address = addresses[index];
-                final displayAddress = address['city'] != null &&
-                    address['state'] != null &&
-                    address['pincode'] != null
-                    ? "${address['address']}, ${address['city']}, ${address['state']} - ${address['pincode']}"
-                    : address['address'];
-                return FadeInAnimation(
-                  delay: Duration(milliseconds: 100 * index),
-                  child: Card(
-                    margin: EdgeInsets.symmetric(horizontal: 8.sp, vertical: 4),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    elevation: 1,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
-                        gradient: LinearGradient(
-                          colors: [
-                            Colors.white,
-                            Colors.grey.shade50,
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
+              child: Column(
+                children: [
+                  if (addresses.isNotEmpty && _selectedAddressIndex != null)
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: const Size(double.infinity, 56),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
+                        backgroundColor: _selectedAddressIndex != null
+                            ? AppColors.navyBlue
+                            : Colors.green.shade200,
+                        foregroundColor: Colors.white,
+                        elevation: _selectedAddressIndex != null ? 8 : 0,
+                        shadowColor: Colors.black.withOpacity(0.2),
                       ),
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(16),
-                        onTap: () {
-                          setState(() {
-                            _selectedAddressIndex = index;
-                          });
-                        },
-                        child: ListTile(
-                          contentPadding: EdgeInsets.symmetric(
-                              horizontal: 0.sp, vertical: 5.sp),
-                          leading: Radio<int>(
-                            value: index,
-                            groupValue: _selectedAddressIndex,
-                            onChanged: (value) {
-                              setState(() {
-                                _selectedAddressIndex = value;
-                              });
-                            },
-                            activeColor: AppColors.navyBlue,
-                          ),
-                          title: Text(
-                            displayAddress,
-                            style: GoogleFonts.poppins(
-                              fontSize: 12.sp,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.black87,
-                            ),
-                            maxLines: 10,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          trailing: IconButton(
-                            icon: Icon(
-                              Icons.delete_outline,
-                              color: Colors.red.shade600,
-                              size: 24,
-                            ),
-                            onPressed: () {
-                              _showDeleteConfirmationDialog(
-                                  address['id'].toString(), index);
-                            },
-                          ),
+                      onPressed: _selectedAddressIndex != null
+                          ? () async {
+                        final selectedAddress = addresses[_selectedAddressIndex!];
+                        final displayAddress = selectedAddress['city'] != null &&
+                            selectedAddress['state'] != null &&
+                            selectedAddress['pincode'] != null
+                            ? "${selectedAddress['address']}, ${selectedAddress['city']}, ${selectedAddress['state']} - ${selectedAddress['pincode']}"
+                            : selectedAddress['address'];
+                        final prefs = await SharedPreferences.getInstance();
+                        await prefs.setString('selected_address', displayAddress);
+                        await prefs.setString('selected_address_id', selectedAddress['id'].toString());
+                        Navigator.pop(context, displayAddress);
+                      }
+                          : null,
+                      child: Text(
+                        "Confirm Selection",
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.5,
                         ),
                       ),
                     ),
-                  ),
-                );
-              },
+                ],
+              ),
             ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: AppColors.colorWhite,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, -2),
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                if (addresses.isNotEmpty && _selectedAddressIndex != null)
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 56),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      backgroundColor: _selectedAddressIndex != null
-                          ? AppColors.navyBlue
-                          : Colors.green.shade200,
-                      foregroundColor: Colors.white,
-                      elevation: _selectedAddressIndex != null ? 8 : 0,
-                      shadowColor: Colors.black.withOpacity(0.2),
-                    ),
-                    onPressed: _selectedAddressIndex != null
-                        ? () async {
-                      final selectedAddress = addresses[_selectedAddressIndex!];
-                      final displayAddress = selectedAddress['city'] != null &&
-                          selectedAddress['state'] != null &&
-                          selectedAddress['pincode'] != null
-                          ? "${selectedAddress['address']}, ${selectedAddress['city']}, ${selectedAddress['state']} - ${selectedAddress['pincode']}"
-                          : selectedAddress['address'];
-                      final prefs = await SharedPreferences.getInstance();
-                      await prefs.setString('selected_address', displayAddress);
-                      await prefs.setString('selected_address_id', selectedAddress['id'].toString());
-                      Navigator.pop(context, displayAddress);
-                    }
-                        : null,
-                    child: Text(
-                      "Confirm Selection",
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

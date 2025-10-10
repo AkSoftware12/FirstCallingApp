@@ -11,9 +11,12 @@ import 'package:firstcallingapp/Utils/color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../Cart/CartModel/cart_model.dart';
 import '../../Cart/CartProvider/cart_provider.dart';
+import '../BannerScreen/banner.dart';
 
 class Product {
   final int? id;
@@ -139,8 +142,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
                 .map(
                   (product) => ProductCard(
                 title: product.name.toString(),
-                price: product.mrp.toString(),
-                originalPrice: product.sellingPrice.toString(),
+                price: product.sellingPrice.toString(),
+                originalPrice: product.mrp.toString(),
                 discount: '',
                 imageUrl: product.imageUrl.toString(),
                 packSize: '',
@@ -384,90 +387,10 @@ class ProductCard extends StatelessWidget {
   }
 }
 
-class BannerSlider extends StatefulWidget {
-  const BannerSlider({super.key});
 
-  @override
-  _BannerSliderState createState() => _BannerSliderState();
-}
 
-class _BannerSliderState extends State<BannerSlider> {
-  final List<String> bannerImages = [
-    'https://i.ibb.co/RkhfdVc1/1.jpg',
-    'https://i.ibb.co/RpKJ6t3c/2.jpg',
-    // 'https://nekinsan-prod.s3.amazonaws.com/blog/thumbnails/2024/05/16/Blog___Door_Bell.png',
-    // 'https://nekinsan-prod.s3.amazonaws.com/blog/thumbnails/2024/05/31/child-safe.png',
-    // 'https://nekinsan-prod.s3.amazonaws.com/blog/thumbnails/2024/06/21/wrong-parking.png',
-  ];
 
-  int _currentIndex = 0;
-  final CarouselController _carouselController =
-      CarouselController(); // Controller for CarouselSlider
 
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        CarouselSlider(
-          // carouselController: _carouselController, // Assign controller to CarouselSlider
-          options: CarouselOptions(
-            height: 130.sp,
-            // Set banner height
-            autoPlay: true,
-            // Auto-scroll banners
-            autoPlayInterval: const Duration(seconds: 3),
-            autoPlayAnimationDuration: const Duration(milliseconds: 800),
-            autoPlayCurve: Curves.fastOutSlowIn,
-            enlargeCenterPage: true,
-            // Enlarge the center banner
-            viewportFraction: 1,
-            // Show partial next/previous banners
-            enableInfiniteScroll: true,
-            // Loop through banners
-            onPageChanged: (index, reason) {
-              setState(() {
-                _currentIndex = index; // Update current index
-              });
-            },
-          ),
-          items: bannerImages.map((imageUrl) {
-            return Builder(
-              builder: (BuildContext context) {
-                return Container(
-                  width: MediaQuery.of(context).size.width,
-                  margin:  EdgeInsets.symmetric(horizontal: 3.sp),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8.0),
-                    image: DecorationImage(
-                      image: NetworkImage(imageUrl),
-                      fit: BoxFit.fill, // Fit image to container
-                    ),
-                  ),
-                );
-              },
-            );
-          }).toList(),
-        ),
-        SizedBox(height: 10.sp), // Space between carousel and dots
-        SmoothPageIndicator(
-          controller: PageController(initialPage: _currentIndex),
-          // Use PageController for SmoothPageIndicator
-          count: bannerImages.length,
-          effect: WormEffect(
-            dotHeight: 5,
-            dotWidth: 10,
-            activeDotColor: AppColors.navyBlue,
-            dotColor: Colors.grey.shade400,
-            spacing: 3,
-          ),
-          onDotClicked: (index) {
-            // _carouselController.animateToPage(index); // Sync dot click with carousel
-          },
-        ),
-      ],
-    );
-  }
-}
 
 class CategoryChips extends StatefulWidget {
   final List<String> categories;

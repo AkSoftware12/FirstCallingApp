@@ -13,8 +13,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../Ui/BottomNavigationScreen/BannerScreen/banner.dart';
 import '../../Utils/string.dart';
 import '../AgentListItem/agent_list_item.dart';
 
@@ -298,7 +301,7 @@ class _AgentScreenState extends State<AgentScreen> {
                                   Navigator.of(context).push(
                                     MaterialPageRoute(
                                       builder: (context) => AgentListItem(
-                                        type: 'available',
+                                        type: 'all', title: 'Total QRs',
                                       ),
                                     ),
                                   );
@@ -314,7 +317,7 @@ class _AgentScreenState extends State<AgentScreen> {
                                     borderRadius: BorderRadius.circular(12.sp),
                                     border: Border.all(
                                       color: AppColors.navyBlue,
-                                      width: 2.sp,
+                                      width: 1.sp,
                                     ),
                                     boxShadow: [
                                       BoxShadow(
@@ -333,7 +336,7 @@ class _AgentScreenState extends State<AgentScreen> {
                                         Icon(
                                           Icons.qr_code_scanner,
                                           size: 32.sp,
-                                          color: Colors.blue.withOpacity(0.8),
+                                          color: Colors.blue,
                                         ),
                                         SizedBox(height: 8.sp),
                                         Text(
@@ -361,58 +364,69 @@ class _AgentScreenState extends State<AgentScreen> {
                               ),
                             ),
                             Expanded(
-                              child: Container(
-                                margin: EdgeInsets.symmetric(horizontal: 4.sp),
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [AppColors.bottomBg, AppColors.bottomBg.withOpacity(0.8)],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
-                                  borderRadius: BorderRadius.circular(12.sp),
-                                  border: Border.all(
-                                    color: AppColors.navyBlue,
-                                    width: 2.sp,
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
-                                      blurRadius: 8.sp,
-                                      offset: Offset(0, 2.sp),
+                              child: GestureDetector(
+                                onTap: (){
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (context) => AgentListItem(
+                                        type: 'available', title: 'Available QRs',
+                                      ),
                                     ),
-                                  ],
-                                ),
-                                child: Padding(
-                                  padding: EdgeInsets.all(12.sp),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        Icons.qr_code,
-                                        size: 32.sp,
-                                        color: Colors.green.withOpacity(0.8),
-                                      ),
-                                      SizedBox(height: 8.sp),
-                                      Text(
-                                        'Available QRs',
-                                        textAlign: TextAlign.center,
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 13.sp,
-                                          fontWeight: FontWeight.w600,
-                                          color: AppColors.colorBlack.withOpacity(0.8),
-                                        ),
-                                      ),
-                                      SizedBox(height: 4.sp),
-                                      Text(
-                                        availableQr.toString(),
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 26.sp,
-                                          fontWeight: FontWeight.w800,
-                                          color: AppColors.colorBlack,
-                                        ),
+                                  );
+                                },
+                                child: Container(
+                                  margin: EdgeInsets.symmetric(horizontal: 4.sp),
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [AppColors.bottomBg, AppColors.bottomBg.withOpacity(0.8)],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    borderRadius: BorderRadius.circular(12.sp),
+                                    border: Border.all(
+                                      color: AppColors.navyBlue,
+                                      width: 1.sp,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.1),
+                                        blurRadius: 8.sp,
+                                        offset: Offset(0, 2.sp),
                                       ),
                                     ],
+                                  ),
+                                  child: Padding(
+                                    padding: EdgeInsets.all(12.sp),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.qr_code,
+                                          size: 32.sp,
+                                          color: Colors.green,
+                                        ),
+                                        SizedBox(height: 8.sp),
+                                        Text(
+                                          'Available QRs',
+                                          textAlign: TextAlign.center,
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 13.sp,
+                                            fontWeight: FontWeight.w600,
+                                            color: AppColors.colorBlack.withOpacity(0.8),
+                                          ),
+                                        ),
+                                        SizedBox(height: 4.sp),
+                                        Text(
+                                          availableQr.toString(),
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 26.sp,
+                                            fontWeight: FontWeight.w800,
+                                            color: AppColors.colorBlack,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ),
@@ -429,59 +443,70 @@ class _AgentScreenState extends State<AgentScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
                             Expanded(
-                              child: Container(
-                                margin: EdgeInsets.symmetric(horizontal: 4.sp),
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [AppColors.bottomBg, AppColors.bottomBg.withOpacity(0.8)],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
-                                  borderRadius: BorderRadius.circular(12.sp),
-                                  border: Border.all(
-                                     color: AppColors.navyBlue,
-
-                                    width: 1.sp,
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
-                                      blurRadius: 8.sp,
-                                      offset: Offset(0, 2.sp),
+                              child: GestureDetector(
+                                onTap: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (context) => AgentListItem(
+                                        type: 'assigned', title: 'Alloted QRs',
+                                      ),
                                     ),
-                                  ],
-                                ),
-                                child: Padding(
-                                  padding: EdgeInsets.all(12.sp),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        Icons.qr_code,
-                                        size: 32.sp,
-                                        color: AppColors.navyBlue,
-                                      ),
-                                      SizedBox(height: 8.sp),
-                                      Text(
-                                        'Alloted QRs',
-                                        textAlign: TextAlign.center,
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 13.sp,
-                                          fontWeight: FontWeight.w600,
-                                          color: AppColors.navyBlue,
-                                        ),
-                                      ),
-                                      SizedBox(height: 4.sp),
-                                      Text(
-                                        allotedQr.toString(),
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 26.sp,
-                                          fontWeight: FontWeight.w800,
-                                          color: AppColors.navyBlue,
-                                        ),
+                                  );
+                                },
+                                child: Container(
+                                  margin: EdgeInsets.symmetric(horizontal: 4.sp),
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [AppColors.bottomBg, AppColors.bottomBg.withOpacity(0.8)],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    borderRadius: BorderRadius.circular(12.sp),
+                                    border: Border.all(
+                                       color: AppColors.navyBlue,
+
+                                      width: 1.sp,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.1),
+                                        blurRadius: 8.sp,
+                                        offset: Offset(0, 2.sp),
                                       ),
                                     ],
+                                  ),
+                                  child: Padding(
+                                    padding: EdgeInsets.all(12.sp),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.qr_code,
+                                          size: 32.sp,
+                                          color: AppColors.navyBlue,
+                                        ),
+                                        SizedBox(height: 8.sp),
+                                        Text(
+                                          'Alloted QRs',
+                                          textAlign: TextAlign.center,
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 13.sp,
+                                            fontWeight: FontWeight.w600,
+                                            color: AppColors.navyBlue,
+                                          ),
+                                        ),
+                                        SizedBox(height: 4.sp),
+                                        Text(
+                                          allotedQr.toString(),
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 26.sp,
+                                            fontWeight: FontWeight.w800,
+                                            color: AppColors.navyBlue,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ),
@@ -489,7 +514,6 @@ class _AgentScreenState extends State<AgentScreen> {
                             Expanded(
                               child: GestureDetector(
                                 onTap: () {
-                                  // Navigate to employees screen
                                 },
                                 child: Container(
                                   margin: EdgeInsets.symmetric(horizontal: 4.sp),
@@ -562,6 +586,24 @@ class _AgentScreenState extends State<AgentScreen> {
             ),
           ),
           const SizedBox(height: 10),
+          Padding(
+            padding:  EdgeInsets.all(8.sp),
+            child: Text(
+              'Recently Alloted',
+              style: GoogleFonts.poppins(
+                textStyle: Theme.of(
+                  context,
+                ).textTheme.displayLarge,
+                fontSize:
+                MediaQuery.of(context)
+                    .size
+                    .width *
+                    0.045,
+                fontWeight: FontWeight.w600,
+                color: AppColors.navyBlue,
+              ),
+            ),
+          ),
           qrDetails.isEmpty
               ? Padding(
             padding: EdgeInsets.symmetric(vertical: 40.h),
@@ -590,11 +632,12 @@ class _AgentScreenState extends State<AgentScreen> {
                 itemBuilder: (context, index) {
                   final item = qrDetails[index];
                   return Card(
+                    color: Colors.grey.shade100,
                     elevation: 3,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10.r),
                     ),
-                    margin: EdgeInsets.symmetric(vertical: 5.sp, horizontal: 8.sp),
+                    margin: EdgeInsets.symmetric(vertical: 5.sp, horizontal: 3.sp),
                     child: ListTile(
                       leading: CircleAvatar(
                         backgroundColor: Colors.blue.shade50,
@@ -611,34 +654,12 @@ class _AgentScreenState extends State<AgentScreen> {
                         style: TextStyle(
                             color: Colors.grey.shade600, fontSize: 13.sp),
                       ),
-                      trailing: Text(
-                        "#${item["id"] ?? ''}",
-                        style: TextStyle(
-                            color: Colors.blueAccent,
-                            fontWeight: FontWeight.w600),
-                      ),
+
                     ),
                   );
                 },
               ),
-              if (qrDetails.length > 3)
-                Padding(
-                  padding: EdgeInsets.only(top: 6.h),
-                  child: TextButton.icon(
-                    onPressed: () {
-                      // 👉 navigate to full list or show dialog
-                    },
-                    icon: Icon(Icons.arrow_forward_ios,
-                        size: 14.sp, color: AppColors.navyBlue),
-                    label: Text(
-                      "View All",
-                      style: TextStyle(
-                          color: AppColors.navyBlue,
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                ),
+
             ],
           )
 
@@ -649,90 +670,11 @@ class _AgentScreenState extends State<AgentScreen> {
 }
 
 
-class BannerSlider extends StatefulWidget {
-  const BannerSlider({super.key});
 
-  @override
-  _BannerSliderState createState() => _BannerSliderState();
-}
 
-class _BannerSliderState extends State<BannerSlider> {
-  final List<String> bannerImages = [
-    'https://i.ibb.co/RkhfdVc1/1.jpg',
-    'https://i.ibb.co/RpKJ6t3c/2.jpg',
-    // 'https://nekinsan-prod.s3.amazonaws.com/blog/thumbnails/2024/05/16/Blog___Door_Bell.png',
-    // 'https://nekinsan-prod.s3.amazonaws.com/blog/thumbnails/2024/05/31/child-safe.png',
-    // 'https://nekinsan-prod.s3.amazonaws.com/blog/thumbnails/2024/06/21/wrong-parking.png',
-  ];
 
-  int _currentIndex = 0;
-  final CarouselController _carouselController =
-  CarouselController(); // Controller for CarouselSlider
 
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        CarouselSlider(
-          // carouselController: _carouselController, // Assign controller to CarouselSlider
-          options: CarouselOptions(
-            height: 130.sp,
-            // Set banner height
-            autoPlay: true,
-            // Auto-scroll banners
-            autoPlayInterval: const Duration(seconds: 3),
-            autoPlayAnimationDuration: const Duration(milliseconds: 800),
-            autoPlayCurve: Curves.fastOutSlowIn,
-            enlargeCenterPage: true,
-            // Enlarge the center banner
-            viewportFraction: 1,
-            // Show partial next/previous banners
-            enableInfiniteScroll: true,
-            // Loop through banners
-            onPageChanged: (index, reason) {
-              setState(() {
-                _currentIndex = index; // Update current index
-              });
-            },
-          ),
-          items: bannerImages.map((imageUrl) {
-            return Builder(
-              builder: (BuildContext context) {
-                return Container(
-                  width: MediaQuery.of(context).size.width,
-                  margin:  EdgeInsets.symmetric(horizontal: 3.sp),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8.0),
-                    image: DecorationImage(
-                      image: NetworkImage(imageUrl),
-                      fit: BoxFit.fill, // Fit image to container
-                    ),
-                  ),
-                );
-              },
-            );
-          }).toList(),
-        ),
-        SizedBox(height: 10.sp), // Space between carousel and dots
-        SmoothPageIndicator(
-          controller: PageController(initialPage: _currentIndex),
-          // Use PageController for SmoothPageIndicator
-          count: bannerImages.length,
-          effect: WormEffect(
-            dotHeight: 5,
-            dotWidth: 10,
-            activeDotColor: AppColors.navyBlue,
-            dotColor: Colors.grey.shade400,
-            spacing: 3,
-          ),
-          onDotClicked: (index) {
-            // _carouselController.animateToPage(index); // Sync dot click with carousel
-          },
-        ),
-      ],
-    );
-  }
-}
+
 
 class CategoryChips extends StatefulWidget {
   final List<String> categories;

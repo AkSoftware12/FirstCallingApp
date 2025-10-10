@@ -17,7 +17,7 @@ import '../../Utils/textSize.dart';
 
 class ProfileUpdatePage extends StatefulWidget {
   final VoidCallback? onProfileUpdated;
-  const ProfileUpdatePage({super.key, this.onProfileUpdated});
+  const ProfileUpdatePage({super.key,  this.onProfileUpdated,});
 
   @override
   State<ProfileUpdatePage> createState() => _ProfileUpdatePageState();
@@ -68,14 +68,14 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body)['user'];
         setState(() {
-          nameController.text = jsonData['name'] ?? 'Not Provided';
-          emailController.text = jsonData['email'] ?? 'Not Provided';
+          nameController.text = jsonData['name'] ?? '';
+          emailController.text = jsonData['email'] ?? '';
           pinController.text = jsonData['pin']?.toString() ?? '';
           addressController.text = jsonData['address'] ?? '';
           cityController.text = jsonData['district'] ?? '';
           userMobile = jsonData['contact'] ?? '';
           photoUrl = jsonData['picture_data'] ?? '';
-          stateController.text = jsonData['state'] ?? 'Not Provided';
+          stateController.text = jsonData['state'] ?? '';
         });
         // Save updated profile data to SharedPreferences for drawer
         // await _saveProfileToPrefs(jsonData);

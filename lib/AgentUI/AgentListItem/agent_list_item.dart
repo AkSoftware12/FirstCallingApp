@@ -5,12 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-
 import '../../Utils/color.dart';
 
 class AgentListItem extends StatefulWidget {
   final String type;
-  const AgentListItem({super.key, required this.type});
+  final String title;
+  const AgentListItem({super.key, required this.type, required this.title});
 
   @override
   State<AgentListItem> createState() => _AgentListItemState();
@@ -50,10 +50,14 @@ class _AgentListItemState extends State<AgentListItem> with TickerProviderStateM
   void _onSearchChanged() {
     final query = _searchController.text.toLowerCase();
     setState(() {
-      filteredQrDetails = qrDetails.where((item) {
-        final qrNumber = (item["qr_number"] ?? '').toString().toLowerCase();
-        return qrNumber.contains(query);
-      }).toList();
+      if (query.isEmpty) {
+        filteredQrDetails = qrDetails;
+      } else {
+        filteredQrDetails = qrDetails.where((item) {
+          final qrNumber = (item["qr_number"] ?? '').toString().toLowerCase();
+          return qrNumber.contains(query);
+        }).toList();
+      }
     });
   }
 
@@ -78,9 +82,12 @@ class _AgentListItemState extends State<AgentListItem> with TickerProviderStateM
             filteredQrDetails = qrDetails;
             isLoading = false;
           });
+        }else{
+          setState(() {
+            isLoading = false;
+          });
         }
       } else {
-        // handle API errors
         setState(() {
           isLoading = false;
         });
@@ -103,7 +110,7 @@ class _AgentListItemState extends State<AgentListItem> with TickerProviderStateM
         backgroundColor: AppColors.navyBlue,
         elevation: 0,
         flexibleSpace: Container(
-          decoration:  BoxDecoration(
+          decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [AppColors.navyBlue, AppColors.navyBlue],
               begin: Alignment.topLeft,
@@ -111,8 +118,8 @@ class _AgentListItemState extends State<AgentListItem> with TickerProviderStateM
             ),
           ),
         ),
-        title: const Text(
-          'QR Details',
+        title:  Text(
+          '${widget.title}',
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.w600,
@@ -120,27 +127,16 @@ class _AgentListItemState extends State<AgentListItem> with TickerProviderStateM
           ),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined, color: Colors.white),
-            onPressed: () {
-              // Add notification logic if needed
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.filter_list_outlined, color: Colors.white),
-            onPressed: () {
-              // Add filter logic if needed
-            },
-          ),
+
         ],
       ),
       body: isLoading
           ? Center(
         child: FadeTransition(
           opacity: _fadeAnimation,
-          child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(AppColors.navyBlue),
-            strokeWidth: 3,
+          child: CupertinoActivityIndicator(
+            radius: 25,
+            color: AppColors.navyBlue,
           ),
         ),
       )
@@ -148,76 +144,90 @@ class _AgentListItemState extends State<AgentListItem> with TickerProviderStateM
         opacity: _fadeAnimation,
         child: Column(
           children: [
-            // Enhanced Search Bar with Animation
+            // Enhanced Search Bar with Better Animation and UI
             AnimatedContainer(
               duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
               padding: EdgeInsets.all(16.w),
               decoration: BoxDecoration(
                 color: Colors.white,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.08),
+                    color: Colors.black.withOpacity(0.1),
                     blurRadius: 20,
-                    offset: const Offset(0, 4),
+                    offset: const Offset(0, 8),
                   ),
                 ],
               ),
-              child: TextField(
-                controller: _searchController,
-                decoration: InputDecoration(
-                  hintText: 'Search by QR Number...',
-                  hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 14.sp),
-                  prefixIcon: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    padding: EdgeInsets.all(12.w),
-                    child: Icon(
-                      Icons.search,
-                      color: AppColors.navyBlue,
-                      size: 20.sp,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _searchController,
+                      decoration: InputDecoration(
+                        hintText: 'Search by QR Number...',
+                        hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 14.sp),
+                        prefixIcon: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          padding: EdgeInsets.all(12.w),
+                          child: Icon(
+                            Icons.search,
+                            color: AppColors.navyBlue,
+                            size: 20.sp,
+                          ),
+                        ),
+                        suffixIcon: _searchController.text.isNotEmpty
+                            ? IconButton(
+                          icon: const Icon(Icons.clear, color: Colors.grey),
+                          onPressed: () {
+                            _searchController.clear();
+                          },
+                        )
+                            : null,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(25.r),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(25.r),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(25.r),
+                          borderSide: BorderSide(color: AppColors.navyBlue, width: 2),
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey.shade100,
+                        contentPadding: EdgeInsets.symmetric(
+                          vertical: 16.sp,
+                          horizontal: 20.w,
+                        ),
+                      ),
+                      style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w500),
                     ),
                   ),
-                  suffixIcon: _searchController.text.isNotEmpty
-                      ? IconButton(
-                    icon: const Icon(Icons.clear, color: Colors.grey),
-                    onPressed: () {
-                      _searchController.clear();
-                    },
-                  )
-                      : null,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16.r),
-                    borderSide: BorderSide(color: Colors.grey.shade200),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16.r),
-                    borderSide: BorderSide(color: Colors.grey.shade200),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16.r),
-                    borderSide: BorderSide(color: AppColors.navyBlue, width: 2),
-                  ),
-                  filled: true,
-                  fillColor: Colors.grey.shade50,
-                  contentPadding: EdgeInsets.symmetric(
-                    vertical: 16.sp,
-                    horizontal: 20.w,
-                  ),
-                ),
-                style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w500),
-              ),
-            ),
-            // Stats Row for Premium Feel
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _buildStatCard('Total', qrDetails.length.toString(), Icons.inventory_2_outlined),
-                  _buildStatCard('Active', qrDetails.where((item) => (item["qr_code"]?["status"] ?? '') == 'active').length.toString(), Icons.check_circle_outline),
-                  _buildStatCard('Inactive', qrDetails.where((item) => (item["qr_code"]?["status"] ?? '') == 'inactive').length.toString(), Icons.pause_circle_outline),
+                  if (_searchController.text.isNotEmpty)
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      margin: EdgeInsets.only(left: 8.w),
+                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                      decoration: BoxDecoration(
+                        color: AppColors.navyBlue,
+                        borderRadius: BorderRadius.circular(20.r),
+                      ),
+                      child: Text(
+                        '${filteredQrDetails.length} results',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),
+            // Item List Only
             Expanded(
               child: filteredQrDetails.isEmpty
                   ? Center(
@@ -294,11 +304,11 @@ class _AgentListItemState extends State<AgentListItem> with TickerProviderStateM
                         shadowColor: statusColor.withOpacity(0.2),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20.r),
-                          side: BorderSide(color: Colors.white, width: 1),
+                          side: BorderSide(color: AppColors.navyBlue, width: 1),
                         ),
                         margin: EdgeInsets.only(bottom: 16.h),
                         child: Container(
-                          padding: EdgeInsets.all(20.w),
+                          padding: EdgeInsets.all(10.sp),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(20.r),
                             gradient: LinearGradient(
@@ -324,7 +334,7 @@ class _AgentListItemState extends State<AgentListItem> with TickerProviderStateM
                               Stack(
                                 children: [
                                   Container(
-                                    padding: EdgeInsets.all(16.w),
+                                    padding: EdgeInsets.all(10.w),
                                     decoration: BoxDecoration(
                                       gradient: LinearGradient(
                                         colors: [
@@ -342,8 +352,8 @@ class _AgentListItemState extends State<AgentListItem> with TickerProviderStateM
                                     ),
                                     child: Icon(
                                       Icons.qr_code_2,
-                                      color: statusColor,
-                                      size: 28.sp,
+                                      color: AppColors.navyBlue,
+                                      size: 22.sp,
                                     ),
                                   ),
                                   if (status == 'active')
@@ -372,18 +382,13 @@ class _AgentListItemState extends State<AgentListItem> with TickerProviderStateM
                                   children: [
                                     Row(
                                       children: [
-                                        Icon(
-                                          Icons.qr_code_outlined,
-                                          size: 16.sp,
-                                          color: AppColors.navyBlue,
-                                        ),
-                                        SizedBox(width: 8.w),
+
                                         Expanded(
                                           child: Text(
-                                            "QR Number: ${item["qr_number"] ?? 'N/A'}",
+                                            "QR No : ${item["qr_number"] ?? 'N/A'}",
                                             style: TextStyle(
                                               fontWeight: FontWeight.w700,
-                                              fontSize: 18.sp,
+                                              fontSize: 14.sp,
                                               color: AppColors.navyBlue,
                                               height: 1.2,
                                             ),
@@ -410,45 +415,6 @@ class _AgentListItemState extends State<AgentListItem> with TickerProviderStateM
                                         ),
                                       ],
                                     ),
-                                    SizedBox(height: 12.h),
-                                    Row(
-                                      children: [
-                                        Container(
-                                          padding: EdgeInsets.symmetric(
-                                            horizontal: 12.w,
-                                            vertical: 6.h,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            gradient: LinearGradient(
-                                              colors: [Colors.blue.shade100, Colors.blue.shade50],
-                                              begin: Alignment.topLeft,
-                                              end: Alignment.bottomRight,
-                                            ),
-                                            borderRadius: BorderRadius.circular(20.r),
-                                            border: Border.all(color: Colors.blue.shade200, width: 1),
-                                          ),
-                                          child: Text(
-                                            "#${item["id"].toString() ?? ''}",
-                                            style: TextStyle(
-                                              color: Colors.blue.shade700,
-                                              fontWeight: FontWeight.w700,
-                                              fontSize: 12.sp,
-                                            ),
-                                          ),
-                                        ),
-                                        const Spacer(),
-                                        IconButton(
-                                          icon: Icon(
-                                            Icons.visibility_outlined,
-                                            color: Colors.grey.shade600,
-                                            size: 20.sp,
-                                          ),
-                                          onPressed: () {
-                                            // Add view QR logic
-                                          },
-                                        ),
-                                      ],
-                                    ),
                                   ],
                                 ),
                               ),
@@ -459,47 +425,6 @@ class _AgentListItemState extends State<AgentListItem> with TickerProviderStateM
                     );
                   },
                 ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatCard(String label, String value, IconData icon) {
-    return Expanded(
-      child: Container(
-        padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16.r),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: AppColors.navyBlue, size: 24.sp),
-            SizedBox(height: 4.h),
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 20.sp,
-                fontWeight: FontWeight.bold,
-                color: AppColors.navyBlue,
-              ),
-            ),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12.sp,
-                color: Colors.grey.shade600,
-                fontWeight: FontWeight.w500,
               ),
             ),
           ],

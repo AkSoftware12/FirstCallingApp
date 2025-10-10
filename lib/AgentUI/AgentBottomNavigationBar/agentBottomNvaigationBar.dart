@@ -19,9 +19,11 @@ import '../../Ui/BottomNavigationScreen/IVRCall/ivr_call.dart';
 import '../../Ui/BottomNavigationScreen/SOS/sos_screen.dart';
 import '../../Ui/DrawerScreen/Drawer/drawer.dart';
 import '../../Ui/DrawerScreen/privacy.dart';
+import '../../Ui/ParkingScreen/parking.dart';
 import '../../Ui/Profile/update_profile.dart';
 import '../../Ui/QRScanScreen/QRCodeData/qr_code_data.dart';
 import '../../Ui/QRScanScreen/TorchScreen/torch_screen.dart';
+import '../AgentDrawer/drawer.dart';
 // Sample data structure for emergency numbers
 class EmergencyNumber {
   final String police;
@@ -226,13 +228,63 @@ class _HomePageState extends State<AgentBottomNavigationBarScreen> {
     );
   }
 
+  // void _handleDetect(BarcodeCapture capture) async {
+  //   if (_isScanning) return;
+  //   _isScanning = true;
+  //
+  //   if (capture.barcodes.isEmpty) {
+  //     debugPrint("❌ No barcode found in capture.");
+  //     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("No QR/Barcode found")));
+  //     _isScanning = false;
+  //     return;
+  //   }
+  //
+  //   final String? value = capture.barcodes.first.rawValue;
+  //
+  //   if (value != null && value.isNotEmpty) {
+  //     debugPrint("✅ Scanned: $value");
+  //     if (_isValidUrl(value)) {
+  //       try {
+  //         final Uri url = Uri.parse(value);
+  //         if (await canLaunchUrl(url)) {
+  //           await launchUrl(url, mode: LaunchMode.externalApplication);
+  //         } else {
+  //           _showResult(value);
+  //         }
+  //       } catch (e) {
+  //         debugPrint("⚠️ URL launch error: $e");
+  //         _showResult(value);
+  //       }
+  //     } else {
+  //       _showResult(value);
+  //     }
+  //   } else {
+  //     debugPrint("⚠️ Barcode detected but value empty.");
+  //     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Invalid QR/Barcode")));
+  //   }
+  //
+  //   Future.delayed(const Duration(seconds: 2), () {
+  //     _isScanning = false;
+  //   });
+  // }
+
+
+
+
+  bool _isValidUrl(String value) {
+    final Uri? uri = Uri.tryParse(value);
+    return uri != null && (uri.isScheme("http") || uri.isScheme("https"));
+  }
+
   void _handleDetect(BarcodeCapture capture) async {
     if (_isScanning) return;
     _isScanning = true;
 
     if (capture.barcodes.isEmpty) {
       debugPrint("❌ No barcode found in capture.");
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("No QR/Barcode found")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("No QR/Barcode found")),
+      );
       _isScanning = false;
       return;
     }
@@ -247,55 +299,39 @@ class _HomePageState extends State<AgentBottomNavigationBarScreen> {
           if (await canLaunchUrl(url)) {
             await launchUrl(url, mode: LaunchMode.externalApplication);
           } else {
-            _showResult(value);
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => FullScreenActionPage(value: value,
+                ),
+              ),
+            );
           }
         } catch (e) {
           debugPrint("⚠️ URL launch error: $e");
-          _showResult(value);
-        }
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => FullScreenActionPage(value: value,
+              ),
+            ),
+          );        }
       } else {
-        _showResult(value);
-      }
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => FullScreenActionPage(value: value,
+            ),
+          ),
+        );      }
     } else {
       debugPrint("⚠️ Barcode detected but value empty.");
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Invalid QR/Barcode")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Invalid QR/Barcode")),
+      );
     }
 
     Future.delayed(const Duration(seconds: 2), () {
       _isScanning = false;
     });
   }
-
-
-
-
-  bool _isValidUrl(String value) {
-    final Uri? uri = Uri.tryParse(value);
-    return uri != null && (uri.isScheme("http") || uri.isScheme("https"));
-  }
-
-  void _showResult(String data) {
-    try {
-      // Parse the scanned data as JSON
-      // final Map<String, dynamic> parsedData = jsonDecode(data);
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ResultPage(data: data,),
-        ),
-      ).then((_) {
-        _isScanning = false;
-      });
-    } catch (e) {
-      debugPrint("⚠️ JSON parsing error: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Invalid data format")),
-      );
-      _isScanning = false;
-    }
-  }
-
-
 
 
   Future<void> checkForVersion(BuildContext context) async {
@@ -532,7 +568,7 @@ class _HomePageState extends State<AgentBottomNavigationBarScreen> {
           ),
           width: MediaQuery.sizeOf(context).width * .7,
           // backgroundColor: ColorSelect.maineColor,
-          child: DrawerPageScreen(
+          child: AgentDrawerPageScreen(
             currentVersion: currentVersion,
           )),
       floatingActionButton: SizedBox(

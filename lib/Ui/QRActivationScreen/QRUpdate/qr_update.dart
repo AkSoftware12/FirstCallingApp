@@ -17,7 +17,8 @@ import '../../../Utils/color.dart';
 
 class UpdateScreen extends StatefulWidget {
   final Map qrData;
-  const UpdateScreen({super.key, required this.qrData,}); // Make token required
+  final String qrNumber;
+  const UpdateScreen({super.key, required this.qrData, required this.qrNumber,}); // Make token required
 
   @override
   State<UpdateScreen> createState() => _UpdateScreenState();
@@ -86,7 +87,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
   Future<void> _updateData() async {
     // Collect updated data into a Map
     Map<String, dynamic> updateData = {
-      'qr_number': widget.qrData['qr_number'],
+      'qr_number': widget.qrNumber,
       'name': _nameController.text,
       'dob': _dobController.text,
       'address': _addressController.text,

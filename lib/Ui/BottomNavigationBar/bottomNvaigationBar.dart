@@ -230,7 +230,9 @@ class _HomePageState extends State<BottomNavigationBarScreen> {
 
     if (capture.barcodes.isEmpty) {
       debugPrint("❌ No barcode found in capture.");
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("No QR/Barcode found")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("No QR/Barcode found")),
+      );
       _isScanning = false;
       return;
     }
@@ -245,25 +247,93 @@ class _HomePageState extends State<BottomNavigationBarScreen> {
           if (await canLaunchUrl(url)) {
             await launchUrl(url, mode: LaunchMode.externalApplication);
           } else {
-            _showResult(value);
+            _showPopup(value);
           }
         } catch (e) {
           debugPrint("⚠️ URL launch error: $e");
-          _showResult(value);
+          _showPopup(value);
         }
       } else {
-        _showResult(value);
+        _showPopup(value);
       }
     } else {
       debugPrint("⚠️ Barcode detected but value empty.");
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Invalid QR/Barcode")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Invalid QR/Barcode")),
+      );
     }
 
     Future.delayed(const Duration(seconds: 2), () {
       _isScanning = false;
     });
   }
-
+// Popup function with Parking and Emergency buttons
+  void _showPopup(String value) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        elevation: 10,
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            color: Colors.white,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                "QR/Barcode Detected",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                value,
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      debugPrint("🚗 Parking clicked");
+                      // Add Parking logic here
+                    },
+                    icon: const Icon(Icons.local_parking),
+                    label: const Text("Parking"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      debugPrint("🚨 Emergency clicked");
+                      // Add Emergency logic here
+                    },
+                    icon: const Icon(Icons.warning),
+                    label: const Text("Emergency"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
 
 
@@ -279,7 +349,7 @@ class _HomePageState extends State<BottomNavigationBarScreen> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => ResultPage(data: data,),
+          builder: (context) => ResultPage(data: data, type: '',),
         ),
       ).then((_) {
         _isScanning = false;
@@ -767,18 +837,23 @@ class _HomePageState extends State<BottomNavigationBarScreen> {
         ),
 
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-        bottomNavigationBar: CustomBottomNavBar(
-        currentIndex: selected,
-        onTap: (int index) {
-          setState(() {
-            selected = index;
-          });
-          controller.jumpToPage(index);
-        },
-      ),
+        bottomNavigationBar: SafeArea(
+          child: CustomBottomNavBar(
+          currentIndex: selected,
+          onTap: (int index) {
+            setState(() {
+              selected = index;
+            });
+            controller.jumpToPage(index);
+          },
+                ),
+        ),
 
       body: SafeArea(
-          child: PageView(
+        top: false, // keep top area flexible
+        bottom: false, // bottom handled manually below
+
+        child: PageView(
             controller: controller,
             physics: const NeverScrollableScrollPhysics(), // 👈 Swipe disable
             children: [

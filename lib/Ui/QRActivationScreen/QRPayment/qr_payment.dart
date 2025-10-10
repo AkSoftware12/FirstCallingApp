@@ -4,7 +4,23 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/animation.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:google_fonts/google_fonts.dart'; // For animations if needed
+import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+import 'package:flutter/cupertino.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../../BaseUrl/baseurl.dart';
+import '../../Cart/OrderConfirmationScreen/order_confirmation.dart';
+import '../../Profile/update_profile.dart';
+import '../QRUpdate/qr_update_popup.dart'; // For animations if needed
 
 class PaymentScreen extends StatefulWidget {
   final Map qrData;
@@ -18,9 +34,146 @@ class PaymentScreen extends StatefulWidget {
 class _PaymentScreenState extends State<PaymentScreen> {
   bool _isLoading = false;
 
+   String userName='';
+   String userAddress='';
+
+
+
+  @override
+  void initState() {
+    super.initState();
+    fetchProfileData();
+  }
+
+  Future<void> fetchProfileData() async {
+    setState(() => _isLoading = true);
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+      final uri = Uri.parse(ApiRoutes.getProfile);
+      final headers = {'Authorization': 'Bearer $token'};
+      final response = await http.get(uri, headers: headers);
+
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(response.body)['user'];
+        setState(() {
+          userName = jsonData['name']??'';
+          userAddress= jsonData['address'] ?? '';
+
+        });
+        // Save updated profile data to SharedPreferences for drawer
+        // await _saveProfileToPrefs(jsonData);
+      } else {
+      }
+    } catch (e) {
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
 
 
   Future<void> _handlePayment() async {
+    print('UserName : $userName');
+    print('UserAddress : $userAddress');
+
+    // ✅ Check for missing details before proceeding
+    if (userName == null || userName!.trim().isEmpty ||
+        userAddress == null || userAddress!.trim().isEmpty) {
+
+      showDialog(
+        context: context,
+        barrierDismissible: false, // ✨ Non-dismissible by tapping outside
+        builder: (context) => Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          elevation: 5,
+          backgroundColor: Colors.white,
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.navyBlue.withOpacity(0.5),
+                    shape: BoxShape.circle,
+                  ),
+                  child:  Icon(
+                    Icons.person,
+                    size: 50,
+                    color: AppColors.navyBlue,
+                  ),
+                ),
+                const SizedBox(height: 15),
+                const Text(
+                  'Profile Incomplete',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                const Text(
+                  'Please update your profile before making a payment.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: Colors.black54,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    OutlinedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: OutlinedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        side: const BorderSide(color: Colors.grey),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 25, vertical: 12),
+                      ),
+                      child: const Text(
+                        'Cancel',
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context)=> ProfileUpdatePage(
+                              onProfileUpdated: () { fetchProfileData(); },)));
+                        },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.navyBlue,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 25, vertical: 12),
+                      ),
+                      child: const Text(
+                        'Update Now',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+      return; // 🚫 Stop payment process
+    }
+
     setState(() {
       _isLoading = true;
     });
@@ -33,24 +186,86 @@ class _PaymentScreenState extends State<PaymentScreen> {
         _isLoading = false;
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: const [
-              Icon(Icons.check_circle, color: Colors.white),
-              SizedBox(width: 8),
-              Text('Payment successful!'),
-            ],
-          ),
-          backgroundColor: Colors.green,
-          behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.all(16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        ),
-      );
 
-      // TODO: Integrate actual payment logic (e.g., Razorpay)
-      // Navigator.pop(context); // Or navigate to success screen
+        final Map<String, dynamic>
+        payload = {
+          "invoice": {
+            "name":userName,
+            "address": userAddress,
+            "qr_number": widget.qrData['qr_number'].toString(),
+            "gst_include": "EXCLUDE",
+            "total_amount": widget.productData['selling_price'],
+            "delivery_charge": 0,
+            "discount": 0,
+          },
+          "products": widget.productData,
+        };
+
+        print('Payload: $payload');
+
+        try {
+          final prefs =
+          await SharedPreferences.getInstance();
+          final token = prefs.getString('token',);
+          final response = await http
+              .post(
+            Uri.parse(
+              ApiRoutes.orderAgentPlaced,
+            ),
+            headers: {
+              'Content-Type':
+              'application/json',
+              'Authorization':
+              'Bearer $token',
+            },
+            body: json.encode(
+              payload,
+            ),
+          );
+
+          Navigator.of(
+            context,
+          ).pop(); // Hide loading
+
+          if (response.statusCode == 200) {
+
+            final data = jsonDecode(response.body);
+            if (data["success"] == true) {
+              final qr = data["qr_number"];
+              print('Qr Data $qr');
+              Navigator.push(context, MaterialPageRoute(builder: (_) => QRUpdateScreen(qrNumber: qr,)));
+
+
+            } else {
+              setState(() {
+
+              });
+            }
+
+
+
+          } else {
+            // messenger.showSnackBar(
+            //   SnackBar(
+            //     content: TextBuilder(
+            //       text:
+            //       'Failed to place order. Try again.',
+            //       color: Colors.white,
+            //       fontSize: 14.sp,
+            //     ),
+            //     backgroundColor:
+            //     Colors.red,
+            //   ),
+            // );
+          }
+        } catch (e) {
+          Navigator.of(
+            context,
+          ).pop(); // Hide loading
+
+
+        }
+
     }
   }
 
