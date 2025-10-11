@@ -6,7 +6,7 @@ class ApiRoutes {
 
 
 // Local App Url
-  static const String baseUrl = "http://192.168.1.13/firstcallingapp2/api";
+  static const String baseUrl = "http://192.168.1.3/firstcallingapp2/api";
 
 
 
@@ -29,4 +29,5 @@ class ApiRoutes {
   static const String notifications = "$baseUrl/notifications";
   static const String agentDashboard = "$baseUrl/agent/dashboard";
   static const String agentItemList = "$baseUrl/agent/qr-list?type=";
+  static const String twilioToken = "$baseUrl/twilio/token";
 }

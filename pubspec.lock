@@ -9,6 +9,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.3.59"
+  adaptive_number:
+    dependency: transitive
+    description:
+      name: adaptive_number
+      sha256: "3a567544e9b5c9c803006f51140ad544aedc79604fd4f3f2c1380003f97c1d77"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
   add_to_cart_animation:
     dependency: "direct main"
     description:
@@ -145,6 +153,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.19.1"
+  convert:
+    dependency: transitive
+    description:
+      name: convert
+      sha256: b30acd5944035672bc15c6b7a8b47d773e41e2f17de064350988c5d02adb1c68
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.1.2"
   cross_file:
     dependency: transitive
     description:
@@ -169,6 +185,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.8"
+  dart_jsonwebtoken:
+    dependency: "direct main"
+    description:
+      name: dart_jsonwebtoken
+      sha256: "1e26ed01c9e1b4fce984a79a5ea80900e323524fa6227b1132430faa37668e65"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.3.0"
+  ed25519_edwards:
+    dependency: transitive
+    description:
+      name: ed25519_edwards
+      sha256: "6ce0112d131327ec6d42beede1e5dfd526069b18ad45dcf654f15074ad9276cd"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.3.1"
   fake_async:
     dependency: transitive
     description:
@@ -318,6 +350,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.30"
+  flutter_ringtone_player:
+    dependency: "direct main"
+    description:
+      name: flutter_ringtone_player
+      sha256: ae4a2caab2cfd14902f3ee5fe0307c454b396f0077fa34700238d6c4bd99cfec
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.0.0+4"
   flutter_screenutil:
     dependency: "direct main"
     description:
@@ -472,6 +512,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.20.2"
+  js:
+    dependency: transitive
+    description:
+      name: js
+      sha256: "53385261521cc4a0c4658fd0ad07a7d14591cf8fc33abbceae306ddb974888dc"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.7.2"
+  js_notifications:
+    dependency: transitive
+    description:
+      name: js_notifications
+      sha256: "980280649b29d618669866bdbf99e4a813009033101a434652d231eaf976c975"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.5"
   json_annotation:
     dependency: transitive
     description:
@@ -728,6 +784,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.8"
+  pointycastle:
+    dependency: transitive
+    description:
+      name: pointycastle
+      sha256: "92aa3841d083cc4b0f4709b5c74fd6409a3e6ba833ffc7dc6a8fee096366acf5"
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.0.0"
   posix:
     dependency: transitive
     description:
@@ -832,6 +896,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.0"
+  simple_print:
+    dependency: transitive
+    description:
+      name: simple_print
+      sha256: "49b6796fb93b557bbba4eca687b8521d3d20ffee47d74d8a0857f6ee0727042b"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.1+2"
   sky_engine:
     dependency: transitive
     description: flutter
@@ -917,6 +989,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.0"
+  twilio_voice:
+    dependency: "direct main"
+    description:
+      name: twilio_voice
+      sha256: "010ac416dc8bcc842486407aec2e6f97fd5bb34b521c04fd4a4a5710f9ec045b"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.3.2+2"
   typed_data:
     dependency: transitive
     description:
@@ -1053,6 +1133,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.1"
+  web_callkit:
+    dependency: transitive
+    description:
+      name: web_callkit
+      sha256: ca05b0fd79366ea072c1ea4982c8a7880ad219e4d1cc74a3a541b010533febee
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.4+1"
   win32:
     dependency: transitive
     description:
