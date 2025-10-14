@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lottie/lottie.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SimpleOrderTrackingScreen extends StatefulWidget {
   final String link;
@@ -338,7 +339,7 @@ class _SimpleOrderTrackingScreenState extends State<SimpleOrderTrackingScreen> {
         _buildTimelineConnector(),
         _buildTimelineStep('Dispatched', '-', true),
         _buildTimelineConnector(),
-        _buildTimelineStep('Delivered', widget.time, isDelivered),
+        _buildTimelineStep('Delivered', '-', isDelivered),
       ],
     );
   }
@@ -411,14 +412,11 @@ class _SimpleOrderTrackingScreenState extends State<SimpleOrderTrackingScreen> {
       width: double.infinity,
       height: 50,
       child: ElevatedButton.icon(
-        onPressed: () {
-          // Navigate to detailed tracking or external link
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Opening tracking link...'),
-              duration: Duration(seconds: 1),
-            ),
-          );
+        onPressed: () async {
+          final Uri url = Uri.parse(widget.link);
+          if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+          throw Exception('Could not launch $url');
+          }
         },
         icon: const Icon(Icons.link, color: Colors.white),
         label: const Text(
@@ -511,7 +509,7 @@ class _SimpleOrderTrackingScreenState extends State<SimpleOrderTrackingScreen> {
         return Colors.green;
       case 'processing':
         return Colors.orange;
-      case 'shipped':
+      case 'dispatched':
         return Colors.blue;
       default:
         return Colors.grey;
@@ -524,7 +522,7 @@ class _SimpleOrderTrackingScreenState extends State<SimpleOrderTrackingScreen> {
         return Icons.check_circle;
       case 'processing':
         return Icons.schedule;
-      case 'shipped':
+      case 'dispatched':
         return Icons.local_shipping;
       default:
         return Icons.info;

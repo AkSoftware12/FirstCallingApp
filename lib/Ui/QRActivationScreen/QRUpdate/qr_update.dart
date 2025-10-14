@@ -4,13 +4,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:gscankit/gscankit.dart';
 import 'package:http/http.dart' as http;
-import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/url_launcher.dart';
-
 import '../../../Utils/color.dart';
 
 
@@ -89,7 +84,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
     Map<String, dynamic> updateData = {
       'qr_number': widget.qrNumber,
       'name': _nameController.text,
-      'dob': _dobController.text,
+      // 'dob': _dobController.text,
       'address': _addressController.text,
       'gender': _genderController.text,
       'email': _emailController.text,
@@ -102,7 +97,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
       'family_member2_relation': _family2RelationController.text,
       'family_member2_no': _family2NoController.text,
     };
-
+print('Update Data $updateData');
 
     try {
       final prefs = await SharedPreferences.getInstance();

@@ -94,7 +94,7 @@ class _PhoneLoginScreenState extends State<OTPVerificationScreen> {
         await prefs.setString("token", data["token"]);
         await prefs.setString("user", jsonEncode(data["user"]));
 
-        await _saveProfileToPrefs(jsonEncode(data["user"]['contact']));
+        await _saveProfileToPrefs(jsonEncode(data["user"]['contact']),jsonEncode(data["user"]['name']),jsonEncode(data["user"]['image']));
 
         int is_agent = int.parse(data["user"]['is_agent'].toString());
 
@@ -133,9 +133,12 @@ class _PhoneLoginScreenState extends State<OTPVerificationScreen> {
     ).showSnackBar(SnackBar(content: Text(message)));
   }
 
-  Future<void> _saveProfileToPrefs(number) async {
+  Future<void> _saveProfileToPrefs(number,name,image) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('user_contact', number ?? '');
+    await prefs.setString('user_name', name ?? '');
+    await prefs.setString('user_photo_url', image ?? '');
+
   }
 
 

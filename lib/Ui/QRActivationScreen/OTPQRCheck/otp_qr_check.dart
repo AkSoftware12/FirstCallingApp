@@ -133,7 +133,7 @@ class _OTPScreenState extends State<OTPScreen> with SingleTickerProviderStateMix
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                builder: (_) => UpdateScreen(qrData: widget.qrData, qrNumber: '',),
+                builder: (_) => UpdateScreen(qrData: widget.qrData, qrNumber: widget.qrData['qr_number'].toString(),),
               ),
             );
           }

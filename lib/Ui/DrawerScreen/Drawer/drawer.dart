@@ -247,9 +247,26 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                         decoration: BoxDecoration(shape: BoxShape.circle),
                         child: userPhotoUrl.isNotEmpty
                             ? CircleAvatar(
-                                radius: 60,
-                                backgroundImage: NetworkImage(userPhotoUrl),
-                              )
+                          radius: 60,
+                          backgroundColor: Colors.grey[300],
+                          child: ClipOval(
+                            child: Image.network(
+                              userPhotoUrl,
+                              width: 120,
+                              height: 120,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                // Agar URL invalid hai, ye default icon dikhayega
+                                return Icon(
+                                  Icons.person,
+                                  size: 60,
+                                  color: Colors.grey[700],
+                                );
+                              },
+                            ),
+                          ),
+                        )
+
                             : const CircleAvatar(
                                 radius: 60,
                                 child: Icon(Icons.person, size: 60),
