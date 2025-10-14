@@ -21,13 +21,9 @@ import '../../QRActivationScreen/qr_check_screen.dart';
 import '../privacy.dart';
 
 class DrawerPageScreen extends StatefulWidget {
-
   final String currentVersion;
 
-  const DrawerPageScreen({
-    super.key,
-    required this.currentVersion,
-  });
+  const DrawerPageScreen({super.key, required this.currentVersion});
 
   @override
   State<DrawerPageScreen> createState() => _DrawerPageScreenState();
@@ -38,7 +34,7 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
   String userName = '';
   String userPhotoUrl = '';
   String userContact = '';
-
+  bool _isLoggingOut = false;
 
   @override
   void initState() {
@@ -55,45 +51,165 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
     });
   }
 
+  Future<void> _handleLogout() async {
+    setState(() {
+      _isLoggingOut = true; // Show loading state
+    });
+
+    // Wait for 5 seconds
+    await Future.delayed(Duration(seconds: 5));
+
+    // Clear SharedPreferences
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+
+    // Navigate to LoginScreen
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => LoginScreen()),
+    );
+  }
+
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Dialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              backgroundColor: Colors.transparent,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 10,
+                      offset: Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                     Icon(Icons.logout, size: 50, color: AppColors.navyBlue),
+                    const SizedBox(height: 20),
+                     Text(
+                      'Logout',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color:  AppColors.navyBlue,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    const Text(
+                      'Are you sure you want to logout?',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 16, color: Colors.grey),
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: const Text(
+                            'Cancel',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.redAccent,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        ElevatedButton(
+                          onPressed: _isLoggingOut
+                              ? null
+                              : () async {
+                            setState(() => _isLoggingOut = true);
+                            await _handleLogout();
+                            setState(() => _isLoggingOut = false);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:  AppColors.navyBlue,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 10),
+                          ),
+                          child: _isLoggingOut
+                              ? SizedBox(
+                            height: 20,
+                            width: 20,
+                            child:  CupertinoActivityIndicator(
+                              radius: 10,
+                              color: AppColors.navyBlue,
+                            ),
+                          )
+                              : const Text(
+                            'Logout',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       body: Column(
         children: [
-          Container(
-            height: 25.sp,
-            color: AppColors.navyBlue,
-          ),
+          Container(height: 25.sp, color: AppColors.navyBlue),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
                 color: AppColors.navyBlue,
-                  height: 35.sp,
-                  width: MediaQuery.sizeOf(context).width * .7,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Image.asset('assets/calling_text.gif',height: 40.sp,),
-                      Padding(
-                        padding: EdgeInsets.only(right: 10.sp),
-                        child: GestureDetector(
-                          onTap: () {
-                            Navigator.of(context).pop();
-                          },
-                          child: Icon(
-                            Icons.close,
+                height: 35.sp,
+                width: MediaQuery.sizeOf(context).width * .7,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Image.asset('assets/calling_text.gif', height: 40.sp),
+                    Padding(
+                      padding: EdgeInsets.only(right: 10.sp),
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: Icon(
+                          Icons.close,
 
-                            // FontAwesomeIcons.xmark,
-                            color: Colors.white,
-                            size: 22.sp,
-                          ),
+                          // FontAwesomeIcons.xmark,
+                          color: Colors.white,
+                          size: 22.sp,
                         ),
                       ),
-
-                    ],
-                  )),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
           Container(
@@ -105,10 +221,7 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(0),
                   gradient: LinearGradient(
-                    colors: [
-                      AppColors.navyBlue,
-                      AppColors.navyBlue,
-                    ],
+                    colors: [AppColors.navyBlue, AppColors.navyBlue],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -129,20 +242,19 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                     // ),
                     ClipOval(
                       child: Container(
-                          width: 50.sp,
-                          height: 50.sp,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                          ),
-                          child:userPhotoUrl.isNotEmpty
-                              ? CircleAvatar(
-                            radius: 60,
-                            backgroundImage: NetworkImage(userPhotoUrl),
-                          )
-                              : const CircleAvatar(
-                            radius: 60,
-                            child: Icon(Icons.person, size: 60),
-                          )),
+                        width: 50.sp,
+                        height: 50.sp,
+                        decoration: BoxDecoration(shape: BoxShape.circle),
+                        child: userPhotoUrl.isNotEmpty
+                            ? CircleAvatar(
+                                radius: 60,
+                                backgroundImage: NetworkImage(userPhotoUrl),
+                              )
+                            : const CircleAvatar(
+                                radius: 60,
+                                child: Icon(Icons.person, size: 60),
+                              ),
+                      ),
                     ),
 
                     SizedBox(width: 10.sp),
@@ -153,45 +265,39 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                         children: [
                           userName.isNotEmpty
                               ? Text.rich(
-                            TextSpan(
-                              text: userName,
-                              style: GoogleFonts.radioCanada(
-                                textStyle: TextStyle(
-                                  color:
-                                  Colors.white,
-                                  fontSize: 17.sp,
-                                  // Adjust font size as needed
-                                  fontWeight:
-                                  FontWeight
-                                      .bold, // Adjust font weight as needed
-                                ),
-                              ),
-                            ),
-                            textAlign:
-                            TextAlign
-                                .start, // Ensure text starts at the beginning
-                          )
+                                  TextSpan(
+                                    text: userName,
+                                    style: GoogleFonts.radioCanada(
+                                      textStyle: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 17.sp,
+                                        // Adjust font size as needed
+                                        fontWeight: FontWeight
+                                            .bold, // Adjust font weight as needed
+                                      ),
+                                    ),
+                                  ),
+                                  textAlign: TextAlign
+                                      .start, // Ensure text starts at the beginning
+                                )
                               : Text.rich(
-                            TextSpan(
-                              text: 'User',
-                              style: GoogleFonts.radioCanada(
-                                textStyle: TextStyle(
-                                  color:
-                                  Theme.of(
-                                    context,
-                                  ).colorScheme.secondary,
-                                  fontSize: 17.sp,
-                                  // Adjust font size as needed
-                                  fontWeight:
-                                  FontWeight
-                                      .bold, // Adjust font weight as needed
+                                  TextSpan(
+                                    text: 'User',
+                                    style: GoogleFonts.radioCanada(
+                                      textStyle: TextStyle(
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.secondary,
+                                        fontSize: 17.sp,
+                                        // Adjust font size as needed
+                                        fontWeight: FontWeight
+                                            .bold, // Adjust font weight as needed
+                                      ),
+                                    ),
+                                  ),
+                                  textAlign: TextAlign
+                                      .start, // Ensure text starts at the beginning
                                 ),
-                              ),
-                            ),
-                            textAlign:
-                            TextAlign
-                                .start, // Ensure text starts at the beginning
-                          ),
 
                           Text(
                             userContact,
@@ -211,18 +317,13 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
               ),
             ),
           ),
-          Divider(
-            height: 2.sp,
-            thickness: 5,
-            color: HexColor('#ff0000'),
-          ),
+          Divider(height: 2.sp, thickness: 5, color: HexColor('#ff0000')),
           SizedBox(height: 10.sp),
 
           Expanded(
             child: ListView(
               padding: EdgeInsets.zero,
               children: <Widget>[
-
                 // Drawer List
                 ListTile(
                   leading: Container(
@@ -231,20 +332,13 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
                       gradient: LinearGradient(
-                        colors: [
-                          HexColor('#800000'),
-                          HexColor('#800000'),
-                        ],
+                        colors: [HexColor('#800000'), HexColor('#800000')],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                     ),
                     padding: EdgeInsets.all(5.sp),
-                    child: Icon(
-                      Icons.apps,
-                      color: Colors.white,
-                      size: 20.sp,
-                    ),
+                    child: Icon(Icons.apps, color: Colors.white, size: 20.sp),
                   ),
                   title: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -269,7 +363,6 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                           ),
                         ),
                       ),
-
                     ],
                   ),
                   onTap: () {
@@ -277,7 +370,8 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const BottomNavigationBarScreen(initialIndex: 0),
+                        builder: (context) =>
+                            const BottomNavigationBarScreen(initialIndex: 0),
                       ),
                     );
                   },
@@ -290,16 +384,13 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
                       gradient: LinearGradient(
-                        colors: [
-                          HexColor('#9A6324'),
-                          HexColor('#9A6324'),
-                        ],
+                        colors: [HexColor('#9A6324'), HexColor('#9A6324')],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                     ),
                     padding: EdgeInsets.all(5.sp),
-                    child: Icon(Icons.person, color: Colors.white,size: 20.sp,),
+                    child: Icon(Icons.person, color: Colors.white, size: 20.sp),
                   ),
                   title: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
@@ -350,16 +441,17 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
                       gradient: LinearGradient(
-                        colors: [
-                          HexColor('#808000'),
-                          HexColor('#808000'),
-                        ],
+                        colors: [HexColor('#808000'), HexColor('#808000')],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                     ),
                     padding: EdgeInsets.all(5.sp),
-                    child: Icon(Icons.qr_code_scanner_outlined, color: Colors.white,size: 20.sp,),
+                    child: Icon(
+                      Icons.qr_code_scanner_outlined,
+                      color: Colors.white,
+                      size: 20.sp,
+                    ),
                   ),
                   title: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
@@ -388,8 +480,10 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                     ],
                   ),
                   onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => QRActive()));
-
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => QRActive()),
+                    );
                   },
                 ),
                 SizedBox(height: 10.sp),
@@ -400,16 +494,17 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
                       gradient: LinearGradient(
-                        colors: [
-                          HexColor('#911eb4'),
-                          HexColor('#911eb4'),
-                        ],
+                        colors: [HexColor('#911eb4'), HexColor('#911eb4')],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                     ),
                     padding: EdgeInsets.all(5.sp),
-                    child: Icon(Icons.shopping_cart, color: Colors.white,size: 20.sp,),
+                    child: Icon(
+                      Icons.shopping_cart,
+                      color: Colors.white,
+                      size: 20.sp,
+                    ),
                   ),
                   title: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
@@ -420,7 +515,7 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                         style: GoogleFonts.openSans(
                           textStyle: TextStyle(
                             color: Colors.black,
-                            fontSize:AppTextSizes.text14,
+                            fontSize: AppTextSizes.text14,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -438,11 +533,12 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                     ],
                   ),
                   onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => OrderHistoryScreen()));
-
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => OrderHistoryScreen()),
+                    );
                   },
                 ),
-
 
                 SizedBox(height: 10.sp),
                 ListTile(
@@ -452,16 +548,17 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
                       gradient: LinearGradient(
-                        colors: [
-                          Colors.grey,
-                          Colors.grey,
-                        ],
+                        colors: [Colors.grey, Colors.grey],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                     ),
                     padding: EdgeInsets.all(5.sp),
-                    child: Icon(Icons.notifications, color: Colors.white,size: 20.sp,),
+                    child: Icon(
+                      Icons.notifications,
+                      color: Colors.white,
+                      size: 20.sp,
+                    ),
                   ),
                   title: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
@@ -492,9 +589,7 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => NotificationScreen(),
-                      ),
+                      MaterialPageRoute(builder: (context) => CallScreen()),
                     );
                   },
                 ),
@@ -508,13 +603,11 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                       color: Colors.blue,
                     ),
                     padding: EdgeInsets.all(5.sp),
-                    child: Icon(Icons.share,
-                        color: Colors.white, size: 20.sp),
+                    child: Icon(Icons.share, color: Colors.white, size: 20.sp),
                   ),
                   title: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment:
-                    CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         'Share App',
@@ -552,16 +645,18 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                     width: 35.sp,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
-                      color:  HexColor('#ff0000'),
+                      color: HexColor('#ff0000'),
                     ),
                     padding: EdgeInsets.all(5.sp),
-                    child: Icon(Icons.bloodtype,
-                        color: Colors.white, size: 20.sp),
+                    child: Icon(
+                      Icons.bloodtype,
+                      color: Colors.white,
+                      size: 20.sp,
+                    ),
                   ),
                   title: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment:
-                    CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         'Blood Donation',
@@ -587,15 +682,14 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                   ),
                   onTap: () {
                     Fluttertoast.showToast(
-                        msg: "Coming Soon",
-                        toastLength: Toast.LENGTH_SHORT,
-                        gravity: ToastGravity.CENTER,
-                        timeInSecForIosWeb: 1,
-                        backgroundColor: Colors.red,
-                        textColor: Colors.white,
-                        fontSize: 16.0
+                      msg: "Coming Soon",
+                      toastLength: Toast.LENGTH_SHORT,
+                      gravity: ToastGravity.CENTER,
+                      timeInSecForIosWeb: 1,
+                      backgroundColor: Colors.red,
+                      textColor: Colors.white,
+                      fontSize: 16.0,
                     );
-
                   },
                 ),
                 SizedBox(height: 10.sp),
@@ -606,17 +700,17 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
                       gradient: LinearGradient(
-                        colors: [
-                          HexColor('#469990'),
-                          HexColor('#469990'),
-                        ],
+                        colors: [HexColor('#469990'), HexColor('#469990')],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                     ),
                     padding: EdgeInsets.all(5.sp),
-                    child: Icon(Icons.privacy_tip,
-                        color: Colors.white, size: 20.sp),
+                    child: Icon(
+                      Icons.privacy_tip,
+                      color: Colors.white,
+                      size: 20.sp,
+                    ),
                   ),
                   title: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
@@ -646,9 +740,9 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                   ),
                   onTap: () {
                     Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) => const PrivacyPage()));
+                      context,
+                      MaterialPageRoute(builder: (_) => const PrivacyPage()),
+                    );
                   },
                 ),
                 SizedBox(height: 10.sp),
@@ -657,17 +751,13 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
                       gradient: LinearGradient(
-                        colors: [
-                          HexColor('#334155'),
-                          HexColor('#334155'),
-                        ],
+                        colors: [HexColor('#334155'), HexColor('#334155')],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                     ),
                     padding: EdgeInsets.all(10.sp),
-                    child: Icon(Icons.policy,
-                        color: Colors.white, size: 20.sp),
+                    child: Icon(Icons.policy, color: Colors.white, size: 20.sp),
                   ),
                   title: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
@@ -678,7 +768,7 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                         style: GoogleFonts.openSans(
                           textStyle: TextStyle(
                             color: Colors.black,
-                            fontSize:AppTextSizes.text14,
+                            fontSize: AppTextSizes.text14,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -697,9 +787,9 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                   ),
                   onTap: () async {
                     Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) => const PrivacyPage()));
+                      context,
+                      MaterialPageRoute(builder: (_) => const PrivacyPage()),
+                    );
                   },
                 ),
 
@@ -709,17 +799,13 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
                       gradient: LinearGradient(
-                        colors: [
-                          HexColor('#ff0000'),
-                          HexColor('#ff0000'),
-                        ],
+                        colors: [HexColor('#ff0000'), HexColor('#ff0000')],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                     ),
                     padding: EdgeInsets.all(10.sp),
-                    child: Icon(Icons.logout,
-                        color: Colors.white, size: 17.sp),
+                    child: Icon(Icons.logout, color: Colors.white, size: 17.sp),
                   ),
                   title: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
@@ -729,8 +815,8 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                         'Logout',
                         style: GoogleFonts.openSans(
                           textStyle: TextStyle(
-                            color:   HexColor('#ff0000'),
-                            fontSize:AppTextSizes.text14,
+                            color: HexColor('#ff0000'),
+                            fontSize: AppTextSizes.text14,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -739,7 +825,7 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                         'Sign out safely from your account.',
                         style: GoogleFonts.openSans(
                           textStyle: TextStyle(
-                            color:  HexColor('#ff0000'),
+                            color: HexColor('#ff0000'),
 
                             fontSize: 9.sp,
                             fontWeight: FontWeight.bold,
@@ -749,14 +835,7 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                     ],
                   ),
                   onTap: () async {
-                    SharedPreferences prefs = await SharedPreferences.getInstance();
-                    await prefs.clear(); // ✅ Clear all stored data
-
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (_) => LoginScreen()),
-                    );
-
+                    _showLogoutDialog(context);
                   },
                 ),
                 SizedBox(height: 20.sp),
@@ -778,8 +857,6 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-
-
                 Expanded(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -788,9 +865,8 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                       // SizedBox(
                       //     height: 18.sp,
                       //     child: Image.asset('assets/calling_text.gif',)),
-
                       Padding(
-                        padding:  EdgeInsets.only(left: 5.sp,bottom: 2.sp),
+                        padding: EdgeInsets.only(left: 5.sp, bottom: 2.sp),
                         child: Text(
                           'App Version :- (${widget.currentVersion})',
                           style: GoogleFonts.radioCanada(

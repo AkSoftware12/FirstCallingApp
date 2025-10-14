@@ -35,6 +35,7 @@ class _DrawerPageScreenState extends State<AgentDrawerPageScreen> {
   String userName = '';
   String userPhotoUrl = '';
   String userContact = '';
+  bool _isLoggingOut = false;
 
 
   @override
@@ -51,7 +52,128 @@ class _DrawerPageScreenState extends State<AgentDrawerPageScreen> {
       userContact = prefs.getString('user_contact') ?? '';
     });
   }
+  Future<void> _handleLogout() async {
+    setState(() {
+      _isLoggingOut = true; // Show loading state
+    });
 
+    // Wait for 5 seconds
+    await Future.delayed(Duration(seconds: 5));
+
+    // Clear SharedPreferences
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+
+    // Navigate to LoginScreen
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => LoginScreen()),
+    );
+  }
+
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Dialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              backgroundColor: Colors.transparent,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 10,
+                      offset: Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.logout, size: 50, color: AppColors.navyBlue),
+                    const SizedBox(height: 20),
+                    Text(
+                      'Logout',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color:  AppColors.navyBlue,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    const Text(
+                      'Are you sure you want to logout?',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 16, color: Colors.grey),
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: const Text(
+                            'Cancel',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.redAccent,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        ElevatedButton(
+                          onPressed: _isLoggingOut
+                              ? null
+                              : () async {
+                            setState(() => _isLoggingOut = true);
+                            await _handleLogout();
+                            setState(() => _isLoggingOut = false);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:  AppColors.navyBlue,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 10),
+                          ),
+                          child: _isLoggingOut
+                              ? SizedBox(
+                            height: 20,
+                            width: 20,
+                            child:  CupertinoActivityIndicator(
+                              radius: 10,
+                              color: AppColors.navyBlue,
+                            ),
+                          )
+                              : const Text(
+                            'Logout',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
   @override
   Widget build(BuildContext context) {
 
@@ -647,13 +769,7 @@ class _DrawerPageScreenState extends State<AgentDrawerPageScreen> {
                     ],
                   ),
                   onTap: () async {
-                    SharedPreferences prefs = await SharedPreferences.getInstance();
-                    await prefs.clear(); // ✅ Clear all stored data
-
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (_) => LoginScreen()),
-                    );
+                    _showLogoutDialog(context);
 
                   },
                 ),

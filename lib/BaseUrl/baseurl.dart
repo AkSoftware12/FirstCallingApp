@@ -2,11 +2,11 @@ class ApiRoutes {
 
 
   // Live  App Url
-  // static const String baseUrl = "https://firstcallingapp.com/api";
+  static const String baseUrl = "https://firstcallingapp.com/api";
 
 
 // Local App Url
-  static const String baseUrl = "http://192.168.1.3/firstcallingapp2/api";
+//   static const String baseUrl = "http://192.168.1.3/firstcallingapp2/api";
 
 
 

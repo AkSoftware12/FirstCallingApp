@@ -23,6 +23,7 @@
     <application
         android:label="First Calling App"
         android:name="${applicationName}"
+        android:enableOnBackInvokedCallback="true"
         android:icon="@mipmap/ic_launcher">
 
         <activity

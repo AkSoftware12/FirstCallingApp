@@ -6,9 +6,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
-void main() {
-  runApp(MyApp());
-}
+import '../TrackingScreen/tracking_screen.dart';
 
 class MyApp extends StatelessWidget {
   @override
@@ -33,12 +31,17 @@ class MyApp extends StatelessWidget {
   }
 }
 
-// Model for Order (unchanged)
+// =====================
+// ✅ Order Model
+// =====================
 class Order {
   final int id;
   final int orderNo;
   final String customerName;
   final String address;
+  final String? trackingUrl;
+  final String? trackingNumber;
+  final String? deliveredAt;
   final String contactNo;
   final String entryDate;
   final double totalAmount;
@@ -57,6 +60,9 @@ class Order {
     required this.amountInWords,
     required this.status,
     required this.orderDetails,
+    this.trackingUrl,
+    this.trackingNumber,
+    this.deliveredAt,
   });
 
   factory Order.fromJson(Map<String, dynamic> json) {
@@ -69,17 +75,23 @@ class Order {
       orderNo: json['order_no'],
       customerName: json['customer_name'],
       address: json['address'],
+      trackingUrl: json['tracking_url'],
+      trackingNumber: json['tracking_number'],
+      deliveredAt: json['delivered_at'],
       contactNo: json['contact_no'],
       entryDate: json['entry_date'],
-      totalAmount: json['total_amount'].toDouble(),
-      amountInWords: json['amount_in_words'],
-      status: json['status'],
+      totalAmount: double.tryParse(json['total_amount'].toString()) ?? 0.0,
+      amountInWords: json['amount_in_words'] ?? '',
+      // ✅ handle both "status" and "delivery_status"
+      status: (json['delivery_status'] ?? '').toString(),
       orderDetails: orderDetailsList,
     );
   }
 }
 
-// Model for OrderDetail (unchanged)
+// =====================
+// ✅ OrderDetail Model
+// =====================
 class OrderDetail {
   final int id;
   final String itemName;
@@ -105,13 +117,16 @@ class OrderDetail {
       itemName: json['item_name'],
       branchName: json['branch_name'],
       quantity: json['quantity'],
-      mrp: json['mrp'].toDouble(),
+      mrp: double.tryParse(json['mrp'].toString()) ?? 0.0,
       totalGst: json['total_gst'].toString(),
       lineTotal: json['line_total'].toString(),
     );
   }
 }
 
+// =====================
+// ✅ Main Screen
+// =====================
 class OrderHistoryScreen extends StatefulWidget {
   const OrderHistoryScreen({super.key});
 
@@ -137,7 +152,6 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
-      print('Token$token');
       final response = await http.get(
         Uri.parse(ApiRoutes.getOrderHistory),
         headers: {
@@ -145,6 +159,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
           'Authorization': 'Bearer $token',
         },
       );
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['success']) {
@@ -173,34 +188,18 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
     }
   }
 
-  // Handle dropdown actions
-  void _handleOrderAction(String? action, Order order) {
-    if (action == null) return;
-    switch (action) {
-      case 'View Details':
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Viewing details for Order #${order.orderNo}')),
-        );
-        break;
-      case 'Reorder':
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Reordering Order #${order.orderNo}')),
-        );
-        break;
-      case 'Cancel':
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Cancelling Order #${order.orderNo}')),
-        );
-        break;
-    }
-  }
-
+  // =====================
+  // ✅ UI BUILD
+  // =====================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        iconTheme: IconThemeData(color: Colors.white),
-        title:  Text('Order History',style: TextStyle(color: Colors.white,fontSize: 16.sp),),
+        iconTheme: const IconThemeData(color: Colors.white),
+        title: Text(
+          'Order History',
+          style: TextStyle(color: Colors.white, fontSize: 16.sp),
+        ),
         centerTitle: true,
         backgroundColor: AppColors.navyBlue,
         elevation: 0,
@@ -212,9 +211,10 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
         ],
       ),
       body: isLoading
-          ?  Center(
+          ? Center(
         child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(AppColors.navyBlue),
+          valueColor:
+          AlwaysStoppedAnimation<Color>(AppColors.navyBlue),
         ),
       )
           : orders.isEmpty
@@ -222,7 +222,8 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.history_toggle_off, size: 80, color: Colors.grey[400]),
+            Icon(Icons.history_toggle_off,
+                size: 80, color: Colors.grey[400]),
             const SizedBox(height: 16),
             Text(
               'No orders found',
@@ -242,21 +243,24 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
           itemCount: orders.length,
           itemBuilder: (context, index) {
             final order = orders[index];
+            final status = order.status.toLowerCase();
+
             return Card(
               child: ExpansionTile(
                 leading: CircleAvatar(
                   backgroundColor: AppColors.navyBlue,
                   child: Text(
                     '#${order.orderNo}',
-                    style:  TextStyle(
+                    style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
+                      fontSize: 12,
                     ),
                   ),
                 ),
                 title: Text(
                   order.customerName,
-                  style:  TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16.sp,
                   ),
@@ -268,72 +272,110 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                     fontSize: 13.sp,
                   ),
                 ),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Chip(
-                      label: Text(
-                        order.status,
-                        style: TextStyle(
-                          color: order.status == 'Delivered' || order.status == 'Active'
-                              ? Colors.green
-                              : order.status == 'Pending'
-                              ? Colors.orange
-                              : Colors.red,
-                          fontWeight: FontWeight.w600,
+                trailing: GestureDetector(
+                  onTap: () {
+                    if (order.trackingUrl != null &&
+                        order.trackingNumber != null) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              SimpleOrderTrackingScreen(
+                                link: order.trackingUrl!,
+                                trackId: order.trackingNumber!,
+                                status: order.status,
+                                date: order.entryDate.toString(),
+                                time: order.deliveredAt.toString(),
+                              ),
                         ),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                              'Tracking information not available for this order.'),
+                          backgroundColor: Colors.orangeAccent,
+                        ),
+                      );
+                    }
+                  },
+                  child: Chip(
+                    label: Text(
+                      order.status.toUpperCase(),
+                      style: TextStyle(
+                        color: status == 'delivered' ||
+                            status == 'active'
+                            ? Colors.green
+                            : status == 'pending'
+                            ? Colors.orange
+                            : Colors.red,
+                        fontWeight: FontWeight.w600,
                       ),
-                      backgroundColor: order.status == 'Delivered' || order.status == 'Active'
-                          ? Colors.green.shade100
-                          : order.status == 'Pending'
-                          ? Colors.orange.shade100
-                          : Colors.red.shade100,
                     ),
-                  ],
+                    backgroundColor:
+                    status == 'delivered' || status == 'active'
+                        ? Colors.green.shade100
+                        : status == 'pending'
+                        ? Colors.orange.shade100
+                        : Colors.red.shade100,
+                  ),
                 ),
                 children: [
                   Padding(
-                    padding:  EdgeInsets.all(10.sp),
+                    padding: EdgeInsets.all(10.sp),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildInfoRow(Icons.location_on, 'Address', order.address),
-                        _buildInfoRow(Icons.phone, 'Contact', order.contactNo),
-                        _buildInfoRow(Icons.account_balance_wallet, 'Total', '₹${order.totalAmount}'),
-                        _buildInfoRow(Icons.text_fields, 'Amount in Words', order.amountInWords),
-                         SizedBox(height: 10.sp),
+                        _buildInfoRow(Icons.location_on, 'Address',
+                            order.address),
+                        _buildInfoRow(
+                            Icons.phone, 'Contact', order.contactNo),
+                        _buildInfoRow(Icons.account_balance_wallet,
+                            'Total', '₹${order.totalAmount}'),
+                        _buildInfoRow(Icons.text_fields,
+                            'Amount in Words', order.amountInWords),
+                        SizedBox(height: 10.sp),
                         Text(
                           'Items',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleMedium
+                              ?.copyWith(
                             fontWeight: FontWeight.bold,
                             color: AppColors.navyBlue,
                           ),
                         ),
-                         SizedBox(height: 5.sp),
-                        ...order.orderDetails.map((detail) => Card(
-                          elevation: 2,
-                          color: Colors.white,
-                          child: ListTile(
-                            contentPadding: const EdgeInsets.all(12.0),
-                            title: Text(
-                              detail.itemName,
-                              style:  TextStyle(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 14.sp,
+                        SizedBox(height: 5.sp),
+                        ...order.orderDetails.map(
+                              (detail) => Card(
+                            elevation: 2,
+                            color: Colors.white,
+                            child: ListTile(
+                              contentPadding:
+                              const EdgeInsets.all(12.0),
+                              title: Text(
+                                detail.itemName,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14.sp,
+                                ),
+                              ),
+                              subtitle: Column(
+                                crossAxisAlignment:
+                                CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                      'Branch: ${detail.branchName}'),
+                                  Text('Qty: ${detail.quantity}'),
+                                  Text('MRP: ₹${detail.mrp}'),
+                                  Text('GST: ₹${detail.totalGst}'),
+                                  Text(
+                                      'Total: ₹${detail.lineTotal}'),
+                                ],
                               ),
                             ),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Branch: ${detail.branchName}'),
-                                Text('Qty: ${detail.quantity}'),
-                                Text('MRP: ₹${detail.mrp}'),
-                                Text('GST: ₹${detail.totalGst}'),
-                                Text('Total: ₹${detail.lineTotal}'),
-                              ],
-                            ),
                           ),
-                        )),
+                        ),
                       ],
                     ),
                   ),
@@ -346,6 +388,9 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
     );
   }
 
+  // =====================
+  // ✅ Helper Widget
+  // =====================
   Widget _buildInfoRow(IconData icon, String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),

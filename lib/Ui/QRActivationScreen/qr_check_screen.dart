@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:gscankit/gscankit.dart';
 import 'package:http/http.dart' as http;
@@ -229,6 +230,15 @@ class _QRActiveState extends State<QRActive> with TickerProviderStateMixin {
             _statusMessage = "QR number does not exist.";
             _statusColor = AppColors.redAccent;
             _statusIcon = Icons.error;
+
+            Fluttertoast.showToast(
+              msg: data['error'].toString(),
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.CENTER,
+              backgroundColor: Colors.red,
+              textColor: Colors.white,
+              fontSize: 16.0,
+            );
           });
         }
       } else if (response.statusCode == 401) {

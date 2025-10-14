@@ -2,7 +2,7 @@ name: firstcallingapp
 description: "A new Flutter project."
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 1.0.0+1
+version: 1.0.1+2
 
 environment:
   sdk: ^3.8.1
@@ -83,6 +83,8 @@ flutter:
   assets:
     - assets/
     - assets/animation.json
+    - assets/bus.json
+    - assets/bluedot.json
     - assets/applogo.jpg
     - assets/scan.gif
     - assets/torch.png
