@@ -606,7 +606,7 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => CallScreen()),
+                      MaterialPageRoute(builder: (context) => TwilioCallScreen(receiverPhone: '+919719532737',)),
                     );
                   },
                 ),

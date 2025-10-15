@@ -30,6 +30,7 @@ class _SplashScreenState extends State<SplashScreen> {
     final token = prefs.getString("token");
     final userData = prefs.getString("user");
 
+
     print('$userData');
 
     await Future.delayed(const Duration(seconds: 4)); // splash delay

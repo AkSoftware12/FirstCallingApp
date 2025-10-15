@@ -9,11 +9,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import '../../BaseUrl/baseurl.dart';
-import '../../Utils/HexColorCode/HexColor.dart';
 import '../../Utils/color.dart';
-import '../../Utils/textSize.dart';
 
 class ProfileUpdatePage extends StatefulWidget {
   final VoidCallback? onProfileUpdated;
