@@ -9,7 +9,8 @@ import java.io.FileInputStream
 
 // Load keystore
 val keystoreProperties = Properties()
-val keystorePropertiesFile = rootProject.file("android/app/key.properties")
+val keystorePropertiesFile = file("app/key.properties")
+
 
 if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(FileInputStream(keystorePropertiesFile))
@@ -39,10 +40,10 @@ android {
 
     signingConfigs {
         create("release") {
-            storeFile = file(keystoreProperties["storeFile"]!!.toString())
-            storePassword = keystoreProperties["storePassword"]!!.toString()
-            keyAlias = keystoreProperties["keyAlias"]!!.toString()
-            keyPassword = keystoreProperties["keyPassword"]!!.toString()
+            storeFile = file(keystoreProperties["storeFile"])
+            storePassword = keystoreProperties["storePassword"] as String
+            keyAlias = keystoreProperties["keyAlias"] as String
+            keyPassword = keystoreProperties["keyPassword"] as String
         }
     }
 
