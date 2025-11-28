@@ -45,37 +45,19 @@ android {
 
     signingConfigs {
         create("release") {
-            val alias = keystoreProperties["keyAlias"]?.toString()
-            val keyPass = keystoreProperties["keyPassword"]?.toString()
-            val storePass = keystoreProperties["storePassword"]?.toString()
-            val storeFileName = keystoreProperties["storeFile"]?.toString()
-
-            if (storeFileName != null && alias != null && keyPass != null && storePass != null) {
-                keyAlias = alias
-                keyPassword = keyPass
-                storePassword = storePass
-                storeFile = file(storeFileName)
-            } else {
-                println("⚠️ WARNING: Signing properties missing!")
-            }
+            keyAlias = keystoreProperties["keyAlias"] as String
+            keyPassword = keystoreProperties["keyPassword"] as String
+            storeFile = file(keystoreProperties["storeFile"] as String)
+            storePassword = keystoreProperties["storePassword"] as String
         }
     }
 
-//    signingConfigs {
-//        create("release") {
-//            keyAlias = keystoreProperties["keyAlias"] as String?
-//            keyPassword = keystoreProperties["keyPassword"] as String?
-//            storeFile = file(keystoreProperties["storeFile"] as String)
-//            storePassword = keystoreProperties["storePassword"] as String?
-//        }
-//    }
     buildTypes {
-        release {
-            isMinifyEnabled = false
-            isShrinkResources = false
+        getByName("release") {
             signingConfig = signingConfigs.getByName("release")
         }
     }
+
 }
 
 flutter {
