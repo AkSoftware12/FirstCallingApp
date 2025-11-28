@@ -41,8 +41,12 @@ jobs:
          printf "storePassword=${{ secrets.KEYSTORE_PASSWORD }}\nkeyPassword=${{ secrets.KEY_PASSWORD }}\nkeyAlias=${{ secrets.KEY_ALIAS }}\nstoreFile=firstcallingapp.jks" > android/app/key.properties
 
       # ---------------- SHOW FILE (MASKED) ----------------
+      # ----------- SHOW key.properties for debug (masked) -----------------
       - name: Show key.properties
-        run: sed 's/=.*/=***MASKED***/' android/key.properties
+        run: |
+         sed 's/=.*/=***MASKED***/' android/app/key.properties
+
+
 
       # ---------------- BUILD APK ----------------
       - name: Build APK
