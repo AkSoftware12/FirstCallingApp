@@ -38,7 +38,7 @@ jobs:
       # ---------------- CREATE key.properties ----------------
       - name: Create key.properties
         run: |
-          printf "storePassword=${{ secrets.KEYSTORE_PASSWORD }}\nkeyPassword=${{ secrets.KEY_PASSWORD }}\nkeyAlias=${{ secrets.KEY_ALIAS }}\nstoreFile=app/firstcallingapp.jks" > android/key.properties
+         printf "storePassword=${{ secrets.KEYSTORE_PASSWORD }}\nkeyPassword=${{ secrets.KEY_PASSWORD }}\nkeyAlias=${{ secrets.KEY_ALIAS }}\nstoreFile=firstcallingapp.jks" > android/app/key.properties
 
       # ---------------- SHOW FILE (MASKED) ----------------
       - name: Show key.properties
