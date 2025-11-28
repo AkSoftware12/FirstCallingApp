@@ -9,8 +9,7 @@ import java.io.FileInputStream
 
 // Load keystore
 val keystoreProperties = Properties()
-val keystorePropertiesFile = file("app/key.properties")
-
+val keystorePropertiesFile = rootProject.file("android/app/key.properties")
 
 if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(FileInputStream(keystorePropertiesFile))
@@ -38,14 +37,16 @@ android {
         versionName = flutter.versionName
     }
 
-  signingConfigs { 
-create("release") {
-storeFile = file(keystoreProperties["storeFile"]!!.toString())
-storePassword = keystoreProperties["storePassword"]!!.toString()
-keyAlias = keystoreProperties["keyAlias"]!!.toString()
-keyPassword = keystoreProperties["keyPassword"]!!.toString()
-}
-}
+    signingConfigs {
+        create("release") {
+            if (keystoreProperties.isNotEmpty()) {
+                storeFile = file(keystoreProperties["storeFile"]?.toString() ?: "")
+                storePassword = keystoreProperties["storePassword"]?.toString() ?: ""
+                keyAlias = keystoreProperties["keyAlias"]?.toString() ?: ""
+                keyPassword = keystoreProperties["keyPassword"]?.toString() ?: ""
+            }
+        }
+    }
 
     buildTypes {
         getByName("release") {
