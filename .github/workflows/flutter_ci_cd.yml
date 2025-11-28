@@ -9,9 +9,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # ---------------- CHECKOUT ----------------
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      # ---------------- FLUTTER SETUP ----------------
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
@@ -20,44 +22,44 @@ jobs:
       - name: Disable Flutter analytics
         run: flutter config --no-analytics
 
+      # ---------------- PUB GET ----------------
       - name: Install dependencies
         run: flutter pub get
 
-      # ----------- DECODE KEYSTORE -----------------
+      # ---------------- DECODE KEYSTORE ----------------
       - name: Decode keystore
         run: |
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/app/firstcallingapp.jks
 
-      # ----------- VERIFY FILE EXISTS -----------------
+      # ---------------- CHECK KEY FILE ----------------
       - name: Check keystore file exists
         run: ls -R android/app
 
-      # ----------- CREATE key.properties -----------------
+      # ---------------- CREATE key.properties ----------------
       - name: Create key.properties
         run: |
-          printf "storePassword=${{ secrets.KEYSTORE_PASSWORD }}\nkeyPassword=${{ secrets.KEY_PASSWORD }}\nkeyAlias=${{ secrets.KEY_ALIAS }}\nstoreFile=firstcallingapp.jks" > android/app/key.properties
+          printf "storePassword=${{ secrets.KEYSTORE_PASSWORD }}\nkeyPassword=${{ secrets.KEY_PASSWORD }}\nkeyAlias=${{ secrets.KEY_ALIAS }}\nstoreFile=app/firstcallingapp.jks" > android/key.properties
 
-      # ----------- SHOW key.properties for debug (masked) -----------------
+      # ---------------- SHOW FILE (MASKED) ----------------
       - name: Show key.properties
-        run: |
-          sed 's/=.*/=***MASKED***/' android/app/key.properties
+        run: sed 's/=.*/=***MASKED***/' android/key.properties
 
-      # ----------- BUILD APK -----------------
+      # ---------------- BUILD APK ----------------
       - name: Build APK
         run: flutter build apk --release
 
-      # ----------- BUILD AAB -----------------
+      # ---------------- BUILD AAB ----------------
       - name: Build AAB
         run: flutter build appbundle --release
 
-      # ----------- UPLOAD APK ARTIFACT -----------------
+      # ---------------- UPLOAD APK ----------------
       - name: Upload Signed APK
         uses: actions/upload-artifact@v4
         with:
           name: signed-apk
           path: build/app/outputs/flutter-apk/app-release.apk
 
-      # ----------- UPLOAD AAB ARTIFACT -----------------
+      # ---------------- UPLOAD AAB ----------------
       - name: Upload Signed AAB
         uses: actions/upload-artifact@v4
         with:
