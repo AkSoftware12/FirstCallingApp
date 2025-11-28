@@ -38,14 +38,14 @@ android {
         versionName = flutter.versionName
     }
 
-    signingConfigs {
-        create("release") {
-            storeFile = file(keystoreProperties["storeFile"])
-            storePassword = keystoreProperties["storePassword"] as String
-            keyAlias = keystoreProperties["keyAlias"] as String
-            keyPassword = keystoreProperties["keyPassword"] as String
-        }
-    }
+  signingConfigs { 
+create("release") {
+storeFile = file(keystoreProperties["storeFile"]!!.toString())
+storePassword = keystoreProperties["storePassword"]!!.toString()
+keyAlias = keystoreProperties["keyAlias"]!!.toString()
+keyPassword = keystoreProperties["keyPassword"]!!.toString()
+}
+}
 
     buildTypes {
         getByName("release") {
