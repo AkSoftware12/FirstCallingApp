@@ -1,7 +1,9 @@
-name: Flutter CI/CD
+name: Build Android
 
 on:
   push:
+    branches: [ "main" ]
+  pull_request:
     branches: [ "main" ]
 
 jobs:
@@ -9,57 +11,38 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+    - name: Checkout repo
+      uses: actions/checkout@v3
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: "3.35.2"
+    - name: Setup Java
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '17'
 
-      - name: Disable Flutter analytics
-        run: flutter config --no-analytics
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        channel: 'stable'
 
-      - name: Install dependencies
-        run: flutter pub get
+    # 🔥 Decode your keystore (.jks)
+    - name: Decode keystore
+      run: |
+        echo "$KEYSTORE_BASE64" | base64 -d > android/app/firstcallingapp.jks
 
-      # ----------- DECODE KEYSTORE -----------------
-      - name: Decode keystore
-        run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/app/firstcallingapp.jks
+    # 🔥 Create key.properties (correct version)
+    - name: Create key.properties
+      run: |
+        printf "storeFile=firstcallingapp.jks\nstorePassword=$KEYSTORE_PASSWORD\nkeyAlias=$KEY_ALIAS\nkeyPassword=$KEY_ALIAS_PASSWORD\n" > android/app/key.properties
 
-      # ----------- VERIFY FILE EXISTS -----------------
-      - name: Check keystore file exists
-        run: ls -R android/app
+    - name: Flutter Pub Get
+      run: flutter pub get
 
-      # ----------- CREATE key.properties -----------------
-      - name: Create key.properties
-        run: |
-          printf "storePassword=${{ secrets.KEYSTORE_PASSWORD }}\nkeyPassword=${{ secrets.KEY_PASSWORD }}\nkeyAlias=${{ secrets.KEY_ALIAS }}\nstoreFile=firstcallingapp.jks" > android/app/key.properties
+    - name: Build Release APK
+      run: flutter build apk --release
 
-      # ----------- SHOW key.properties for debug (masked) -----------------
-      - name: Show key.properties
-        run: |
-          sed 's/=.*/=***MASKED***/' android/app/key.properties
-
-      # ----------- BUILD APK -----------------
-      - name: Build APK
-        run: flutter build apk --release
-
-      # ----------- BUILD AAB -----------------
-      - name: Build AAB
-        run: flutter build appbundle --release
-
-      # ----------- UPLOAD APK ARTIFACT -----------------
-      - name: Upload Signed APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: signed-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
-
-      # ----------- UPLOAD AAB ARTIFACT -----------------
-      - name: Upload Signed AAB
-        uses: actions/upload-artifact@v4
-        with:
-          name: signed-aab
-          path: build/app/outputs/bundle/release/app-release.aab
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: app-release
+        path: build/app/outputs/flutter-apk/app-release.apk
