@@ -98,8 +98,9 @@ class _BannerSliderState extends State<BannerSlider> {
             },
           ),
           items: banners.map((item) {
-            final imageUrl = item["image_url"]?.toString() ?? "";
+            final imageUrl = item["image"]?.toString() ?? "";
             final link = item["title"]?.toString() ?? "";
+            print('${'https://firstcallingapp.com'}$imageUrl');
 
             return Stack(
               children: [
@@ -116,7 +117,7 @@ class _BannerSliderState extends State<BannerSlider> {
                       )
                     ],
                     image: DecorationImage(
-                      image: NetworkImage(imageUrl),
+                      image: NetworkImage('${'https://firstcallingapp.com'}$imageUrl'),
                       fit: BoxFit.cover,
                     ),
                   ),
