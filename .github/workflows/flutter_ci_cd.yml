@@ -25,15 +25,25 @@ jobs:
       with:
         channel: 'stable'
 
-    # 🔥 Decode your keystore (.jks)
+    # KEYS debug check (optional)
+    - name: Check if KEYS exist
+      run: |
+        if [ -z "$KEYSTORE_BASE64" ]; then echo "❌ KEYSTORE_BASE64 is EMPTY"; exit 1; fi
+        if [ -z "$KEYSTORE_PASSWORD" ]; then echo "❌ KEYSTORE_PASSWORD is EMPTY"; exit 1; fi
+        if [ -z "$KEY_ALIAS" ]; then echo "❌ KEY_ALIAS is EMPTY"; exit 1; fi
+        if [ -z "$KEY_ALIAS_PASSWORD" ]; then echo "❌ KEY_ALIAS_PASSWORD is EMPTY"; exit 1; fi
+
+    # Decode keystore
     - name: Decode keystore
       run: |
         echo "$KEYSTORE_BASE64" | base64 -d > android/app/firstcallingapp.jks
+        ls -lh android/app/firstcallingapp.jks
 
-    # 🔥 Create key.properties (correct version)
+    # Create key.properties
     - name: Create key.properties
       run: |
         printf "storeFile=firstcallingapp.jks\nstorePassword=$KEYSTORE_PASSWORD\nkeyAlias=$KEY_ALIAS\nkeyPassword=$KEY_ALIAS_PASSWORD\n" > android/app/key.properties
+        cat android/app/key.properties
 
     - name: Flutter Pub Get
       run: flutter pub get
