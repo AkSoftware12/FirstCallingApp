@@ -5,11 +5,10 @@ plugins {
 }
 
 import java.util.Properties
-import java.io.FileInputStream
+        import java.io.FileInputStream
 
-// Load keystore
 val keystoreProperties = Properties()
-val keystorePropertiesFile = rootProject.file("android/app/key.properties")
+val keystorePropertiesFile = rootProject.file("key.properties")
 
 if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(FileInputStream(keystorePropertiesFile))
@@ -23,6 +22,7 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+        isCoreLibraryDesugaringEnabled = true   // ✅ Kotlin correct syntax
     }
 
     kotlinOptions {
@@ -39,23 +39,34 @@ android {
 
     signingConfigs {
         create("release") {
-            if (keystoreProperties.isNotEmpty()) {
-                storeFile = file(keystoreProperties["storeFile"]?.toString() ?: "")
-                storePassword = keystoreProperties["storePassword"]?.toString() ?: ""
-                keyAlias = keystoreProperties["keyAlias"]?.toString() ?: ""
-                keyPassword = keystoreProperties["keyPassword"]?.toString() ?: ""
-            }
+            keyAlias = keystoreProperties["keyAlias"] as String?
+            keyPassword = keystoreProperties["keyPassword"] as String?
+            storeFile = keystoreProperties["storeFile"]?.let { file(it) }
+            storePassword = keystoreProperties["storePassword"] as String?
         }
     }
 
     buildTypes {
-        getByName("release") {
-             isMinifyEnabled = true
+        release {
             signingConfig = signingConfigs.getByName("release")
+            isMinifyEnabled = false
+            isShrinkResources = false
         }
     }
 }
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+
+    // coreLibraryDesugaring for Kotlin DSL
+    add("coreLibraryDesugaring", "com.android.tools:desugar_jdk_libs:2.1.5")
+
+    // Firebase BoM
+    implementation(platform("com.google.firebase:firebase-bom:34.5.0"))
+
+    // Firebase Analytics
+    implementation("com.google.firebase:firebase-analytics")
 }
