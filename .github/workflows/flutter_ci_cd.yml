@@ -12,37 +12,37 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      # Setup Java (required for Android build)
       - name: Set up Java
         uses: actions/setup-java@v2
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      # Install Flutter
       - name: Install Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.27.0"
+          flutter-version: "3.32.5"
 
-      # Decode the Keystore
+      # Auto Versioning (VersionCode auto update)
+      - name: Auto Increment Build Number
+        run: |
+          BUILD_NUMBER=$(date +%s)
+          echo "Build Number: $BUILD_NUMBER"
+          sed -i "s/version:.*/version: 1.0.0+${BUILD_NUMBER}/" pubspec.yaml
+
       - name: Decode Keystore
         run: echo "$KEYSTORE_BASE64" | base64 --decode > android/app/firstcallingapp.jks
 
-      # Get dependencies
       - name: Flutter Pub Get
         run: flutter pub get
 
-      # Build Signed App Bundle
       - name: Build AppBundle
-        run: |
-          flutter build appbundle --release
+        run: flutter build appbundle --release
         env:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
 
-      # Upload .AAB to Google Play
       - name: Upload to Play Store
         uses: r0adkll/upload-google-play@v1
         with:
