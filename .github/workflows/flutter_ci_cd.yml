@@ -1,6 +1,7 @@
-name: Flutter CI/CD Play Store Deployment
+name: Build Flutter AppBundle
 
 on:
+  workflow_dispatch:
   push:
     branches: [ "main" ]
 
@@ -9,43 +10,29 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Repo
-      uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-    - name: Install Flutter
-      uses: subosito/flutter-action@v2
-      with:
-        channel: stable
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: "17"
 
-    - name: Flutter Pub Get
-      run: flutter pub get
+      - name: Install Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.22.0"
 
-    - name: Decode Keystore
-      run: |
-        echo "$KEYSTORE_BASE64" | base64 --decode > android/app/firstcallingapp.jks
-      env:
-        KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+      - name: Decode Keystore
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 --decode > android/app/firstcallingapp.jks
+        shell: bash
 
-    - name: Create key.properties
-      run: |
-        echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" > android/key.properties
-        echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
-        echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
-        echo "storeFile=key.jks" >> android/key.properties
+      - name: Flutter Pub Get
+        run: flutter pub get
 
-    - name: Build App Bundle
-      run: flutter build appbundle --release
-
-    - name: Decode Play Store JSON
-      run: |
-        echo "${{ secrets.PLAYSTORE_JSON }}" | base64 --decode > android/fastlane/playstore.json
-
-    - name: Install Fastlane
-      run: sudo gem install fastlane -NV
-
-    - name: Upload to Play Store
-      working-directory: android
-      run: fastlane deploy
-      env:
-        PLAYSTORE_JSON: ${{ secrets.PLAYSTORE_JSON }}
-        PACKAGE_NAME: ${{ secrets.PACKAGE_NAME }}
+      - name: Build App Bundle
+        run: flutter build appbundle --release
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
