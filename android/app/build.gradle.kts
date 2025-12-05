@@ -3,7 +3,6 @@ plugins {
     id("kotlin-android")
     id("dev.flutter.flutter-gradle-plugin")
 }
-
 import java.util.Properties
 import java.io.FileInputStream
 
