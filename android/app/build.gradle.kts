@@ -38,21 +38,23 @@ android {
     }
 
     signingConfigs {
-        create("release") {
-            keyAlias = keystoreProperties["keyAlias"] as String?
-            keyPassword = keystoreProperties["keyPassword"] as String?
-            storeFile = keystoreProperties["storeFile"]?.let { file(it) }
-            storePassword = keystoreProperties["storePassword"] as String?
-        }
+    create("release") {
+        storeFile = file("firstcallingapp.jks")
+        storePassword = System.getenv("KEYSTORE_PASSWORD")
+        keyAlias = System.getenv("KEY_ALIAS")
+        keyPassword = System.getenv("KEY_PASSWORD")
     }
+}
+
 
     buildTypes {
-        release {
-            signingConfig = signingConfigs.getByName("release")
-            isMinifyEnabled = false
-            isShrinkResources = false
-        }
+    getByName("release") {
+        signingConfig = signingConfigs.getByName("release")
+        isMinifyEnabled = false
+        isShrinkResources = false
     }
+}
+
 }
 
 flutter {
