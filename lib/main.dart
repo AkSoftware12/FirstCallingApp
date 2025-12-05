@@ -2,6 +2,8 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -14,19 +16,19 @@ Future<void> main() async {
   if (Platform.isAndroid) {
     await Firebase.initializeApp(
       options: const FirebaseOptions(
-        apiKey: 'AIzaSyASMmPy8mhABFOGTEHmkI-vv559WTiw814',
-        appId: '1:164105009272:android:67e2bc460fd3b44376158d',
-        messagingSenderId: '164105009272',
-        projectId: 'cjm-shimla-parent',
-        storageBucket: "cjm-shimla-parent.firebasestorage.app",
+        apiKey: 'AIzaSyCE01wxa5AcekGS9RYEGnvIPadRlSbeklE',
+        appId: '1:442155608498:android:a05c3b671760ddc18fdcab',
+        messagingSenderId: '442155608498',
+        projectId: 'first-calling-app-7a9b4',
+        storageBucket: "first-calling-app-7a9b4.firebasestorage.app",
       ),
     );
   } else {
     // await Firebase.initializeApp(
     //     options: DefaultFirebaseOptions.currentPlatform);
   }
+  await NotificationService().initNotifications();
 
-  // Sirf portraitUp (normal) aur portraitDown (ulot ke saath) chahiye toh:
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     // DeviceOrientation.portraitDown, // agar upside-down bhi allow karna ho toh uncomment karo
@@ -48,7 +50,6 @@ class MyApp extends StatelessWidget {
       designSize: const Size(360, 690),
       minTextAdapt: true,
       splitScreenMode: true,
-      // Use builder only if you need to use library outside ScreenUtilInit context
       builder: (_ , child) {
         return  MaterialApp(
           debugShowCheckedModeBanner: false,
@@ -71,5 +72,55 @@ class MyApp extends StatelessWidget {
 
 
 
+class NotificationService {
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+
+  // इनिशियलाइज़ नोटिफिकेशन्स
+  Future<void> initNotifications() async {
+    // Android और iOS के लिए नोटिफिकेशन परमिशन रिक्वेस्ट करें
+    NotificationSettings settings = await _firebaseMessaging.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+
+    if (kDebugMode) {
+      print('Permission granted: ${settings.authorizationStatus}');
+    }
+
+    // FCM टोकन प्राप्त करें
+    String? token = await _firebaseMessaging.getToken();
+    if (kDebugMode) {
+      print('FCM Token: $token');
+    }
+
+    // फोरग्राउंड में नोटिफिकेशन्स हैंडल करें
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      if (kDebugMode) {
+        print('Foreground Message: ${message.notification?.title}');
+        print('Message Data: ${message.data}');
+      }
+      // यहाँ आप नोटिफिकेशन UI दिखा सकते हैं (जैसे Flutter का SnackBar)
+    });
+
+    // बैकग्राउंड में नोटिफिकेशन हैंडल करें
+    FirebaseMessaging.onBackgroundMessage(_backgroundHandler);
+
+    // ऐप बंद होने पर नोटिफिकेशन टैप करने पर हैंडल करें
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      if (kDebugMode) {
+        print('Message opened: ${message.notification?.title}');
+      }
+      // यहाँ नेविगेशन या अन्य एक्शन जोड़ सकते हैं
+    });
+  }
+
+  // बैकग्राउंड हैंडलर (टॉप-लेवल फंक्शन)
+  static Future<void> _backgroundHandler(RemoteMessage message) async {
+    if (kDebugMode) {
+      print('Background Message: ${message.notification?.title}');
+    }
+  }
+}
 
 

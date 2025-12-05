@@ -36,22 +36,24 @@ android {
         versionName = flutter.versionName
     }
 
-signingConfigs {
-    release {
-        if (project.hasProperty('storePassword')) {
-            storeFile file("upload-keystore.jks")
-            storePassword keystoreProperties['storePassword']
-            keyAlias keystoreProperties['keyAlias']
-            keyPassword keystoreProperties['keyPassword']
+    signingConfigs {
+        create("release") {
+            if (keystorePropertiesFile.exists()) {
+                storeFile = file("upload-keystore.jks")
+                storePassword = keystoreProperties["storePassword"] as String
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
+            }
         }
     }
-}
 
-buildTypes {
-    release {
-        signingConfig signingConfigs.release
+    buildTypes {
+        getByName("release") {
+            signingConfig = signingConfigs.getByName("release")
+            isMinifyEnabled = false
+            isShrinkResources = false
+        }
     }
-}
 
 }
 
