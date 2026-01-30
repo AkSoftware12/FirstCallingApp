@@ -6,7 +6,7 @@ class ApiRoutes {
 
 
 // Local App Url
-//   static const String baseUrl = "http://192.168.1.3/firstcallingapp2/api";
+//   static const String baseUrl = "http://192.168.1.12:8080/firstcalling/api";
 
 
 
@@ -14,6 +14,7 @@ class ApiRoutes {
   static const String verifyOtp = "$baseUrl/verifyOtp";
   static const String qrVerifyOtp = "$baseUrl/qr/verifyOtp";
   static const String getProfile = "$baseUrl/get-profile";
+  static const String getNotifications = "$baseUrl/notifications";
   static const String getUpdateProfile = "$baseUrl/update-profile";
   static const String getAllProducts = "$baseUrl/products";
   static const String getBanners= "$baseUrl/banners";
@@ -30,5 +31,11 @@ class ApiRoutes {
   static const String agentDashboard = "$baseUrl/agent/dashboard";
   static const String agentItemList = "$baseUrl/agent/qr-list?type=";
   static const String twilioToken = "$baseUrl/twilio/token";
-  // static const String twilioCall = "$baseUrl/twilio/call";
+  static const String createRazorpayOrder = "$baseUrl/createRazorpayOrderId";
+  static const String getRazorpayKey = "$baseUrl/getrazorpaykey";
+  static const String ordersIdRazorpay = "$baseUrl/ordersid";
+  static const String paymentStore = "$baseUrl/payment-store";
+  static const String getUserPayment = "$baseUrl/my-payments";
+
+
 }

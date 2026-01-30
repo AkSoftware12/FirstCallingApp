@@ -339,7 +339,7 @@ class _SimpleOrderTrackingScreenState extends State<SimpleOrderTrackingScreen> {
         _buildTimelineConnector(),
         _buildTimelineStep('Dispatched', '-', true),
         _buildTimelineConnector(),
-        _buildTimelineStep('Delivered', '-', isDelivered),
+        _buildTimelineStep('Delivered', '-' , isDelivered),
       ],
     );
   }

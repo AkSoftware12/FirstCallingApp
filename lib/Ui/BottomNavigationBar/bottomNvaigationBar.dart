@@ -4,6 +4,7 @@ import 'package:firstcallingapp/Utils/HexColorCode/HexColor.dart';
 import 'package:firstcallingapp/Utils/color.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -20,11 +21,15 @@ import '../Cart/CartModel/cart_model.dart';
 import '../Cart/CartScreen/cart_screen.dart';
 import '../DrawerScreen/Drawer/drawer.dart';
 import '../DrawerScreen/privacy.dart';
+import '../Login/SplashScreen/splash_screen.dart';
 import '../OrderHistory/order_history.dart';
+import '../ParkingScreen/parking.dart';
 import '../Profile/update_profile.dart';
 import '../QRActivationScreen/qr_check_screen.dart';
 import '../QRScanScreen/QRCodeData/qr_code_data.dart';
 import '../QRScanScreen/TorchScreen/torch_screen.dart';
+import 'package:new_version_plus/new_version_plus.dart';
+
 
 // Sample data structure for emergency numbers
 class EmergencyNumber {
@@ -58,8 +63,11 @@ class _HomePageState extends State<BottomNavigationBarScreen> {
   PageController controller = PageController();
 
   String currentVersion = '';
+  String release = "";
   String? userName;
   String userImage = "";
+  bool _upgradeDialogShown = false;
+
   // Cart animation
   GlobalKey<CartIconKey> cartKey = GlobalKey<CartIconKey>();
   late Function(GlobalKey) runAddToCartAnimation;
@@ -68,10 +76,83 @@ class _HomePageState extends State<BottomNavigationBarScreen> {
 
   @override
   void initState() {
-    checkForVersion(context);
+    super.initState();
     selected = widget.initialIndex;
     controller = PageController(initialPage: selected);
-    super.initState();
+
+    checkForVersion(context);
+
+    final newVersion = NewVersionPlus(
+      iOSId: 'com.firstcallingapp.firstcallingapp',
+      androidId: 'com.firstcallingapp.firstcallingapp',
+      androidPlayStoreCountry: "es_ES",
+      androidHtmlReleaseNotes: true,
+    );
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      advancedStatusCheck(newVersion); // ✅ now context is ready
+    });
+  }
+
+  basicStatusCheck(NewVersionPlus newVersion) async {
+    final version = await newVersion.getVersionStatus();
+    if (version != null) {
+      release = version.releaseNotes ?? "";
+      setState(() {});
+    }
+    newVersion.showAlertIfNecessary(
+      context: context,
+      launchModeVersion: LaunchModeVersion.external,
+    );
+  }
+
+  Future<void> advancedStatusCheck(NewVersionPlus newVersion) async {
+    try {
+      final status = await newVersion.getVersionStatus();
+      if (status == null) return;
+
+      debugPrint("releaseNotes: ${status.releaseNotes}");
+      debugPrint("appStoreLink: ${status.appStoreLink}");
+      debugPrint("localVersion: ${status.localVersion}");
+      debugPrint("storeVersion: ${status.storeVersion}");
+      debugPrint("canUpdate: ${status.canUpdate}");
+
+      if (!status.canUpdate) return;
+      if (_upgradeDialogShown) return;
+      if (!mounted) return;
+
+      _upgradeDialogShown = true;
+
+      showDialog(
+        context: context, // ✅ yahi best hai
+        barrierDismissible: false,
+        builder: (dialogCtx) {
+          return PopScope( // ✅ WillPopScope new replacement (Flutter 3.13+)
+            canPop: false,
+            onPopInvoked: (didPop) {
+              SystemNavigator.pop();
+            },
+            child: CustomUpgradeDialog(
+              currentVersion: status.localVersion,
+              newVersion: status.storeVersion,
+              releaseNotes: [
+                (status.releaseNotes ?? "").trim().isEmpty
+                    ? "New update available."
+                    : status.releaseNotes!.trim(),
+              ],
+            ),
+          );
+        },
+      );
+    } catch (e, st) {
+      debugPrint("advancedStatusCheck error: $e");
+      debugPrint("$st");
+    }
+  }
+  Future<void> checkForVersion(BuildContext context) async {
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    currentVersion = packageInfo.version;
   }
 
   // Sample data for emergency numbers
@@ -88,277 +169,80 @@ class _HomePageState extends State<BottomNavigationBarScreen> {
     EmergencyNumber(police: '100', ambulance: '102', fire: '112'),
   ];
 
-  void showEmergencyNumbersDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return Dialog(
-              elevation: 8,
-              backgroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20.r),
-              ),
-              child: Container(
-                padding: EdgeInsets.all(10.w),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20.r),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 10,
-                      offset: Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: EdgeInsets.all(8.w),
-                          decoration: BoxDecoration(
-                            color: AppColors.navyBlue.withOpacity(0.1),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.phone,
-                            color: AppColors.navyBlue,
-                            size: 25.sp,
-                          ),
-                        ),
-                        SizedBox(width: 12.w),
-                        Text(
-                          'Emergency Numbers',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.navyBlue,
-                            fontSize: 16.sp,
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 16.h),
-                    SizedBox(
-                      height: 250.h,
-                      child: GridView.builder(
-                        shrinkWrap: true,
-                        padding: EdgeInsets.zero,
-                        physics: const BouncingScrollPhysics(),
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3,
-                          childAspectRatio: 1,
-                          crossAxisSpacing: 5,
-                          mainAxisSpacing: 5,
-                        ),
-                        itemCount: emergencyNumbers.length,
-                        itemBuilder: (context, index) {
-                          final number = emergencyNumbers[index];
-                          return Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white10,
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: HexColor('#f26652')),
-                            ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.local_police, color: Colors.red),
-                                SizedBox(height: 4.h),
-                                Text(
-                                  number.police,
-                                  style: TextStyle(fontSize: 12.sp),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                    SizedBox(height: 20.h),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: GestureDetector(
-                        onTap: () => Navigator.of(context).pop(),
-                        child: Container(
-                          width: 100.w,
-                          padding: EdgeInsets.symmetric(vertical: 10.h),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [AppColors.navyBlue, AppColors.maroonRed],
-                              begin: Alignment.centerLeft,
-                              end: Alignment.centerRight,
-                            ),
-                            borderRadius: BorderRadius.circular(12.r),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.navyBlue.withOpacity(0.3),
-                                blurRadius: 5,
-                                offset: Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Center(
-                            child: Text(
-                              'Close',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 14.sp,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
+
+  String? extractNumberFromUrl(String url) {
+    try {
+      final uri = Uri.parse(url);
+
+      /// 🔹 Case 1: query parameter se ( ?code=1000001 )
+      if (uri.queryParameters.isNotEmpty) {
+        for (final value in uri.queryParameters.values) {
+          final match = RegExp(r'\d+').firstMatch(value);
+          if (match != null) return match.group(0);
+        }
+      }
+
+      /// 🔹 Case 2: path se ( /call/9876543210 )
+      final match = RegExp(r'\d+').firstMatch(uri.path);
+      if (match != null) return match.group(0);
+    } catch (_) {}
+
+    return null;
   }
 
-  void _handleDetect(BarcodeCapture capture) async {
-    if (_isScanning) return;
-    _isScanning = true;
 
-    if (capture.barcodes.isEmpty) {
-      debugPrint("❌ No barcode found in capture.");
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("No QR/Barcode found")),
-      );
-      _isScanning = false;
-      return;
-    }
+  String? _lastScannedValue;
+  DateTime? _lastScanTime;
+
+  Future<void> _handleDetect(BarcodeCapture capture) async {
+    if (_isScanning) return;
+
+    if (capture.barcodes.isEmpty) return;
 
     final String? value = capture.barcodes.first.rawValue;
+    if (value == null || value.trim().isEmpty) return;
 
-    if (value != null && value.isNotEmpty) {
-      debugPrint("✅ Scanned: $value");
-      if (_isValidUrl(value)) {
-        try {
-          final Uri url = Uri.parse(value);
-          if (await canLaunchUrl(url)) {
-            await launchUrl(url, mode: LaunchMode.externalApplication);
-          } else {
-            _showPopup(value);
-          }
-        } catch (e) {
-          debugPrint("⚠️ URL launch error: $e");
-          _showPopup(value);
-        }
-      } else {
-        _showPopup(value);
-      }
-    } else {
-      debugPrint("⚠️ Barcode detected but value empty.");
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Invalid QR/Barcode")),
-      );
+    // ✅ same qr duplicate block (within 2 seconds)
+    final now = DateTime.now();
+    if (_lastScannedValue == value &&
+        _lastScanTime != null &&
+        now.difference(_lastScanTime!).inMilliseconds < 2000) {
+      return;
     }
+    _lastScannedValue = value;
+    _lastScanTime = now;
 
-    Future.delayed(const Duration(seconds: 2), () {
-      _isScanning = false;
-    });
-  }
-// Popup function with Parking and Emergency buttons
-  void _showPopup(String value) {
-    showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        elevation: 10,
-        child: Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            color: Colors.white,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                "QR/Barcode Detected",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                value,
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16, color: Colors.grey[700]),
-              ),
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      debugPrint("🚗 Parking clicked");
-                      // Add Parking logic here
-                    },
-                    icon: const Icon(Icons.local_parking),
-                    label: const Text("Parking"),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    ),
-                  ),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      debugPrint("🚨 Emergency clicked");
-                      // Add Emergency logic here
-                    },
-                    icon: const Icon(Icons.warning),
-                    label: const Text("Emergency"),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+    _isScanning = true;
 
-
-
-  bool _isValidUrl(String value) {
-    final Uri? uri = Uri.tryParse(value);
-    return uri != null && (uri.isScheme("http") || uri.isScheme("https"));
-  }
-
-  void _showResult(String data) {
     try {
-      // Parse the scanned data as JSON
-      // final Map<String, dynamic> parsedData = jsonDecode(data);
-      Navigator.push(
-        context,
+      debugPrint("✅ Scanned: $value");
+
+      /// 🔥 NUMBER NIKALO
+      final extractedNumber = extractNumberFromUrl(value);
+      debugPrint("📞 Extracted Number: $extractedNumber");
+
+      // ✅ scanner ko stop/pause kar do navigation se pehle (agar controller hai)
+      try {
+        await controllerScan.stop(); // if available in your controller
+      } catch (_) {}
+
+      // ✅ push and wait till return
+      await Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (context) => ResultPage(data: data, type: '',),
+          builder: (_) => FullScreenActionPage(
+            value: extractedNumber.toString(),
+          ),
         ),
-      ).then((_) {
-        _isScanning = false;
-      });
-    } catch (e) {
-      debugPrint("⚠️ JSON parsing error: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Invalid data format")),
       );
+    } catch (e) {
+      debugPrint("⚠️ handleDetect error: $e");
+    } finally {
+      // ✅ wapas aake scanner start/resume
+      try {
+        await controllerScan.start(); // if available
+      } catch (_) {}
+
+      // ✅ lock release immediately
       _isScanning = false;
     }
   }
@@ -382,10 +266,7 @@ class _HomePageState extends State<BottomNavigationBarScreen> {
         .runCartAnimation(_cartQuantityItems.toString());
   }
 
-  Future<void> checkForVersion(BuildContext context) async {
-    PackageInfo packageInfo = await PackageInfo.fromPlatform();
-    currentVersion = packageInfo.version;
-  }
+
   @override
   Widget build(BuildContext context) {
     return AddToCartAnimation(
@@ -645,7 +526,7 @@ class _HomePageState extends State<BottomNavigationBarScreen> {
             width: MediaQuery.sizeOf(context).width * .7,
             // backgroundColor: ColorSelect.maineColor,
             child: DrawerPageScreen(
-              currentVersion: currentVersion,
+              // currentVersion: currentVersion,
             )),
         floatingActionButton: SizedBox(
           width: 55.sp,
@@ -974,260 +855,3 @@ class CustomBottomNavBar extends StatelessWidget {
 }
 
 
-
-
-
-
-
-
-class CustomDrawer extends StatelessWidget {
-  const CustomDrawer({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Drawer(
-      // Use a subtle, light background
-      backgroundColor: AppColors.lightGray,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.horizontal(right: Radius.circular(0.0)),
-      ),
-      child: SafeArea(
-        child: Column(
-          children: [
-            Container(
-              height: 20.sp,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  IconButton(
-                    icon: Icon(Icons.close, color: Colors.black,size: 25.sp,),
-                    onPressed: () {
-                      Navigator.pop(context); // Drawer band karega
-                    },
-                  ),
-                ],
-              ),
-            ),
-
-            // Header
-            _buildHeader(),
-            Divider(
-              thickness: 2.sp,
-              color: Colors.grey.shade300,
-            ),
-
-            // Menu Items
-            Expanded(
-              child: ListView(
-                padding:  EdgeInsets.symmetric(horizontal: 5.sp),
-                children: [
-                  _buildListTile(
-                    context: context,
-                    icon: Icons.person,
-                    title: 'Profile',
-                    onTap: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context)=> ProfileUpdatePage()));
-                    },
-                  ),
-                  _buildListTile(
-                    context: context,
-                    icon: Icons.qr_code,
-                    title: 'Activate New QR Sticker',
-                    onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => QRActive()));
-
-                    },
-                  ),
-                  _buildListTile(
-                    context: context,
-                    icon: Icons.shop,
-                    title: 'My Orders/Products',
-                    onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => OrderHistoryScreen()));
-
-                    },
-                  ),
-                  // _buildListTile(
-                  //   context: context,
-                  //   icon: Icons.share,
-                  //   title: 'Share Tap',
-                  //   onTap: () {},
-                  // ),
-                  // _buildListTile(
-                  //   context: context,
-                  //   icon: Icons.account_balance_wallet,
-                  //   title: 'Wallet',
-                  //   onTap: () {},
-                  // ),
-                  // _buildListTile(
-                  //   context: context,
-                  //   icon: Icons.touch_app,
-                  //   title: 'Active/Deactive QR',
-                  //   onTap: () {},
-                  // ),
-                  // _buildListTile(
-                  //   context: context,
-                  //   icon: Icons.block,
-                  //   title: 'Block A Number',
-                  //   onTap: () {},
-                  // ),
-                  // _buildListTile(
-                  //   context: context,
-                  //   icon: Icons.bookmark,
-                  //   title: 'My Story',
-                  //   onTap: () {},
-                  // ),
-                  // _buildListTile(
-                  //   context: context,
-                  //   icon: Icons.call,
-                  //   title: 'Call Log',
-                  //   onTap: () {},
-                  // ),
-                  _buildListTile(
-                    context: context,
-                    icon: Icons.notifications,
-                    title: 'Notification',
-                    onTap: () {},
-                  ),
-                  _buildListTile(
-                    context: context,
-                    icon: Icons.policy,
-                    title: 'Privacy Policy',
-                    onTap: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (_) => const PrivacyPage()));
-                    },
-                  ),
-                  _buildListTile(
-                    context: context,
-                    icon: Icons.description,
-                    title: 'Grievances',
-                    onTap: () {},
-                  ),
-                  _buildListTile(
-                    context: context,
-                    icon: Icons.bloodtype,
-                    title: 'Blood Donation',
-                    onTap: () {
-                      Fluttertoast.showToast(
-                          msg: "Coming Soon",
-                          toastLength: Toast.LENGTH_SHORT,
-                          gravity: ToastGravity.CENTER,
-                          timeInSecForIosWeb: 1,
-                          backgroundColor: Colors.red,
-                          textColor: Colors.white,
-                          fontSize: 16.0
-                      );
-
-                    },
-                  ),
-              _buildListTile(
-                context: context,
-                icon: Icons.logout,
-                title: 'Logout',
-                textColor: Colors.red,
-                iconColor: Colors.red,
-                onTap: () async {
-                  SharedPreferences prefs = await SharedPreferences.getInstance();
-                  await prefs.clear(); // ✅ Clear all stored data
-
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (_) => LoginScreen()),
-                  );
-
-                },
-              )
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 0.0),
-      child: Column(
-        children: [
-          CircleAvatar(
-            radius: 40.sp,
-            backgroundImage: const AssetImage('assets/playstore.png'),
-            backgroundColor: AppColors.lightGray,
-            child: Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: AppColors.primaryBlue, width: 3.sp),
-              ),
-            ),
-          ),
-           SizedBox(height: 8.sp),
-          Text(
-            'Ravikant Saini',
-            style: TextStyle(
-              color: AppColors.navyBlue,
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          SizedBox(height: 8.sp),
-
-        ],
-      ),
-    );
-  }
-
-  Widget _buildListTile({
-    required BuildContext context,
-    required IconData icon,
-    required String title,
-    required VoidCallback onTap,
-    Color textColor = AppColors.primaryBlue,
-    Color iconColor = AppColors.primaryBlue,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2.0),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(12.0),
-          // Add a splash color for a nice touch
-          child: Padding(
-            padding:  EdgeInsets.symmetric(
-              horizontal: 16.sp,
-              vertical: 12.sp,
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  icon,
-                  color:  AppColors.navyBlue,
-                  size: 24.sp,
-                ),
-                 SizedBox(width: 12.sp),
-                Expanded(
-                  child: Text(
-                    title,
-                    style: TextStyle(
-                      color:  AppColors.navyBlue,
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}

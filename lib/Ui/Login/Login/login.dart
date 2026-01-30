@@ -6,6 +6,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 import '../Otp/otp.dart'; // Assuming OTPVerificationScreen is defined here
@@ -47,6 +48,8 @@ class _PhoneLoginScreenState extends State<LoginScreen> {
       if (data["success"] == true) {
         if (mounted) {
           setState(() => _isLoading = false);
+          showTopOtpSnackBar(context,"${data["otp"].toString()}");
+
           Navigator.of(context).push(
             MaterialPageRoute(
               builder: (context) => OTPVerificationScreen(
@@ -64,6 +67,27 @@ class _PhoneLoginScreenState extends State<LoginScreen> {
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  void showTopOtpSnackBar(BuildContext context, String otp) {
+    final snackBar = SnackBar(
+      content: Text(
+        "Your OTP is $otp",
+        style: const TextStyle(color: Colors.white),
+      ),
+      duration: const Duration(seconds: 8),
+      behavior: SnackBarBehavior.floating,
+      margin: const EdgeInsets.only(
+        top: 10,
+        left: 12,
+        right: 12,
+      ),
+      backgroundColor: Colors.green,
+    );
+
+    ScaffoldMessenger.of(context)
+      ..clearSnackBars()
+      ..showSnackBar(snackBar);
   }
 
   void _showError(String message) {

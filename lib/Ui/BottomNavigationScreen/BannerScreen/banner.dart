@@ -73,7 +73,7 @@ class _BannerSliderState extends State<BannerSlider> {
           height: 130.sp,
           decoration: BoxDecoration(
             color: Colors.grey.shade300,
-            borderRadius: BorderRadius.circular(10.sp),
+            borderRadius: BorderRadius.circular(5.sp),
           ),
         ),
       ),
@@ -99,16 +99,16 @@ class _BannerSliderState extends State<BannerSlider> {
           ),
           items: banners.map((item) {
             final imageUrl = item["image"]?.toString() ?? "";
-            final link = item["title"]?.toString() ?? "";
-            print('${'https://firstcallingapp.com'}$imageUrl');
-
+            final String? link = item.containsKey("link")
+                ? item["link"]?.toString()
+                : null;
             return Stack(
               children: [
                 Container(
                   width: double.infinity,
                   margin: EdgeInsets.symmetric(horizontal: 5.sp),
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(5),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black12,
@@ -117,14 +117,14 @@ class _BannerSliderState extends State<BannerSlider> {
                       )
                     ],
                     image: DecorationImage(
-                      image: NetworkImage('${'https://firstcallingapp.com'}$imageUrl'),
+                      image: NetworkImage(imageUrl),
                       fit: BoxFit.cover,
                     ),
                   ),
                 ),
 
                 // 🔹 Show button only if title (link) is not null
-                if (link.isNotEmpty)
+                if (link != null && link.trim().isNotEmpty)
                   Positioned(
                     bottom: 5,
                     left: 0,
@@ -148,9 +148,9 @@ class _BannerSliderState extends State<BannerSlider> {
                           child: Text(
                             "Click here",
                             style: TextStyle(
-                                fontSize: 12.sp,
-                                fontWeight: FontWeight.w500,
-                                color: AppColors.navyBlue
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.navyBlue,
                             ),
                           ),
                         ),

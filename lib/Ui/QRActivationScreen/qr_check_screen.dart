@@ -48,41 +48,59 @@ class _QRActiveState extends State<QRActive> with TickerProviderStateMixin {
     if (_isScanning) return;
     _isScanning = true;
 
-
     final String? value = capture.barcodes.first.rawValue;
 
-    if (value != null && value.isNotEmpty) {
-      if (_isValidUrl(value)) {
-        try {
-          final Uri url = Uri.parse(value);
-          if (await canLaunchUrl(url)) {
-            await launchUrl(url, mode: LaunchMode.externalApplication);
-          } else {
-            _showResult(value);
-          }
-        } catch (e) {
-          debugPrint("⚠️ URL launch error: $e");
-          _showResult(value);
-        }
-      } else {
-        _showResult(value);
-      }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Invalid QR/Barcode")));
+    if (value == null || value.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Invalid QR/Barcode")),
+      );
+      _isScanning = false;
+      return;
     }
 
+    debugPrint("✅ Raw Scanned: $value");
+
+    /// 🔥 SIRF NUMBER NIKALO
+    final extractedNumber = extractNumberFromUrl(value);
+
+    if (extractedNumber == null || extractedNumber.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Number not found in QR")),
+      );
+      _isScanning = false;
+      return;
+    }
+
+    debugPrint("📞 Extracted Number: $extractedNumber");
+
+    // ✅ Direct result screen (NO URL HIT)
+    _showResult(extractedNumber);
+
+    // ✅ Thoda delay taaki double scan na ho
     Future.delayed(const Duration(seconds: 2), () {
       _isScanning = false;
     });
   }
+  String? extractNumberFromUrl(String url) {
+    try {
+      final uri = Uri.parse(url);
 
+      // 🔹 Query param (?code=1000001)
+      if (uri.queryParameters.isNotEmpty) {
+        for (final value in uri.queryParameters.values) {
+          final match = RegExp(r'\d+').firstMatch(value);
+          if (match != null) return match.group(0);
+        }
+      }
 
+      // 🔹 Path (/call/9876543210)
+      final match = RegExp(r'\d+').firstMatch(uri.path);
+      if (match != null) return match.group(0);
+    } catch (_) {}
 
-
-  bool _isValidUrl(String value) {
-    final Uri? uri = Uri.tryParse(value);
-    return uri != null && (uri.isScheme("http") || uri.isScheme("https"));
+    return null;
   }
+
 
   void _showResult(String data) {
     try {

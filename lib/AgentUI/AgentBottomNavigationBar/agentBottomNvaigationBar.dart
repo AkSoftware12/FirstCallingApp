@@ -5,11 +5,13 @@ import 'package:firstcallingapp/Utils/HexColorCode/HexColor.dart';
 import 'package:firstcallingapp/Utils/color.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:gscankit/gscankit.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:new_version_plus/new_version_plus.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -19,6 +21,7 @@ import '../../Ui/BottomNavigationScreen/IVRCall/ivr_call.dart';
 import '../../Ui/BottomNavigationScreen/SOS/sos_screen.dart';
 import '../../Ui/DrawerScreen/Drawer/drawer.dart';
 import '../../Ui/DrawerScreen/privacy.dart';
+import '../../Ui/Login/SplashScreen/splash_screen.dart';
 import '../../Ui/ParkingScreen/parking.dart';
 import '../../Ui/Profile/update_profile.dart';
 import '../../Ui/QRScanScreen/QRCodeData/qr_code_data.dart';
@@ -54,8 +57,9 @@ class _HomePageState extends State<AgentBottomNavigationBarScreen> {
   bool _isScanning = false;
   int selected = 0;
   PageController controller = PageController();
-
   String currentVersion = '';
+  String release = "";
+  bool _upgradeDialogShown = false;
   String? userName;
   String userImage = "";
   // Cart animation
@@ -66,11 +70,25 @@ class _HomePageState extends State<AgentBottomNavigationBarScreen> {
 
   @override
   void initState() {
-    checkForVersion(context);
+    super.initState();
+
     _loadProfileData();
     selected = widget.initialIndex;
     controller = PageController(initialPage: selected);
-    super.initState();
+
+    checkForVersion(context);
+
+    final newVersion = NewVersionPlus(
+      iOSId: 'com.firstcallingapp.firstcallingapp',
+      androidId: 'com.firstcallingapp.firstcallingapp',
+      androidPlayStoreCountry: "es_ES",
+      androidHtmlReleaseNotes: true,
+    );
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      advancedStatusCheck(newVersion); // ✅ now context is ready
+    });
   }
   Future<void> _loadProfileData() async {
     final prefs = await SharedPreferences.getInstance();
@@ -92,252 +110,148 @@ class _HomePageState extends State<AgentBottomNavigationBarScreen> {
     EmergencyNumber(police: '100', ambulance: '102', fire: '112'),
   ];
 
-  void showEmergencyNumbersDialog(BuildContext context) {
-    showDialog(
+
+
+
+
+  String? extractNumberFromUrl(String url) {
+    try {
+      final uri = Uri.parse(url);
+
+      /// 🔹 Case 1: query parameter se ( ?code=1000001 )
+      if (uri.queryParameters.isNotEmpty) {
+        for (final value in uri.queryParameters.values) {
+          final match = RegExp(r'\d+').firstMatch(value);
+          if (match != null) return match.group(0);
+        }
+      }
+
+      /// 🔹 Case 2: path se ( /call/9876543210 )
+      final match = RegExp(r'\d+').firstMatch(uri.path);
+      if (match != null) return match.group(0);
+    } catch (_) {}
+
+    return null;
+  }
+
+
+  String? _lastScannedValue;
+  DateTime? _lastScanTime;
+
+  Future<void> _handleDetect(BarcodeCapture capture) async {
+    if (_isScanning) return;
+
+    if (capture.barcodes.isEmpty) return;
+
+    final String? value = capture.barcodes.first.rawValue;
+    if (value == null || value.trim().isEmpty) return;
+
+    // ✅ same qr duplicate block (within 2 seconds)
+    final now = DateTime.now();
+    if (_lastScannedValue == value &&
+        _lastScanTime != null &&
+        now.difference(_lastScanTime!).inMilliseconds < 2000) {
+      return;
+    }
+    _lastScannedValue = value;
+    _lastScanTime = now;
+
+    _isScanning = true;
+
+    try {
+      debugPrint("✅ Scanned: $value");
+
+      /// 🔥 NUMBER NIKALO
+      final extractedNumber = extractNumberFromUrl(value);
+      debugPrint("📞 Extracted Number: $extractedNumber");
+
+      // ✅ scanner ko stop/pause kar do navigation se pehle (agar controller hai)
+      try {
+        await controllerScan.stop(); // if available in your controller
+      } catch (_) {}
+
+      // ✅ push and wait till return
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => FullScreenActionPage(
+            value: extractedNumber.toString(),
+          ),
+        ),
+      );
+    } catch (e) {
+      debugPrint("⚠️ handleDetect error: $e");
+    } finally {
+      // ✅ wapas aake scanner start/resume
+      try {
+        await controllerScan.start(); // if available
+      } catch (_) {}
+
+      // ✅ lock release immediately
+      _isScanning = false;
+    }
+  }
+
+
+  basicStatusCheck(NewVersionPlus newVersion) async {
+    final version = await newVersion.getVersionStatus();
+    if (version != null) {
+      release = version.releaseNotes ?? "";
+      setState(() {});
+    }
+    newVersion.showAlertIfNecessary(
       context: context,
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return Dialog(
-              elevation: 8,
-              backgroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20.r),
-              ),
-              child: Container(
-                padding: EdgeInsets.all(10.w),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20.r),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 10,
-                      offset: Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: EdgeInsets.all(8.w),
-                          decoration: BoxDecoration(
-                            color: AppColors.navyBlue.withOpacity(0.1),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.phone,
-                            color: AppColors.navyBlue,
-                            size: 25.sp,
-                          ),
-                        ),
-                        SizedBox(width: 12.w),
-                        Text(
-                          'Emergency Numbers',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.navyBlue,
-                            fontSize: 16.sp,
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 16.h),
-                    SizedBox(
-                      height: 250.h,
-                      child: GridView.builder(
-                        shrinkWrap: true,
-                        padding: EdgeInsets.zero,
-                        physics: const BouncingScrollPhysics(),
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3,
-                          childAspectRatio: 1,
-                          crossAxisSpacing: 5,
-                          mainAxisSpacing: 5,
-                        ),
-                        itemCount: emergencyNumbers.length,
-                        itemBuilder: (context, index) {
-                          final number = emergencyNumbers[index];
-                          return Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white10,
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: HexColor('#f26652')),
-                            ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.local_police, color: Colors.red),
-                                SizedBox(height: 4.h),
-                                Text(
-                                  number.police,
-                                  style: TextStyle(fontSize: 12.sp),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                    SizedBox(height: 20.h),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: GestureDetector(
-                        onTap: () => Navigator.of(context).pop(),
-                        child: Container(
-                          width: 100.w,
-                          padding: EdgeInsets.symmetric(vertical: 10.h),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [AppColors.navyBlue, AppColors.maroonRed],
-                              begin: Alignment.centerLeft,
-                              end: Alignment.centerRight,
-                            ),
-                            borderRadius: BorderRadius.circular(12.r),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.navyBlue.withOpacity(0.3),
-                                blurRadius: 5,
-                                offset: Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Center(
-                            child: Text(
-                              'Close',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 14.sp,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        );
-      },
+      launchModeVersion: LaunchModeVersion.external,
     );
   }
 
-  // void _handleDetect(BarcodeCapture capture) async {
-  //   if (_isScanning) return;
-  //   _isScanning = true;
-  //
-  //   if (capture.barcodes.isEmpty) {
-  //     debugPrint("❌ No barcode found in capture.");
-  //     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("No QR/Barcode found")));
-  //     _isScanning = false;
-  //     return;
-  //   }
-  //
-  //   final String? value = capture.barcodes.first.rawValue;
-  //
-  //   if (value != null && value.isNotEmpty) {
-  //     debugPrint("✅ Scanned: $value");
-  //     if (_isValidUrl(value)) {
-  //       try {
-  //         final Uri url = Uri.parse(value);
-  //         if (await canLaunchUrl(url)) {
-  //           await launchUrl(url, mode: LaunchMode.externalApplication);
-  //         } else {
-  //           _showResult(value);
-  //         }
-  //       } catch (e) {
-  //         debugPrint("⚠️ URL launch error: $e");
-  //         _showResult(value);
-  //       }
-  //     } else {
-  //       _showResult(value);
-  //     }
-  //   } else {
-  //     debugPrint("⚠️ Barcode detected but value empty.");
-  //     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Invalid QR/Barcode")));
-  //   }
-  //
-  //   Future.delayed(const Duration(seconds: 2), () {
-  //     _isScanning = false;
-  //   });
-  // }
+  Future<void> advancedStatusCheck(NewVersionPlus newVersion) async {
+    try {
+      final status = await newVersion.getVersionStatus();
+      if (status == null) return;
 
+      debugPrint("releaseNotes: ${status.releaseNotes}");
+      debugPrint("appStoreLink: ${status.appStoreLink}");
+      debugPrint("localVersion: ${status.localVersion}");
+      debugPrint("storeVersion: ${status.storeVersion}");
+      debugPrint("canUpdate: ${status.canUpdate}");
 
+      if (!status.canUpdate) return;
+      if (_upgradeDialogShown) return;
+      if (!mounted) return;
 
+      _upgradeDialogShown = true;
 
-  bool _isValidUrl(String value) {
-    final Uri? uri = Uri.tryParse(value);
-    return uri != null && (uri.isScheme("http") || uri.isScheme("https"));
-  }
-
-  void _handleDetect(BarcodeCapture capture) async {
-    if (_isScanning) return;
-    _isScanning = true;
-
-    if (capture.barcodes.isEmpty) {
-      debugPrint("❌ No barcode found in capture.");
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("No QR/Barcode found")),
-      );
-      _isScanning = false;
-      return;
-    }
-
-    final String? value = capture.barcodes.first.rawValue;
-
-    if (value != null && value.isNotEmpty) {
-      debugPrint("✅ Scanned: $value");
-      if (_isValidUrl(value)) {
-        try {
-          final Uri url = Uri.parse(value);
-          if (await canLaunchUrl(url)) {
-            await launchUrl(url, mode: LaunchMode.externalApplication);
-          } else {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => FullScreenActionPage(value: value,
-                ),
-              ),
-            );
-          }
-        } catch (e) {
-          debugPrint("⚠️ URL launch error: $e");
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => FullScreenActionPage(value: value,
-              ),
+      showDialog(
+        context: context, // ✅ yahi best hai
+        barrierDismissible: false,
+        builder: (dialogCtx) {
+          return PopScope( // ✅ WillPopScope new replacement (Flutter 3.13+)
+            canPop: false,
+            onPopInvoked: (didPop) {
+              SystemNavigator.pop();
+            },
+            child: CustomUpgradeDialog(
+              currentVersion: status.localVersion,
+              newVersion: status.storeVersion,
+              releaseNotes: [
+                (status.releaseNotes ?? "").trim().isEmpty
+                    ? "New update available."
+                    : status.releaseNotes!.trim(),
+              ],
             ),
-          );        }
-      } else {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => FullScreenActionPage(value: value,
-            ),
-          ),
-        );      }
-    } else {
-      debugPrint("⚠️ Barcode detected but value empty.");
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Invalid QR/Barcode")),
+          );
+        },
       );
+    } catch (e, st) {
+      debugPrint("advancedStatusCheck error: $e");
+      debugPrint("$st");
     }
-
-    Future.delayed(const Duration(seconds: 2), () {
-      _isScanning = false;
-    });
   }
-
-
   Future<void> checkForVersion(BuildContext context) async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
     currentVersion = packageInfo.version;
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
