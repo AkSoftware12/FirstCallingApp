@@ -155,19 +155,6 @@ class _HomePageState extends State<BottomNavigationBarScreen> {
     currentVersion = packageInfo.version;
   }
 
-  // Sample data for emergency numbers
-  final List<EmergencyNumber> emergencyNumbers = [
-    EmergencyNumber(police: '100', ambulance: '102', fire: '112'),
-    EmergencyNumber(police: '100', ambulance: '102', fire: '112'),
-    EmergencyNumber(police: '100', ambulance: '102', fire: '112'),
-    EmergencyNumber(police: '100', ambulance: '102', fire: '112'),
-    EmergencyNumber(police: '100', ambulance: '102', fire: '112'),
-    EmergencyNumber(police: '100', ambulance: '102', fire: '112'),
-    EmergencyNumber(police: '100', ambulance: '102', fire: '112'),
-    EmergencyNumber(police: '100', ambulance: '102', fire: '112'),
-    EmergencyNumber(police: '100', ambulance: '102', fire: '112'),
-    EmergencyNumber(police: '100', ambulance: '102', fire: '112'),
-  ];
 
 
   String? extractNumberFromUrl(String url) {
