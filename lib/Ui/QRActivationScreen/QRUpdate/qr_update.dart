@@ -242,8 +242,8 @@ print('Update Data $updateData');
               _buildTextField("Address", _addressController),
               _buildTextField("Gender", _genderController),
               _buildTextField("Email", _emailController),
-              _buildTextField("Contact No 1", _contactNo1Controller),
-              _buildTextField("Contact No 2", _contactNo2Controller),
+              _buildTextFieldNumber("Primary Contact No.", _contactNo1Controller),
+              _buildTextFieldNumber("Secondary Contact No.", _contactNo2Controller),
               const SizedBox(height: 20),
               _buildSectionTitle("Family Members"),
               _buildFamilyMemberSection("Family Member 1", 1),
@@ -344,7 +344,71 @@ print('Update Data $updateData');
       ),
     );
   }
+  Widget _buildTextFieldNumber(String label, TextEditingController controller) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 15),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: AppColors.navyBlue,
+            ),
+          ),
+          const SizedBox(height: 8),
+          TextFormField(
+            controller: controller,
+            keyboardType: TextInputType.number, // ✅ Number keyboard
 
+            // ✅ IMPORTANT PART
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly, // Only numbers
+              LengthLimitingTextInputFormatter(10),   // Max 10 digits
+            ],
+
+            decoration: InputDecoration(
+              prefixIcon: Icon(
+                Icons.call,
+                color: AppColors.navyBlue.withOpacity(0.7),
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: AppColors.navyBlue.withOpacity(0.3)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: AppColors.navyBlue),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: AppColors.navyBlue.withOpacity(0.3)),
+              ),
+              filled: true,
+              fillColor: AppColors.colorWhite,
+              contentPadding: const EdgeInsets.all(15),
+            ),
+            style: TextStyle(
+              fontSize: 16,
+              color: AppColors.colorBlack,
+            ),
+
+            // (Optional) Validation bhi laga sakte ho
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return "Please enter number";
+              } else if (value.length != 10) {
+                return "Enter valid 10 digit number";
+              }
+              return null;
+            },
+          ),
+        ],
+      ),
+    );
+  }
   // Helper to get icon based on label (you can expand this)
   IconData _getIconForLabel(String label) {
     switch (label) {
@@ -387,7 +451,7 @@ print('Update Data $updateData');
             const SizedBox(height: 10),
             _buildSmallTextField("Name", memberNumber == 1 ? _family1NameController : _family2NameController),
             _buildSmallTextField("Relation", memberNumber == 1 ? _family1RelationController : _family2RelationController),
-            _buildSmallTextField("Contact No", memberNumber == 1 ? _family1NoController : _family2NoController),
+            _buildTextFieldNumber("Contact No", memberNumber == 1 ? _family1NoController : _family2NoController),
           ],
         ),
       ),

@@ -296,7 +296,7 @@ class _ResultPageState extends State<ResultPage> {
                                         ),
 
                                         _buildDetailRow(
-                                          'Phone',
+                                          'Primary Contact No',
                                           userPhone,
                                           context,
                                           isPhone: true,
@@ -307,7 +307,7 @@ class _ResultPageState extends State<ResultPage> {
                                         ),
 
                                         _buildDetailRow(
-                                          'Contact',
+                                          'Secondary Contact No.',
                                           userContact,
                                           context,
                                           isPhone: true,
