@@ -12,7 +12,8 @@ import '../QRUpdate/qr_update.dart';
 
 class OTPScreen extends StatefulWidget {
   final Map qrData;
-  const OTPScreen({super.key, required this.qrData});
+  final  String otoValu;
+  const OTPScreen({super.key, required this.qrData, required this.otoValu});
 
   @override
   _OTPScreenState createState() => _OTPScreenState();
@@ -28,15 +29,15 @@ class _OTPScreenState extends State<OTPScreen> with SingleTickerProviderStateMix
   late Animation<Offset> _shakeAnimation;
 
 
-
-
   @override
   void initState() {
     super.initState();
+
     _shakeController = AnimationController(
       duration: const Duration(milliseconds: 500),
       vsync: this,
     );
+
     _shakeAnimation = Tween<Offset>(
       begin: const Offset(-1.0, 0.0),
       end: Offset.zero,
@@ -44,14 +45,52 @@ class _OTPScreenState extends State<OTPScreen> with SingleTickerProviderStateMix
       parent: _shakeController,
       curve: Curves.elasticOut,
     ));
-    // Auto-focus first field
+
+    // ✅ Auto fill OTP
+    _fillOTP();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _otpControllers[0].selection = TextSelection.fromPosition(
-        TextPosition(offset: _otpControllers[0].text.length),
-      );
-      FocusScope.of(context).requestFocus(FocusNode());
+      FocusScope.of(context).unfocus();
     });
   }
+
+  void _fillOTP() {
+    String otp = widget.otoValu;
+
+    if (otp.length == 6) {
+      for (int i = 0; i < 6; i++) {
+        _otpControllers[i].text = otp[i];
+      }
+
+      // Optional: Auto verify after fill
+      Future.delayed(const Duration(milliseconds: 300), () {
+        _verifyOTP();
+      });
+    }
+  }
+
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   _shakeController = AnimationController(
+  //     duration: const Duration(milliseconds: 500),
+  //     vsync: this,
+  //   );
+  //   _shakeAnimation = Tween<Offset>(
+  //     begin: const Offset(-1.0, 0.0),
+  //     end: Offset.zero,
+  //   ).animate(CurvedAnimation(
+  //     parent: _shakeController,
+  //     curve: Curves.elasticOut,
+  //   ));
+  //   // Auto-focus first field
+  //   WidgetsBinding.instance.addPostFrameCallback((_) {
+  //     _otpControllers[0].selection = TextSelection.fromPosition(
+  //       TextPosition(offset: _otpControllers[0].text.length),
+  //     );
+  //     FocusScope.of(context).requestFocus(FocusNode());
+  //   });
+  // }
 
   @override
   void dispose() {
@@ -215,8 +254,8 @@ class _OTPScreenState extends State<OTPScreen> with SingleTickerProviderStateMix
     return Scaffold(
       backgroundColor: AppColors.lightGray,
       appBar: AppBar(
-        title: const Text(
-          "OTP Verification",
+        title:  Text(
+          "OTP Verification ${widget.otoValu}",
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         backgroundColor: AppColors.navyBlue,

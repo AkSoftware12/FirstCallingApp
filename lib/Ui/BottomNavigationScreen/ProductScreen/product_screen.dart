@@ -1,6 +1,8 @@
 
 import 'dart:convert';
+import 'dart:ui';
 import 'package:firstcallingapp/BaseUrl/baseurl.dart';
+import 'package:firstcallingapp/Ui/Login/Login/login.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -11,6 +13,7 @@ import 'package:firstcallingapp/Utils/color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -65,8 +68,30 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
   Future<void> fetchProducts() async {
     try {
-      var url = Uri.parse(ApiRoutes.getAllProducts); // apna API endpoint
-      var response = await http.get(url);
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+
+      print("Apitoken: $token");
+
+      if (token == null || token.isEmpty) {
+        if (mounted) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) showSessionExpiredDialog(context);
+          });
+        }
+        return;
+      }
+
+      var url = Uri.parse(ApiRoutes.getAllProducts);
+
+      // ✅ Token header add kiya
+      var response = await http.get(
+        url,
+        headers: {
+          "Authorization": "Bearer $token",
+          "Content-Type": "application/json",
+        },
+      );
 
       if (response.statusCode == 200) {
         var data = json.decode(response.body);
@@ -76,6 +101,13 @@ class _ProductListScreenState extends State<ProductListScreen> {
           products = list.map((e) => Product.fromJson(e)).toList();
           isLoading = false;
         });
+      } else if (response.statusCode == 401) {
+        // ✅ Unauthorized → session expire
+        if (mounted) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) showSessionExpiredDialog(context);
+          });
+        }
       } else {
         setState(() {
           isLoading = false;
@@ -85,13 +117,47 @@ class _ProductListScreenState extends State<ProductListScreen> {
       setState(() {
         isLoading = false;
       });
+
       debugPrint("Error: $e");
+
+      if (mounted) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) showSessionExpiredDialog(context);
+        });
+      }
     }
   }
   @override
   void initState() {
     super.initState();
-    fetchProducts();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      fetchProducts();
+    });
+  }
+  void showSessionExpiredDialog(BuildContext context) {
+    if (!Navigator.of(context).mounted) return;
+
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierLabel: 'session_expired',
+      barrierColor: Colors.black.withOpacity(0.75),
+      transitionDuration: const Duration(milliseconds: 400),
+      transitionBuilder: (ctx, animation, secondaryAnimation, child) {
+        final curved = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutBack,
+        );
+        return ScaleTransition(
+          scale: Tween<double>(begin: 0.85, end: 1.0).animate(curved),
+          child: FadeTransition(
+            opacity: Tween<double>(begin: 0.0, end: 1.0).animate(curved),
+            child: child,
+          ),
+        );
+      },
+      pageBuilder: (ctx, _, __) =>  _SessionExpiredDialog(),
+    );
   }
 
   @override
@@ -467,6 +533,258 @@ class _CategoryChipsState extends State<CategoryChips> {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+
+class _SessionExpiredDialog extends StatefulWidget {
+  const _SessionExpiredDialog();
+
+  @override
+  State<_SessionExpiredDialog> createState() => _SessionExpiredDialogState();
+}
+
+class _SessionExpiredDialogState extends State<_SessionExpiredDialog>
+    with SingleTickerProviderStateMixin {
+  bool _loading = false;
+
+  late AnimationController _iconController;
+  late Animation<double> _iconRotate;
+
+  @override
+  void initState() {
+    super.initState();
+    _iconController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 700),
+    );
+    _iconRotate = Tween<double>(begin: 0.0, end: 0.05).animate(
+      CurvedAnimation(parent: _iconController, curve: Curves.elasticOut),
+    );
+    // Subtle idle shake on mount
+    Future.delayed(const Duration(milliseconds: 200), () {
+      if (mounted) _iconController.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _iconController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleOk() async {
+    setState(() => _loading = true);
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+
+    if (!mounted) return;
+
+    Navigator.of(context).pop();
+
+    Navigator.pushAndRemoveUntil(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (_, animation, __) => const LoginScreen(),
+        transitionsBuilder: (_, animation, __, child) {
+          return FadeTransition(
+            opacity: animation,
+            child: SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0, 0.04),
+                end: Offset.zero,
+              ).animate(CurvedAnimation(
+                parent: animation,
+                curve: Curves.easeOutCubic,
+              )),
+              child: child,
+            ),
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 480),
+      ),
+          (route) => false,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Material(
+        color: Colors.transparent,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(28),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+            child: Container(
+              width: 320,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(28),
+                gradient:  LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Colors.grey.shade200,
+                    Colors.grey.shade200,
+                  ],
+                ),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.08),
+                  width: 1.2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.navyBlue.withOpacity(0.18),
+                    blurRadius: 60,
+                    spreadRadius: 0,
+                    offset: const Offset(0, 20),
+                  ),
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.6),
+                    blurRadius: 40,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(28, 32, 28, 28),
+                    child: Column(
+                      children: [
+                        // ── Icon ──
+                        AnimatedBuilder(
+                          animation: _iconRotate,
+                          builder: (_, child) => Transform.rotate(
+                            angle: _iconRotate.value,
+                            child: child,
+                          ),
+                          child: Container(
+                            width: 72,
+                            height: 72,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient:  RadialGradient(
+                                colors: [
+                                  AppColors.navyBlue,
+                                  AppColors.navyBlue,
+                                ],
+                              ),
+                              border: Border.all(
+                                color: AppColors.navyBlue.withOpacity(0.35),
+                                width: 1.5,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color:AppColors.navyBlue.withOpacity(0.3),
+                                  blurRadius: 24,
+                                  spreadRadius: 2,
+                                ),
+                              ],
+                            ),
+                            child: const Icon(
+                              Icons.lock_clock_rounded,
+                              color: Colors.white,
+                              size: 32,
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        // ── Title ──
+                        Text(
+                          'Session Expired',
+                          style: TextStyle(
+                            fontFamily: 'SF Pro Display',
+                            fontSize: 22,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.navyBlue,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+
+                        const SizedBox(height: 10),
+
+                        // ── Subtitle ──
+                        Text(
+                          'Your session has timed out for security.\nPlease log in again to continue.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 14,
+                            height: 1.55,
+                            color: AppColors.navyBlue.withOpacity(0.8),
+                            letterSpacing: 0.1,
+                          ),
+                        ),
+
+                        const SizedBox(height: 32),
+
+                        // ── Button ──
+                        GestureDetector(
+                          onTap: _loading ? null : _handleOk,
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            width: double.infinity,
+                            height: 52,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(14),
+                              gradient: _loading
+                                  ? null
+                                  :  LinearGradient(
+                                colors: [
+                                  AppColors.navyBlue,
+                                  AppColors.navyBlue,
+                                ],
+                              ),
+                              color: _loading
+                                  ? Colors.white.withOpacity(0.07)
+                                  : null,
+                              boxShadow: _loading
+                                  ? []
+                                  : [
+                                BoxShadow(
+                                  color: AppColors.navyBlue
+                                      .withOpacity(0.4),
+                                  blurRadius: 20,
+                                  offset: const Offset(0, 6),
+                                ),
+                              ],
+                            ),
+                            alignment: Alignment.center,
+                            child: _loading
+                                ? const SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.2,
+                                valueColor: AlwaysStoppedAnimation(
+                                    Colors.white54),
+                              ),
+                            )
+                                : const Text(
+                              'Log In Again',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

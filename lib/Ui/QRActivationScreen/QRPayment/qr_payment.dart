@@ -90,6 +90,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
           userMobile = jsonData['contact'] ?? '';
 
         });
+        _handlePayment();
         // Save updated profile data to SharedPreferences for drawer
         // await _saveProfileToPrefs(jsonData);
       } else {
@@ -136,8 +137,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
     print('UserAddress : $userAddress');
 
     // ✅ Check for missing details before proceeding
-    if (userName == null || userName!.trim().isEmpty ||
-        userAddress == null || userAddress!.trim().isEmpty) {
+    if (userName.trim().isEmpty || userAddress.trim().isEmpty) {
 
       showDialog(
         context: context,

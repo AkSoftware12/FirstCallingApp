@@ -224,7 +224,7 @@ class _QRActiveState extends State<QRActive> with TickerProviderStateMixin {
             Future.delayed(const Duration(milliseconds: 800), () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => OTPScreen(qrData: qr)),
+                MaterialPageRoute(builder: (_) => OTPScreen(qrData: qr, otoValu: '${data['otp'].toString()}',)),
               );
             });
           } else {
