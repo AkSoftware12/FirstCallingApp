@@ -31,10 +31,14 @@ class _ResultPageState extends State<ResultPage> {
     super.initState();
     // fetchQrDetails();
   }
-
+  String maskLastFourDigits(String number) {
+    if (number.length <= 4) return '****';
+    return number.substring(0, number.length - 4) + '****';
+  }
   @override
   Widget build(BuildContext context) {
     final Map<String, dynamic>? qrData = widget.qrData; // ✅ from previous screen
+    final String carNo = qrData?['car_no'] ?? 'Unknown';
     final String userName = qrData?['name'] ?? 'Unknown';
     final Object userAge = qrData?['dob'].toString() ?? 0;
     final String userGender = qrData?['gender'] ?? 'Not specified';
@@ -204,99 +208,144 @@ class _ResultPageState extends State<ResultPage> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        Row(
-                                          children: [
-                                            Center(
-                                              child: Hero(
-                                                tag: 'profileImage',
-                                                child: CircleAvatar(
-                                                  radius: 30,
-                                                  backgroundImage:
-                                                      profileImage.isNotEmpty
-                                                      ? NetworkImage(
-                                                          profileImage,
-                                                        )
-                                                      : null,
-                                                  child: profileImage.isEmpty
-                                                      ? Icon(
-                                                          Icons.person,
-                                                          size: 50.sp,
-                                                          color: Colors
-                                                              .blue
-                                                              .shade700,
-                                                        )
-                                                      : null,
-                                                  backgroundColor:
-                                                      Colors.blue.shade100,
-                                                ),
-                                              ),
-                                            ),
-                                            SizedBox(width: 10.sp),
-                                            Expanded(
-                                              child: Column(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    userName,
-                                                    style: TextStyle(
-                                                      fontSize: 15.sp,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      color:
-                                                          Colors.blue.shade900,
-                                                      letterSpacing: 1.0,
-                                                    ),
-                                                  ),
-                                                  Text(
-                                                    userEmail,
-                                                    style: TextStyle(
-                                                      fontSize: 12.sp,
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                      color:
-                                                          Colors.blue.shade900,
-                                                      letterSpacing: 1.0,
-                                                    ),
-                                                  ),
-                                                  Row(
-                                                    children: [
-                                                      // Text(
-                                                      //   DateFormat('dd-MM-yyyy').format( DateTime.parse(userAge)),
-                                                      //   style: TextStyle(
-                                                      //     fontSize: 12.sp,
-                                                      //     fontWeight: FontWeight.w500,
-                                                      //     color: Colors.blue.shade900,
-                                                      //   ),
-                                                      // ),
-                                                      Text(
-                                                        ' / ${userGender}',
-                                                        style: TextStyle(
-                                                          fontSize: 12.sp,
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          color: Colors
-                                                              .blue
-                                                              .shade900,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        SizedBox(height: 5.sp),
-                                        Divider(
-                                          thickness: 1.sp,
-                                          color: Colors.grey.shade200,
-                                        ),
+                                        // Row(
+                                        //   children: [
+                                        //     // Center(
+                                        //     //   child: Hero(
+                                        //     //     tag: 'profileImage',
+                                        //     //     child: CircleAvatar(
+                                        //     //       radius: 30,
+                                        //     //       backgroundImage:
+                                        //     //           profileImage.isNotEmpty
+                                        //     //           ? NetworkImage(
+                                        //     //               profileImage,
+                                        //     //             )
+                                        //     //           : null,
+                                        //     //       child: profileImage.isEmpty
+                                        //     //           ? Icon(
+                                        //     //               Icons.person,
+                                        //     //               size: 50.sp,
+                                        //     //               color: Colors
+                                        //     //                   .blue
+                                        //     //                   .shade700,
+                                        //     //             )
+                                        //     //           : null,
+                                        //     //       backgroundColor:
+                                        //     //           Colors.blue.shade100,
+                                        //     //     ),
+                                        //     //   ),
+                                        //     // ),
+                                        //     // SizedBox(width: 10.sp),
+                                        //     Expanded(
+                                        //       child: Column(
+                                        //         mainAxisAlignment:
+                                        //             MainAxisAlignment.start,
+                                        //         crossAxisAlignment:
+                                        //             CrossAxisAlignment.start,
+                                        //         children: [
+                                        //           Container(
+                                        //             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                                        //             decoration: BoxDecoration(
+                                        //               color: Colors.white,
+                                        //               borderRadius: BorderRadius.circular(6),
+                                        //               border: Border.all(
+                                        //                 color: Colors.blue.shade900,
+                                        //                 width: 2.5,
+                                        //               ),
+                                        //               boxShadow: [
+                                        //                 BoxShadow(
+                                        //                   color: Colors.blue.shade900.withOpacity(0.15),
+                                        //                   blurRadius: 8,
+                                        //                   offset: const Offset(0, 3),
+                                        //                 ),
+                                        //               ],
+                                        //             ),
+                                        //             child: Row(
+                                        //               mainAxisSize: MainAxisSize.min,
+                                        //               children: [
+                                        //                 // IND flag strip (left blue bar)
+                                        //                 Container(
+                                        //                   width: 30,
+                                        //                   padding: const EdgeInsets.symmetric(vertical: 2),
+                                        //                   decoration: BoxDecoration(
+                                        //                     color: Colors.blue.shade900,
+                                        //                     borderRadius: BorderRadius.circular(3),
+                                        //                   ),
+                                        //                   child: Column(
+                                        //                     mainAxisSize: MainAxisSize.min,
+                                        //                     children: [
+                                        //                       // Ashoka Chakra (simplified)
+                                        //                       Icon(
+                                        //                         Icons.brightness_high_rounded,
+                                        //                         color: Colors.white,
+                                        //                         size: 15.sp,
+                                        //                       ),
+                                        //                       const SizedBox(height: 2),
+                                        //                       Text(
+                                        //                         'IND',
+                                        //                         style: TextStyle(
+                                        //                           color: Colors.white,
+                                        //                           fontSize: 10.sp,
+                                        //                           fontWeight: FontWeight.bold,
+                                        //                           letterSpacing: 0.5,
+                                        //                         ),
+                                        //                       ),
+                                        //                     ],
+                                        //                   ),
+                                        //                 ),
+                                        //                 const SizedBox(width: 8),
+                                        //                 // Car Number
+                                        //                 Text(
+                                        //                   carNo,
+                                        //                   style: TextStyle(
+                                        //                     fontSize: 20.sp,
+                                        //                     fontWeight: FontWeight.bold,
+                                        //                     color: Colors.black87,
+                                        //                     letterSpacing: 2.0,
+                                        //                     fontFamily: 'monospace',
+                                        //                   ),
+                                        //                 ),
+                                        //               ],
+                                        //             ),
+                                        //           ),                                                  // Text(
+                                        //           //   userEmail,
+                                        //           //   style: TextStyle(
+                                        //           //     fontSize: 12.sp,
+                                        //           //     fontWeight:
+                                        //           //         FontWeight.w500,
+                                        //           //     color:
+                                        //           //         Colors.blue.shade900,
+                                        //           //     letterSpacing: 1.0,
+                                        //           //   ),
+                                        //           // ),
+                                        //           // Row(
+                                        //           //   children: [
+                                        //           //     Text(
+                                        //           //       '${userGender}',
+                                        //           //       style: TextStyle(
+                                        //           //         fontSize: 12.sp,
+                                        //           //         fontWeight:
+                                        //           //             FontWeight.w500,
+                                        //           //         color: Colors
+                                        //           //             .blue
+                                        //           //             .shade900,
+                                        //           //       ),
+                                        //           //     ),
+                                        //           //   ],
+                                        //           // ),
+                                        //         ],
+                                        //       ),
+                                        //     ),
+                                        //   ],
+                                        // ),
+                                        // SizedBox(height: 5.sp),
+                                        // Divider(
+                                        //   thickness: 1.sp,
+                                        //   color: Colors.grey.shade200,
+                                        // ),
 
                                         _buildDetailRow(
-                                          'Primary Contact No',
+                                          'Primary Contact No.',
                                           userPhone,
                                           context,
                                           isPhone: true,
@@ -312,16 +361,16 @@ class _ResultPageState extends State<ResultPage> {
                                           context,
                                           isPhone: true,
                                         ),
-                                        Divider(
-                                          thickness: 1.sp,
-                                          color: Colors.grey.shade200,
-                                        ),
-
-                                        _buildDetailRow(
-                                          'Address',
-                                          userAddress,
-                                          context,
-                                        ),
+                                        // Divider(
+                                        //   thickness: 1.sp,
+                                        //   color: Colors.grey.shade200,
+                                        // ),
+                                        //
+                                        // _buildDetailRow(
+                                        //   'Address',
+                                        //   userAddress,
+                                        //   context,
+                                        // ),
                                       ],
                                     ),
                                   ),
@@ -391,78 +440,82 @@ class _ResultPageState extends State<ResultPage> {
                                         contentPadding: EdgeInsets.all(10.sp),
                                         title: Column(
                                           children: [
-                                            Row(
-                                              children: [
-                                                Center(
-                                                  child: Hero(
-                                                    tag: 'profileImage',
-                                                    child: CircleAvatar(
-                                                      radius: 20.sp,
-                                                      backgroundImage:
-                                                          profileImage
-                                                              .isNotEmpty
-                                                          ? NetworkImage('')
-                                                          : null,
-                                                      child:
-                                                          profileImage.isEmpty
-                                                          ? Icon(
-                                                              Icons.person,
-                                                              size: 30.sp,
-                                                              color: Colors
-                                                                  .blue
-                                                                  .shade700,
-                                                            )
-                                                          : null,
-                                                      backgroundColor:
-                                                          Colors.blue.shade100,
-                                                    ),
-                                                  ),
-                                                ),
-                                                SizedBox(width: 10.sp),
-                                                Expanded(
-                                                  child: Column(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment.start,
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      Text(
-                                                        family_member1_name,
-                                                        style: TextStyle(
-                                                          fontSize: 15.sp,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          color: Colors
-                                                              .red
-                                                              .shade900,
-                                                          letterSpacing: 1.0,
-                                                        ),
-                                                      ),
-                                                      Text(
-                                                        '($family_member1_relation)' ??
-                                                            'Unknown',
-                                                        style: TextStyle(
-                                                          fontSize: 12.sp,
-                                                          fontWeight:
-                                                              FontWeight.w600,
-                                                          color: Colors
-                                                              .red
-                                                              .shade900,
-                                                          letterSpacing: 1.0,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                            Divider(
-                                              thickness: 2.sp,
-                                              color: Colors.red.shade100,
-                                            ),
+                                            // Row(
+                                            //   children: [
+                                            //     // Container(
+                                            //     //   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                                            //     //   decoration: BoxDecoration(
+                                            //     //     color: Colors.white,
+                                            //     //     borderRadius: BorderRadius.circular(6),
+                                            //     //     border: Border.all(
+                                            //     //       color: Colors.red.shade900,
+                                            //     //       width: 2.5,
+                                            //     //     ),
+                                            //     //     boxShadow: [
+                                            //     //       BoxShadow(
+                                            //     //         color: Colors.red.shade900.withOpacity(0.15),
+                                            //     //         blurRadius: 8,
+                                            //     //         offset: const Offset(0, 3),
+                                            //     //       ),
+                                            //     //     ],
+                                            //     //   ),
+                                            //     //   child: Row(
+                                            //     //     mainAxisSize: MainAxisSize.min,
+                                            //     //     children: [
+                                            //     //       // IND flag strip (left blue bar)
+                                            //     //       Container(
+                                            //     //         width: 30,
+                                            //     //         padding: const EdgeInsets.symmetric(vertical: 2),
+                                            //     //         decoration: BoxDecoration(
+                                            //     //           color: Colors.blue.shade900,
+                                            //     //           borderRadius: BorderRadius.circular(3),
+                                            //     //         ),
+                                            //     //         child: Column(
+                                            //     //           mainAxisSize: MainAxisSize.min,
+                                            //     //           children: [
+                                            //     //             // Ashoka Chakra (simplified)
+                                            //     //             Icon(
+                                            //     //               Icons.brightness_high_rounded,
+                                            //     //               color: Colors.white,
+                                            //     //               size: 15.sp,
+                                            //     //             ),
+                                            //     //             const SizedBox(height: 2),
+                                            //     //             Text(
+                                            //     //               'IND',
+                                            //     //               style: TextStyle(
+                                            //     //                 color: Colors.white,
+                                            //     //                 fontSize: 10.sp,
+                                            //     //                 fontWeight: FontWeight.bold,
+                                            //     //                 letterSpacing: 0.5,
+                                            //     //               ),
+                                            //     //             ),
+                                            //     //           ],
+                                            //     //         ),
+                                            //     //       ),
+                                            //     //       const SizedBox(width: 8),
+                                            //     //       // Car Number
+                                            //     //       Text(
+                                            //     //         carNo,
+                                            //     //         style: TextStyle(
+                                            //     //           fontSize: 20.sp,
+                                            //     //           fontWeight: FontWeight.bold,
+                                            //     //           color: Colors.black87,
+                                            //     //           letterSpacing: 2.0,
+                                            //     //           fontFamily: 'monospace',
+                                            //     //         ),
+                                            //     //       ),
+                                            //     //     ],
+                                            //     //   ),
+                                            //     // ),                                                  // Text(
+                                            //
+                                            //   ],
+                                            // ),
+                                            // Divider(
+                                            //   thickness: 2.sp,
+                                            //   color: Colors.red.shade100,
+                                            // ),
                                             _buildDetailRow2(
-                                              'Contact',
+                                              'Contact No. 1',
                                               family_member1_no ?? 'N/A',
                                               userPhone,
                                               context,
@@ -510,80 +563,80 @@ class _ResultPageState extends State<ResultPage> {
                                         contentPadding: EdgeInsets.all(10.sp),
                                         title: Column(
                                           children: [
-                                            Row(
-                                              children: [
-                                                Center(
-                                                  child: Hero(
-                                                    tag: 'profileImage',
-                                                    child: CircleAvatar(
-                                                      radius: 20.sp,
-                                                      backgroundImage:
-                                                          profileImage
-                                                              .isNotEmpty
-                                                          ? NetworkImage(
-                                                              'profileImage',
-                                                            )
-                                                          : null,
-                                                      backgroundColor:
-                                                          Colors.blue.shade100,
-                                                      child:
-                                                          profileImage.isEmpty
-                                                          ? Icon(
-                                                              Icons.person,
-                                                              size: 30.sp,
-                                                              color: Colors
-                                                                  .blue
-                                                                  .shade700,
-                                                            )
-                                                          : null,
-                                                    ),
-                                                  ),
-                                                ),
-                                                SizedBox(width: 10.sp),
-                                                Expanded(
-                                                  child: Column(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment.start,
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      Text(
-                                                        family_member2_name,
-                                                        style: TextStyle(
-                                                          fontSize: 15.sp,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          color: Colors
-                                                              .red
-                                                              .shade900,
-                                                          letterSpacing: 1.0,
-                                                        ),
-                                                      ),
-                                                      Text(
-                                                        '($family_member2_relation)' ??
-                                                            'Unknown',
-                                                        style: TextStyle(
-                                                          fontSize: 12.sp,
-                                                          fontWeight:
-                                                              FontWeight.w600,
-                                                          color: Colors
-                                                              .red
-                                                              .shade900,
-                                                          letterSpacing: 1.0,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                            Divider(
-                                              thickness: 2.sp,
-                                              color: Colors.red.shade100,
-                                            ),
+                                            // Row(
+                                            //   children: [
+                                            //     Center(
+                                            //       child: Hero(
+                                            //         tag: 'profileImage',
+                                            //         child: CircleAvatar(
+                                            //           radius: 20.sp,
+                                            //           backgroundImage:
+                                            //               profileImage
+                                            //                   .isNotEmpty
+                                            //               ? NetworkImage(
+                                            //                   'profileImage',
+                                            //                 )
+                                            //               : null,
+                                            //           backgroundColor:
+                                            //               Colors.blue.shade100,
+                                            //           child:
+                                            //               profileImage.isEmpty
+                                            //               ? Icon(
+                                            //                   Icons.person,
+                                            //                   size: 30.sp,
+                                            //                   color: Colors
+                                            //                       .blue
+                                            //                       .shade700,
+                                            //                 )
+                                            //               : null,
+                                            //         ),
+                                            //       ),
+                                            //     ),
+                                            //     SizedBox(width: 10.sp),
+                                            //     Expanded(
+                                            //       child: Column(
+                                            //         mainAxisAlignment:
+                                            //             MainAxisAlignment.start,
+                                            //         crossAxisAlignment:
+                                            //             CrossAxisAlignment
+                                            //                 .start,
+                                            //         children: [
+                                            //           Text(
+                                            //             family_member2_name,
+                                            //             style: TextStyle(
+                                            //               fontSize: 15.sp,
+                                            //               fontWeight:
+                                            //                   FontWeight.bold,
+                                            //               color: Colors
+                                            //                   .red
+                                            //                   .shade900,
+                                            //               letterSpacing: 1.0,
+                                            //             ),
+                                            //           ),
+                                            //           Text(
+                                            //             '($family_member2_relation)' ??
+                                            //                 'Unknown',
+                                            //             style: TextStyle(
+                                            //               fontSize: 12.sp,
+                                            //               fontWeight:
+                                            //                   FontWeight.w600,
+                                            //               color: Colors
+                                            //                   .red
+                                            //                   .shade900,
+                                            //               letterSpacing: 1.0,
+                                            //             ),
+                                            //           ),
+                                            //         ],
+                                            //       ),
+                                            //     ),
+                                            //   ],
+                                            // ),
+                                            // Divider(
+                                            //   thickness: 2.sp,
+                                            //   color: Colors.red.shade100,
+                                            // ),
                                             _buildDetailRow2(
-                                              'Contact',
+                                              'Contact NO. 2',
                                               family_member2_no ?? 'N/A',
                                               userPhone,
                                               context,
@@ -643,15 +696,15 @@ class _ResultPageState extends State<ResultPage> {
                   Text(
                     '$label',
                     style: GoogleFonts.poppins(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w600,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.bold,
                       color: Colors.blue.shade700,
                     ),
                   ),
                   Text(
                     displayValue,
                     style: GoogleFonts.poppins(
-                      fontSize: 12.sp,
+                      fontSize: 17.sp,
                       fontWeight: FontWeight.w400,
                       color: Colors.blue.shade900,
                     ),
@@ -720,15 +773,15 @@ class _ResultPageState extends State<ResultPage> {
                   Text(
                     '$label',
                     style: GoogleFonts.poppins(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w400,
+                      fontSize: 17.sp,
+                      fontWeight: FontWeight.bold,
                       color: Colors.red,
                     ),
                   ),
                   Text(
                     displayValue,
                     style: GoogleFonts.poppins(
-                      fontSize: 12.sp,
+                      fontSize: 17.sp,
                       fontWeight: FontWeight.w600,
                       color: Colors.red.shade900,
                     ),

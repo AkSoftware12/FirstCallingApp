@@ -37,5 +37,4 @@ class ApiRoutes {
   static const String paymentStore = "$baseUrl/payment-store";
   static const String getUserPayment = "$baseUrl/my-payments";
 
-
 }

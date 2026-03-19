@@ -21,6 +21,7 @@ class UpdateScreen extends StatefulWidget {
 
 class _UpdateScreenState extends State<UpdateScreen> {
   // Form controllers to track changes
+  late TextEditingController _carController;
   late TextEditingController _nameController;
   late TextEditingController _dobController;
   late TextEditingController _addressController;
@@ -41,26 +42,28 @@ class _UpdateScreenState extends State<UpdateScreen> {
   void initState() {
     super.initState();
     // Initialize controllers with initial values
-    _nameController = TextEditingController(text: widget.qrData['name'] ?? 'N/A');
-    _dobController = TextEditingController(text: widget.qrData['dob'] ?? 'N/A');
-    _addressController = TextEditingController(text: widget.qrData['address'] ?? 'N/A');
-    _genderController = TextEditingController(text: widget.qrData['gender'] ?? 'N/A');
-    _emailController = TextEditingController(text: widget.qrData['email'] ?? 'N/A');
-    _contactNo1Controller = TextEditingController(text: widget.qrData['contact_no1'] ?? 'N/A');
-    _contactNo2Controller = TextEditingController(text: widget.qrData['contact_no2'] ?? 'N/A');
+    _carController = TextEditingController(text: widget.qrData['car_no'] ?? '');
+    _nameController = TextEditingController(text: widget.qrData['name'] ?? '');
+    _dobController = TextEditingController(text: widget.qrData['dob'] ?? '');
+    _addressController = TextEditingController(text: widget.qrData['address'] ?? '');
+    _genderController = TextEditingController(text: widget.qrData['gender'] ?? '');
+    _emailController = TextEditingController(text: widget.qrData['email'] ?? '');
+    _contactNo1Controller = TextEditingController(text: widget.qrData['contact_no1'] ?? '');
+    _contactNo2Controller = TextEditingController(text: widget.qrData['contact_no2'] ?? '');
 
-    _family1NameController = TextEditingController(text: widget.qrData['family_member1_name'] ?? 'N/A');
-    _family1RelationController = TextEditingController(text: widget.qrData['family_member1_relation'] ?? 'N/A');
-    _family1NoController = TextEditingController(text: widget.qrData['family_member1_no'] ?? 'N/A');
+    _family1NameController = TextEditingController(text: widget.qrData['family_member1_name'] ?? '');
+    _family1RelationController = TextEditingController(text: widget.qrData['family_member1_relation'] ?? '');
+    _family1NoController = TextEditingController(text: widget.qrData['family_member1_no'] ?? '');
 
-    _family2NameController = TextEditingController(text: widget.qrData['family_member2_name'] ?? 'N/A');
-    _family2RelationController = TextEditingController(text: widget.qrData['family_member2_relation'] ?? 'N/A');
-    _family2NoController = TextEditingController(text: widget.qrData['family_member2_no'] ?? 'N/A');
+    _family2NameController = TextEditingController(text: widget.qrData['family_member2_name'] ?? '');
+    _family2RelationController = TextEditingController(text: widget.qrData['family_member2_relation'] ?? '');
+    _family2NoController = TextEditingController(text: widget.qrData['family_member2_no'] ?? '');
   }
 
   @override
   void dispose() {
     // Dispose controllers to prevent memory leaks
+    _carController.dispose();
     _nameController.dispose();
     _dobController.dispose();
     _addressController.dispose();
@@ -84,7 +87,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
     Map<String, dynamic> updateData = {
       'qr_number': widget.qrNumber,
       'name': _nameController.text,
-      // 'dob': _dobController.text,
+      'car_no': _carController.text,
       'address': _addressController.text,
       'gender': _genderController.text,
       'email': _emailController.text,
@@ -102,6 +105,7 @@ print('Update Data $updateData');
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
+      print(token);
       final response = await http.post(
         Uri.parse(ApiRoutes.qrCodeUpdate),
         headers: {
@@ -238,6 +242,7 @@ print('Update Data $updateData');
             children: [
               const SizedBox(height: 00),
               _buildSectionTitle("Personal Information"),
+              _buildTextField("Car & Bike Number", _carController),
               _buildTextField("Name", _nameController),
               _buildTextField("Address", _addressController),
               _buildTextField("Gender", _genderController),
@@ -298,6 +303,8 @@ print('Update Data $updateData');
   }
 
   Widget _buildTextField(String label, TextEditingController controller) {
+    bool isVehicleField = label == "Car & Bike Number";
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 15),
       child: Column(
@@ -313,15 +320,30 @@ print('Update Data $updateData');
           ),
           const SizedBox(height: 8),
           TextFormField(
-            controller: controller, // Use controller instead of initialValue
+            controller: controller,
+            textCapitalization: isVehicleField
+                ? TextCapitalization.characters
+                : TextCapitalization.none,
+
+            maxLength: isVehicleField ? 13 : null, // space ke saath
+
+            inputFormatters: isVehicleField
+                ? [
+              FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9]')),
+              VehicleNumberFormatter(),
+            ]
+                : null,
+
             decoration: InputDecoration(
+              counterText: "",
               prefixIcon: Icon(
-                _getIconForLabel(label), // Helper to get icon based on label
+                _getIconForLabel(label),
                 color: AppColors.navyBlue.withOpacity(0.7),
               ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppColors.navyBlue.withOpacity(0.3)),
+                borderSide:
+                BorderSide(color: AppColors.navyBlue.withOpacity(0.3)),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -329,7 +351,8 @@ print('Update Data $updateData');
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppColors.navyBlue.withOpacity(0.3)),
+                borderSide:
+                BorderSide(color: AppColors.navyBlue.withOpacity(0.3)),
               ),
               filled: true,
               fillColor: AppColors.colorWhite,
@@ -339,6 +362,29 @@ print('Update Data $updateData');
               fontSize: 16,
               color: AppColors.colorBlack,
             ),
+
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return "Please enter $label";
+              }
+
+              if (isVehicleField) {
+                String vehicle = value.replaceAll(" ", "");
+
+                if (vehicle.length < 8) {
+                  return "Enter valid vehicle number";
+                }
+
+                final regex =
+                RegExp(r'^[A-Z]{2}[0-9]{1,2}[A-Z]{1,2}[0-9]{1,4}$');
+
+                if (!regex.hasMatch(vehicle)) {
+                  return "Invalid vehicle number";
+                }
+              }
+
+              return null;
+            },
           ),
         ],
       ),
@@ -420,6 +466,8 @@ print('Update Data $updateData');
         return Icons.location_on;
       case "Gender":
         return Icons.wc;
+      case "Car & Bike Number":
+        return Icons.directions_car;
       case "Email":
         return Icons.email;
       case "Contact No 1":
@@ -505,6 +553,25 @@ print('Update Data $updateData');
           ),
         ],
       ),
+    );
+  }
+}
+
+
+class VehicleNumberFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+
+    String text = newValue.text.toUpperCase().replaceAll(" ", "");
+
+    if (text.length > 11) {
+      text = text.substring(0, 11);
+    }
+
+    return TextEditingValue(
+      text: text,
+      selection: TextSelection.collapsed(offset: text.length),
     );
   }
 }
