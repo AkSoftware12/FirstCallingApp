@@ -19,6 +19,7 @@ import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../Cart/CartModel/cart_model.dart';
 import '../../Cart/CartProvider/cart_provider.dart';
+import '../../QRActivationScreen/qr_check_screen.dart';
 import '../BannerScreen/banner.dart';
 
 class Product {
@@ -179,6 +180,139 @@ class _ProductListScreenState extends State<ProductListScreen> {
         children: [
           BannerSlider(),
           SizedBox(height: 5.sp),
+        GestureDetector(
+          onTap: (){
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => QRActive()),
+            );
+          },
+          child: Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: AppColors.navyBlue,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(width: 1, color: Colors.white),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(14),
+              child:  Padding(
+                padding: const EdgeInsets.all(10),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF6C63FF).withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(
+                    color: const Color(0xFF6C63FF).withOpacity(0.3),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 7,
+                      height: 7,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: const Color(0xFF43E8C5),
+                      ),
+                    ),
+                    const SizedBox(width: 7),
+                    const Text(
+                      'QR STICKER',
+                      style: TextStyle(
+                        color: Color(0xFF43E8C5),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+                          const SizedBox(height: 5),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.baseline,
+                          textBaseline: TextBaseline.alphabetic,
+                          children: [
+                            const Text(
+                              'Activate ',
+                              style: TextStyle(
+                                color: Color(0xFFF0EEFF),
+                                fontSize: 20,
+                                fontWeight: FontWeight.w800,
+                                height: 1.2,
+                              ),
+                            ),
+                            Text(
+                              'New QR',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w800,
+                                height: 1.2,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const Text(
+                              ' Sticker',
+                              style: TextStyle(
+                                color: Color(0xFFF0EEFF),
+                                fontSize: 20,
+                                fontWeight: FontWeight.w800,
+                                height: 1.2,
+                              ),
+                            ),
+                          ],
+                        ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'TAP TO SCAN & ACTIVATE',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.white.withOpacity(0.4),
+                              letterSpacing: 1.2,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Container(
+                      width: 72,
+                      height: 72,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(
+                          color: Colors.white,
+                          width: 1.5,
+                        ),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: Image.asset(
+                          'assets/applogo.jpg',
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -789,3 +923,8 @@ class _SessionExpiredDialogState extends State<_SessionExpiredDialog>
     );
   }
 }
+
+
+
+
+

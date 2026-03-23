@@ -165,39 +165,7 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
     );
   }
 
-  // void _showLoginDialog() {
-  //   // ✅ Agar already login screen pe ja raha hai to duplicate dialog mat dikhao
-  //   if (!mounted) return;
-  //
-  //   showCupertinoDialog(
-  //     context: context,
-  //     barrierDismissible: false, // ✅ Back press se band na ho
-  //     builder: (ctx) => CupertinoAlertDialog(
-  //       title: const Text('Session Expired'),
-  //       content: const Text('Please log in again to continue.'),
-  //       actions: [
-  //         CupertinoDialogAction(
-  //           child: const Text('OK'),
-  //           onPressed: () async {
-  //             Navigator.of(ctx).pop();
-  //
-  //             // ✅ Prefs clear karo before redirecting
-  //             final prefs = await SharedPreferences.getInstance();
-  //             await prefs.clear();
-  //
-  //             if (mounted) {
-  //               Navigator.pushAndRemoveUntil(
-  //                 context,
-  //                 MaterialPageRoute(builder: (_) => const LoginScreen()),
-  //                     (route) => false, // ✅ Saari back stack clear ho
-  //               );
-  //             }
-  //           },
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
+
 
 
 

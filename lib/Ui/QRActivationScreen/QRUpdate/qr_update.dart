@@ -243,18 +243,19 @@ print('Update Data $updateData');
               const SizedBox(height: 00),
               _buildSectionTitle("Personal Information"),
               _buildTextField("Car & Bike Number", _carController),
-              _buildTextField("Name", _nameController),
-              _buildTextField("Address", _addressController),
-              _buildTextField("Gender", _genderController),
-              _buildTextField("Email", _emailController),
+
+              // _buildTextField("Name", _nameController),
+              _buildTextField("City", _addressController),
+              // _buildTextField("Gender", _genderController),
+              // _buildTextField("Email", _emailController),
               _buildTextFieldNumber("Primary Contact No.", _contactNo1Controller),
               _buildTextFieldNumber("Secondary Contact No.", _contactNo2Controller),
-              const SizedBox(height: 20),
+              const SizedBox(height: 10),
               _buildSectionTitle("Family Members"),
               _buildFamilyMemberSection("Family Member 1", 1),
-              const SizedBox(height: 15),
+              const SizedBox(height: 10),
               _buildFamilyMemberSection("Family Member 2", 2),
-              const SizedBox(height: 40),
+              const SizedBox(height: 20),
               SizedBox(
                 width: double.infinity,
                 height: 50,
@@ -468,6 +469,8 @@ print('Update Data $updateData');
         return Icons.wc;
       case "Car & Bike Number":
         return Icons.directions_car;
+      case "City":
+        return Icons.location_city;
       case "Email":
         return Icons.email;
       case "Contact No 1":
