@@ -18,6 +18,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import '../../AccountDelete/account_delete.dart';
 import '../../BottomNavigationBar/bottomNvaigationBar.dart';
 import '../../Login/Login/login.dart';
 import '../../Notification/notification.dart';
@@ -82,15 +83,15 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
 
-      if (token == null || token.isEmpty) {
-        if (mounted) {
-          // ✅ Frame render hone ka wait karo, phir dialog dikhao
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) showSessionExpiredDialog(context);
-          });
-        }
-        return;
-      }
+      // if (token == null || token.isEmpty) {
+      //   if (mounted) {
+      //     // ✅ Frame render hone ka wait karo, phir dialog dikhao
+      //     WidgetsBinding.instance.addPostFrameCallback((_) {
+      //       if (mounted) showSessionExpiredDialog(context);
+      //     });
+      //   }
+      //   return;
+      // }
 
       final uri = Uri.parse(ApiRoutes.getProfile);
       final headers = {'Authorization': 'Bearer $token'};
@@ -108,19 +109,19 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
         });
       } else if (response.statusCode == 401) {
         // ✅ Token expire ho gaya
-        if (mounted) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) showSessionExpiredDialog(context);
-          });
-        }
+        // if (mounted) {
+        //   WidgetsBinding.instance.addPostFrameCallback((_) {
+        //     if (mounted) showSessionExpiredDialog(context);
+        //   });
+        // }
       }
     } catch (e) {
       debugPrint('Profile fetch error: $e');
-      if (mounted) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) showSessionExpiredDialog(context);
-        });
-      }
+      // if (mounted) {
+      //   WidgetsBinding.instance.addPostFrameCallback((_) {
+      //     if (mounted) showSessionExpiredDialog(context);
+      //   });
+      // }
     }
   }
   Future<void> _handleLogout() async {
@@ -329,7 +330,33 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
       child: Icon(icon, color: Colors.white, size: 20.sp),
     );
   }
+  Future<bool> checkUserLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString("token"); // ya userId
+    return token != null && token.isNotEmpty;
+  }
 
+  Future<void> handleAuthTap(BuildContext context) async {
+    bool isLoggedIn = await checkUserLogin();
+
+    if (!isLoggedIn) {
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => LoginScreen(fromCheckout: true),
+        ),
+      );
+
+      if (result == true) {
+        setState(() {
+          _loadProfileData();
+          fetchProfileData();
+        });
+      }
+    } else {
+      _showLogoutDialog(context);
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -489,15 +516,37 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                   ),
                   title: 'Profile',
                   subtitle: 'View profile insights',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ProfileUpdatePage(
-                          onProfileUpdated: () => _loadProfileData(),
+                  onTap: () async {
+
+                    bool isLoggedIn = await checkUserLogin();
+
+                    if (!isLoggedIn) {
+
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => LoginScreen(fromCheckout: true),
                         ),
-                      ),
-                    );
+                      );
+
+                      if (result == true) {
+                        setState(() {
+                          // loadUserData();
+                          // loadAddress();
+                        });
+                      }
+                      return;
+                    }else{
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ProfileUpdatePage(
+                            onProfileUpdated: () => _loadProfileData(),
+                          ),
+                        ),
+                      );
+                    }
+
                   },
                 ),
                 SizedBox(height: 10.sp),
@@ -509,11 +558,34 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                   ),
                   title: 'Activate New QR Sticker',
                   subtitle: 'Keep Your QR Active & Updated',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => QRActive()),
-                    );
+                  onTap: () async {
+
+
+                    bool isLoggedIn = await checkUserLogin();
+
+                    if (!isLoggedIn) {
+
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => LoginScreen(fromCheckout: true),
+                        ),
+                      );
+
+                      if (result == true) {
+                        setState(() {
+                          // loadUserData();
+                          // loadAddress();
+                        });
+                      }
+                      return;
+                    }else{
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => QRActive()),
+                      );
+                    }
+
                   },
                 ),
                 SizedBox(height: 10.sp),
@@ -525,7 +597,34 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                   ),
                   title: 'My Orders',
                   subtitle: 'Track your past and current orders.',
-                  onTap: () {
+                  onTap: () async {
+
+
+                    bool isLoggedIn = await checkUserLogin();
+
+                    if (!isLoggedIn) {
+
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => LoginScreen(fromCheckout: true),
+                        ),
+                      );
+
+                      if (result == true) {
+                        setState(() {
+                          // loadUserData();
+                          // loadAddress();
+                        });
+                      }
+                      return;
+                    }else{
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => OrderHistoryScreen()),
+                      );
+                    }
+
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => OrderHistoryScreen()),
@@ -541,7 +640,7 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                   ),
                   title: 'Notifications',
                   subtitle: 'Stay Updated, Never Miss Out',
-                  onTap: () {
+                  onTap: ()  {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -565,12 +664,34 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                   ),
                   title: 'Transaction History',
                   subtitle: 'Track all your successful & failed transactions',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => TransactionHistoryScreen()),
-                    );
+                  onTap: () async {
+                    bool isLoggedIn = await checkUserLogin();
+
+                    if (!isLoggedIn) {
+
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => LoginScreen(fromCheckout: true),
+                        ),
+                      );
+
+                      if (result == true) {
+                        setState(() {
+                          // loadUserData();
+                          // loadAddress();
+                        });
+                      }
+                      return;
+                    }else{
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => TransactionHistoryScreen()),
+                      );
+                    }
+
+
                   },
                 ),
                 SizedBox(height: 10.sp),
@@ -598,33 +719,7 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                 ),
                 SizedBox(height: 10.sp),
 
-                _tile(
-                  leading: Container(
-                    height: 35.sp,
-                    width: 35.sp,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      color: HexColor('#ff0000'),
-                    ),
-                    padding: EdgeInsets.all(5.sp),
-                    child: Icon(Icons.bloodtype,
-                        color: Colors.white, size: 20.sp),
-                  ),
-                  title: 'Blood Donation',
-                  subtitle: 'Give Blood, Save Lives.',
-                  onTap: () {
-                    Fluttertoast.showToast(
-                      msg: "Coming Soon",
-                      toastLength: Toast.LENGTH_SHORT,
-                      gravity: ToastGravity.CENTER,
-                      timeInSecForIosWeb: 1,
-                      backgroundColor: Colors.red,
-                      textColor: Colors.white,
-                      fontSize: 16.0,
-                    );
-                  },
-                ),
-                SizedBox(height: 10.sp),
+
 
                 _tile(
                   leading: _leadIcon(
@@ -659,16 +754,60 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                 SizedBox(height: 10.sp),
 
                 _tile(
-                  leading: _leadIcon(
-                    icon: Icons.logout,
-                    colors: [HexColor('#ff0000'), HexColor('#ff0000')],
+                  leading: Container(
+                    height: 35.sp,
+                    width: 35.sp,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      color: HexColor('#ff0000'),
+                    ),
+                    padding: EdgeInsets.all(5.sp),
+                    child: Icon(Icons.bloodtype,
+                        color: Colors.white, size: 20.sp),
                   ),
-                  title: 'Logout',
-                  subtitle: 'Sign out safely from your account.',
-                  titleColor: HexColor('#ff0000'),
-                  subColor: HexColor('#ff0000'),
-                  onTap: () => _showLogoutDialog(context),
+                  title: 'Delete Account',
+                  subtitle: 'Request to permanently delete your account.',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const DeleteAccountScreen()),
+                    );
+                  },
                 ),
+                SizedBox(height: 10.sp),
+
+                // _tile(
+                //   leading: _leadIcon(
+                //     icon: Icons.logout,
+                //     colors: [HexColor('#ff0000'), HexColor('#ff0000')],
+                //   ),
+                //   title: 'Logout',
+                //   subtitle: 'Sign out safely from your account.',
+                //   titleColor: HexColor('#ff0000'),
+                //   subColor: HexColor('#ff0000'),
+                //   onTap: () => _showLogoutDialog(context),
+                // ),
+
+        FutureBuilder<bool>(
+          future: checkUserLogin(),
+          builder: (context, snapshot) {
+            bool isLoggedIn = snapshot.data ?? false;
+
+            return _tile(
+              leading: _leadIcon(
+                icon: isLoggedIn ? Icons.logout : Icons.login,
+                colors: [HexColor('#ff0000'), HexColor('#ff0000')],
+              ),
+              title: isLoggedIn ? 'Logout' : 'Login',
+              subtitle: isLoggedIn
+                  ? 'Sign out safely from your account.'
+                  : 'Login to access your account.',
+              titleColor: HexColor('#ff0000'),
+              subColor: HexColor('#ff0000'),
+              onTap: () => handleAuthTap(context),
+            );
+          },
+        ),
 
                 SizedBox(height: 20.sp),
               ],

@@ -12,6 +12,7 @@ class ApiRoutes {
 
   static const String login = "$baseUrl/login";
   static const String verifyOtp = "$baseUrl/verifyOtp";
+  static const String deleteUser = "$baseUrl/delete-user";
   static const String qrVerifyOtp = "$baseUrl/qr/verifyOtp";
   static const String getProfile = "$baseUrl/get-profile";
   static const String getNotifications = "$baseUrl/notifications";

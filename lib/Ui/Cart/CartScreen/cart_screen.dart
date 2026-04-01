@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../Login/Login/login.dart';
 import '../AddressScreen/add_address.dart';
 import '../AddressScreen/place_orders_screen.dart';
 import '../CartModel/cart_model.dart';
@@ -53,6 +54,12 @@ class _CartScreenState extends State<CartScreen> with RouteAware {
         selectedAddress = result as String;
       });
     }
+  }
+
+  Future<bool> checkUserLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString("token"); // ya userId
+    return token != null && token.isNotEmpty;
   }
 
   @override
@@ -346,36 +353,64 @@ class _CartScreenState extends State<CartScreen> with RouteAware {
                           ],
 
                           const SizedBox(height: 16),
-                          ElevatedButton(
-                            onPressed: cart.items.isEmpty
-                                ? null
-                                : selectedAddress == null
-                                ? () {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                          "Please select an address first!",
-                                        ),
-                                      ),
-                                    );
-                                  }
-                                : () {
-                              Navigator.push( context, MaterialPageRoute( builder: (context) => AddressScreen( orderItems: cart.items, address: selectedAddress!, ), ), );                              },
-                            style: ElevatedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 24,
-                                vertical: 12,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              backgroundColor: AppColors.navyBlue,
-                            ),
-                            child: const Text(
-                              "Checkout",
-                              style: TextStyle(fontSize: 16, color: Colors.white),
-                            ),
-                          ),
+                        ElevatedButton(
+    onPressed: cart.items.isEmpty
+    ? null
+        : () async {
+    // 🔹 Check login first
+    bool isLoggedIn = await checkUserLogin();
+
+    if (!isLoggedIn) {
+
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => LoginScreen(fromCheckout: true),
+        ),
+      );
+
+      if (result == true) {
+        setState(() {
+          // loadUserData();
+          // loadAddress();
+        });
+      }
+    return;
+    }
+
+    // 🔹 Address check
+    if (selectedAddress == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(
+    content: Text("Please select an address first!"),
+    ),
+    );
+    return;
+    }
+
+    // 🔹 Checkout
+    Navigator.push(
+    context,
+    MaterialPageRoute(
+    builder: (context) => AddressScreen(
+    orderItems: cart.items,
+    address: selectedAddress!,
+    ),
+    ),
+    );
+    },
+    style: ElevatedButton.styleFrom(
+    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+    shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(12),
+    ),
+    backgroundColor: AppColors.navyBlue,
+    ),
+    child: const Text(
+    "Checkout",
+    style: TextStyle(fontSize: 16, color: Colors.white),
+    ),
+    ),
                         ],
                       ),
                     ),

@@ -252,7 +252,11 @@ class _HomePageState extends State<BottomNavigationBarScreen> {
     await cartKey.currentState!
         .runCartAnimation(_cartQuantityItems.toString());
   }
-
+  Future<bool> checkUserLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString("token"); // ya userId
+    return token != null && token.isNotEmpty;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -306,7 +310,258 @@ class _HomePageState extends State<BottomNavigationBarScreen> {
           ),
           actions: [
             GestureDetector(
-              onTap: () {
+              onTap: () async {
+                bool isLoggedIn = await checkUserLogin();
+
+                if (!isLoggedIn) {
+
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => LoginScreen(fromCheckout: true),
+                    ),
+                  );
+
+                  if (result == true) {
+                    setState(() {
+                      // loadUserData();
+                      // loadAddress();
+                    });
+                  }
+                  return;
+                }else{
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => GscanKit(
+                        controller: controllerScan,
+                        onDetect: _handleDetect,
+                        appBar: (context, controller) {
+                          return AppBar(
+                            automaticallyImplyLeading: true,
+                            iconTheme: const IconThemeData(color: Colors.white),
+                            title: Row(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(25.sp),
+                                  child: Image.asset(
+                                    'assets/playstore.png',
+                                    height: 35.sp,
+                                    width: 35.sp,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                                SizedBox(width: 3.sp),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "Scan any QR",
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 14.sp,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    Text(
+                                      "First Calling App",
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 7.sp,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            backgroundColor: Colors.transparent,
+                          );
+                        },
+                        floatingOption: [
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Row(
+                                children: [
+                                  IconButton.filled(
+                                    style: IconButton.styleFrom(
+                                      backgroundColor: CupertinoColors.systemGrey6,
+                                      foregroundColor: CupertinoColors.darkBackgroundGray,
+                                    ),
+                                    icon: Icon(CupertinoIcons.camera_rotate),
+                                    onPressed: () => controllerScan.switchCamera(),
+                                  ),
+                                  SizedBox(width: 5.sp),
+                                  ValueListenableBuilder(
+                                    valueListenable: controllerScan,
+                                    builder: (context, state, child) {
+                                      final isTorchOn = state.torchState == TorchState.on;
+                                      return TorchToggleButton(
+                                        isTorchOn: isTorchOn,
+                                        onPressed: () => controllerScan.toggleTorch(),
+                                      );
+                                    },
+                                  ),
+                                  SizedBox(width: 5.sp),
+                                  IconButton.filled(
+                                    style: IconButton.styleFrom(
+                                      backgroundColor: CupertinoColors.systemGrey6,
+                                      foregroundColor: CupertinoColors.darkBackgroundGray,
+                                    ),
+                                    icon: Icon(CupertinoIcons.photo),
+                                    onPressed: () async {
+                                      final picker = ImagePicker();
+                                      final pickedFile = await picker.pickImage(
+                                        source: ImageSource.gallery,
+                                      );
+                                      if (pickedFile != null) {
+                                        try {
+                                          final result = await controllerScan.analyzeImage(pickedFile.path);
+                                          if (result != null) {
+                                            _handleDetect(result);
+                                          } else {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              const SnackBar(content: Text("No QR/Barcode found in image")),
+                                            );
+                                          }
+                                        } catch (e) {
+                                          debugPrint("Error scanning from gallery: $e");
+                                        }
+                                      }
+                                    },
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 20.sp),
+                              Padding(
+                                padding: EdgeInsets.only(bottom: 50.sp),
+                                child: Column(
+                                  children: [
+                                    Container(
+                                      width: 150.sp,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(10.sp),
+                                      ),
+                                      child: Center(
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Column(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              ClipRRect(
+                                                borderRadius: BorderRadius.circular(10.sp),
+                                                child: Image.asset(
+                                                  'assets/playstore.png',
+                                                  height: 50.sp,
+                                                  width: 50.sp,
+                                                  fit: BoxFit.cover,
+                                                ),
+                                              ),
+                                              SizedBox(height: 10.sp),
+                                              Text(
+                                                'First Calling App',
+                                                style: GoogleFonts.poppins(
+                                                  fontSize: 8.sp,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.white,
+                                                  letterSpacing: 1.5,
+                                                  shadows: [
+                                                    Shadow(
+                                                      blurRadius: 10.0,
+                                                      color: Colors.black.withOpacity(0.3),
+                                                      offset: const Offset(2.0, 2.0),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+
+                        gscanOverlayConfig: GscanOverlayConfig(
+                          scannerScanArea: ScannerScanArea.center,
+                          scannerBorder: ScannerBorder.visible,
+                          scannerBorderPulseEffect: ScannerBorderPulseEffect.enabled,
+                          borderColor: AppColors.navyBlue,
+                          borderRadius: 24.0,
+                          scannerLineAnimationColor: AppColors.navyBlue,
+                          scannerOverlayBackground: ScannerOverlayBackground.blur,
+                          scannerLineAnimation: ScannerLineAnimation.enabled,
+                        ),
+                      ),
+                    ),
+                  );
+                }
+              },
+              child: SizedBox(
+                height: 25.sp,
+                width: 25.sp,
+                child: Image.asset('assets/scan.gif'),
+              ),
+            ),
+
+            GestureDetector(
+              onTap: (){
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const CartScreen()),
+                );
+              },
+              child: AddToCartIcon(
+                key: cartKey,
+                icon:  Icon(Icons.shopping_cart),
+                badgeOptions:  BadgeOptions(
+                  active: true,
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                  fontSize: 10.sp,
+                ),
+              ),
+            ),
+            const SizedBox(width: 16),
+          ],
+        ),
+        drawer: Drawer(
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.zero,
+            ),
+            width: MediaQuery.sizeOf(context).width * .7,
+            // backgroundColor: ColorSelect.maineColor,
+            child: DrawerPageScreen(
+              // currentVersion: currentVersion,
+            )),
+        floatingActionButton: SizedBox(
+          width: 55.sp,
+          height: 55.sp,
+          child: FloatingActionButton(
+            onPressed: () async {
+              bool isLoggedIn = await checkUserLogin();
+
+              if (!isLoggedIn) {
+
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => LoginScreen(fromCheckout: true),
+                  ),
+                );
+
+                if (result == true) {
+                  setState(() {
+                    // loadUserData();
+                    // loadAddress();
+                  });
+                }
+                return;
+              }else{
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (context) => GscanKit(
@@ -315,7 +570,7 @@ class _HomePageState extends State<BottomNavigationBarScreen> {
                       appBar: (context, controller) {
                         return AppBar(
                           automaticallyImplyLeading: true,
-                          iconTheme: IconThemeData(color: Colors.white),
+                          iconTheme: const IconThemeData(color: Colors.white),
                           title: Row(
                             children: [
                               ClipRRect(
@@ -329,7 +584,6 @@ class _HomePageState extends State<BottomNavigationBarScreen> {
                               ),
                               SizedBox(width: 3.sp),
                               Column(
-                                mainAxisAlignment: MainAxisAlignment.start,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
@@ -353,7 +607,6 @@ class _HomePageState extends State<BottomNavigationBarScreen> {
                             ],
                           ),
                           backgroundColor: Colors.transparent,
-                          actions: [],
                         );
                       },
                       floatingOption: [
@@ -464,6 +717,7 @@ class _HomePageState extends State<BottomNavigationBarScreen> {
                           ],
                         ),
                       ],
+
                       gscanOverlayConfig: GscanOverlayConfig(
                         scannerScanArea: ScannerScanArea.center,
                         scannerBorder: ScannerBorder.visible,
@@ -477,218 +731,9 @@ class _HomePageState extends State<BottomNavigationBarScreen> {
                     ),
                   ),
                 );
-              },
-              child: SizedBox(
-                height: 25.sp,
-                width: 25.sp,
-                child: Image.asset('assets/scan.gif'),
-              ),
-            ),
+              }
 
-            GestureDetector(
-              onTap: (){
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const CartScreen()),
-                );
-              },
-              child: AddToCartIcon(
-                key: cartKey,
-                icon:  Icon(Icons.shopping_cart),
-                badgeOptions:  BadgeOptions(
-                  active: true,
-                  backgroundColor: Colors.red,
-                  foregroundColor: Colors.white,
-                  fontSize: 10.sp,
-                ),
-              ),
-            ),
-            const SizedBox(width: 16),
-          ],
-        ),
-        drawer: Drawer(
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.zero,
-            ),
-            width: MediaQuery.sizeOf(context).width * .7,
-            // backgroundColor: ColorSelect.maineColor,
-            child: DrawerPageScreen(
-              // currentVersion: currentVersion,
-            )),
-        floatingActionButton: SizedBox(
-          width: 55.sp,
-          height: 55.sp,
-          child: FloatingActionButton(
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => GscanKit(
-                    controller: controllerScan,
-                    onDetect: _handleDetect,
-                    appBar: (context, controller) {
-                      return AppBar(
-                        automaticallyImplyLeading: true,
-                        iconTheme: const IconThemeData(color: Colors.white),
-                        title: Row(
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(25.sp),
-                              child: Image.asset(
-                                'assets/playstore.png',
-                                height: 35.sp,
-                                width: 35.sp,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                            SizedBox(width: 3.sp),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "Scan any QR",
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 14.sp,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                Text(
-                                  "First Calling App",
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 7.sp,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        backgroundColor: Colors.transparent,
-                      );
-                    },
-                    floatingOption: [
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Row(
-                            children: [
-                              IconButton.filled(
-                                style: IconButton.styleFrom(
-                                  backgroundColor: CupertinoColors.systemGrey6,
-                                  foregroundColor: CupertinoColors.darkBackgroundGray,
-                                ),
-                                icon: Icon(CupertinoIcons.camera_rotate),
-                                onPressed: () => controllerScan.switchCamera(),
-                              ),
-                              SizedBox(width: 5.sp),
-                              ValueListenableBuilder(
-                                valueListenable: controllerScan,
-                                builder: (context, state, child) {
-                                  final isTorchOn = state.torchState == TorchState.on;
-                                  return TorchToggleButton(
-                                    isTorchOn: isTorchOn,
-                                    onPressed: () => controllerScan.toggleTorch(),
-                                  );
-                                },
-                              ),
-                              SizedBox(width: 5.sp),
-                              IconButton.filled(
-                                style: IconButton.styleFrom(
-                                  backgroundColor: CupertinoColors.systemGrey6,
-                                  foregroundColor: CupertinoColors.darkBackgroundGray,
-                                ),
-                                icon: Icon(CupertinoIcons.photo),
-                                onPressed: () async {
-                                  final picker = ImagePicker();
-                                  final pickedFile = await picker.pickImage(
-                                    source: ImageSource.gallery,
-                                  );
-                                  if (pickedFile != null) {
-                                    try {
-                                      final result = await controllerScan.analyzeImage(pickedFile.path);
-                                      if (result != null) {
-                                        _handleDetect(result);
-                                      } else {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          const SnackBar(content: Text("No QR/Barcode found in image")),
-                                        );
-                                      }
-                                    } catch (e) {
-                                      debugPrint("Error scanning from gallery: $e");
-                                    }
-                                  }
-                                },
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 20.sp),
-                          Padding(
-                            padding: EdgeInsets.only(bottom: 50.sp),
-                            child: Column(
-                              children: [
-                                Container(
-                                  width: 150.sp,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(10.sp),
-                                  ),
-                                  child: Center(
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          ClipRRect(
-                                            borderRadius: BorderRadius.circular(10.sp),
-                                            child: Image.asset(
-                                              'assets/playstore.png',
-                                              height: 50.sp,
-                                              width: 50.sp,
-                                              fit: BoxFit.cover,
-                                            ),
-                                          ),
-                                          SizedBox(height: 10.sp),
-                                          Text(
-                                            'First Calling App',
-                                            style: GoogleFonts.poppins(
-                                              fontSize: 8.sp,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white,
-                                              letterSpacing: 1.5,
-                                              shadows: [
-                                                Shadow(
-                                                  blurRadius: 10.0,
-                                                  color: Colors.black.withOpacity(0.3),
-                                                  offset: const Offset(2.0, 2.0),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
 
-                    gscanOverlayConfig: GscanOverlayConfig(
-                      scannerScanArea: ScannerScanArea.center,
-                      scannerBorder: ScannerBorder.visible,
-                      scannerBorderPulseEffect: ScannerBorderPulseEffect.enabled,
-                      borderColor: AppColors.navyBlue,
-                      borderRadius: 24.0,
-                      scannerLineAnimationColor: AppColors.navyBlue,
-                      scannerOverlayBackground: ScannerOverlayBackground.blur,
-                      scannerLineAnimation: ScannerLineAnimation.enabled,
-                    ),
-                  ),
-                ),
-              );
             },
             backgroundColor: Colors.white,
             elevation: 8, // main shadow depth

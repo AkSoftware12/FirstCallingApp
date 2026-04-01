@@ -9,6 +9,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
+import '../../BottomNavigationBar/bottomNvaigationBar.dart';
 import '../Otp/otp.dart'; // Assuming OTPVerificationScreen is defined here
 import 'package:firstcallingapp/Utils/color.dart';
 import 'package:firstcallingapp/Utils/string.dart';
@@ -17,7 +18,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  final bool fromCheckout;
+  const LoginScreen({super.key,  this.fromCheckout = false,});
 
   @override
   State<LoginScreen> createState() => _PhoneLoginScreenState();
@@ -54,6 +56,8 @@ class _PhoneLoginScreenState extends State<LoginScreen> {
             MaterialPageRoute(
               builder: (context) => OTPVerificationScreen(
                 mobileNo: mobileNo,
+                fromCheckout: widget.fromCheckout,
+
                 // otp: data["otp"].toString(), // ✅ OTP pass kar diya
               ),
             ),
@@ -406,6 +410,7 @@ class _PhoneLoginScreenState extends State<LoginScreen> {
                         ],
                       ),
                     ),
+
                     SizedBox(height: 20.sp),
 
                     // Terms and conditions
@@ -438,6 +443,68 @@ class _PhoneLoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                     ),
+                    SizedBox(height: 20.sp),
+
+
+                    if(widget.fromCheckout!=true)
+
+                    SizedBox(
+                      // width: 150.sp,
+                      height: 40.sp,
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        decoration: BoxDecoration(
+                          // color: HexColor('d63b7e'),
+                          gradient: LinearGradient(
+                            colors: [
+                              AppColors.navyBlue,
+                              Colors.blue.shade400,
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(20.sp),
+                        ),
+                        child: ElevatedButton(
+                            onPressed:(){
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(builder: (_) => const BottomNavigationBarScreen()),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.transparent,
+                              shadowColor: Colors.transparent,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                  20.sp,
+                                ),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  'Skip',
+                                  style: GoogleFonts.roboto(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14.sp,
+                                  ),
+                                ),
+                                SizedBox(width: 8.sp),
+                                Icon(
+                                  Icons.arrow_forward_ios,
+                                  color: Colors.white,
+                                  size: 16.sp,
+                                ),
+                              ],
+                            )
+
+                        ),
+                      ),
+                    ),
+
                   ],
                 ),
               ),

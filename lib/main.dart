@@ -89,7 +89,7 @@ class _MyAppState extends State<MyApp>with WidgetsBindingObserver {
         return  MaterialApp(
           debugShowCheckedModeBanner: false,
           theme: ThemeData.light(),
-          darkTheme: ThemeData.dark(),
+          darkTheme: ThemeData.light(),
           supportedLocales: const [
             Locale('en'),
             Locale('hi'),

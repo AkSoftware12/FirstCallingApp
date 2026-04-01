@@ -74,14 +74,14 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
       print("Apitoken: $token");
 
-      if (token == null || token.isEmpty) {
-        if (mounted) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) showSessionExpiredDialog(context);
-          });
-        }
-        return;
-      }
+      // if (token == null || token.isEmpty) {
+      //   if (mounted) {
+      //     WidgetsBinding.instance.addPostFrameCallback((_) {
+      //       if (mounted) showSessionExpiredDialog(context);
+      //     });
+      //   }
+      //   return;
+      // }
 
       var url = Uri.parse(ApiRoutes.getAllProducts);
 
@@ -104,11 +104,11 @@ class _ProductListScreenState extends State<ProductListScreen> {
         });
       } else if (response.statusCode == 401) {
         // ✅ Unauthorized → session expire
-        if (mounted) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) showSessionExpiredDialog(context);
-          });
-        }
+        // if (mounted) {
+        //   WidgetsBinding.instance.addPostFrameCallback((_) {
+        //     if (mounted) showSessionExpiredDialog(context);
+        //   });
+        // }
       } else {
         setState(() {
           isLoading = false;
@@ -121,11 +121,11 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
       debugPrint("Error: $e");
 
-      if (mounted) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) showSessionExpiredDialog(context);
-        });
-      }
+      // if (mounted) {
+      //   WidgetsBinding.instance.addPostFrameCallback((_) {
+      //     if (mounted) showSessionExpiredDialog(context);
+      //   });
+      // }
     }
   }
   @override
