@@ -2,7 +2,7 @@ name: firstcallingapp
 description: "A new Flutter project."
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 1.0.7+7
+version: 1.0.14+14
 
 environment:
   sdk: ^3.8.1
@@ -17,7 +17,7 @@ dependencies:
   url_launcher: ^6.3.2
   torch_light: ^1.1.0
   flutter_screenutil: ^5.9.3
-  google_fonts: ^6.3.1
+  google_fonts: ^6.3.2
   carousel_slider: ^5.1.1
   smooth_page_indicator: ^1.2.1
   responsive_builder: ^0.7.1

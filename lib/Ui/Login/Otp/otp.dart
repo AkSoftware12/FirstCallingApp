@@ -18,8 +18,10 @@ import '../../BottomNavigationBar/bottomNvaigationBar.dart';
 
 class OTPVerificationScreen extends StatefulWidget {
   final String mobileNo;
+  final bool fromCheckout;   // 👈 add this
 
-  const OTPVerificationScreen({super.key, required this.mobileNo});
+
+  const OTPVerificationScreen({super.key, required this.mobileNo,  this.fromCheckout = false,});
 
   @override
   State<OTPVerificationScreen> createState() => _PhoneLoginScreenState();
@@ -159,6 +161,14 @@ class _PhoneLoginScreenState extends State<OTPVerificationScreen> {
 
         if (!mounted) return;
         setState(() => _isLoading = false);
+
+
+        // 👇 IMPORTANT PART
+        if (widget.fromCheckout) {
+          Navigator.pop(context, true); // checkout screen par wapas
+          Navigator.pop(context, true); // checkout screen par wapas
+          return;
+        }
 
         if (isAgent != 1) {
           Navigator.pushReplacement(

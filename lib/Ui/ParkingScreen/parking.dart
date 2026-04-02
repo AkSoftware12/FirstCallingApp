@@ -56,10 +56,11 @@ class _FullScreenActionPageState extends State<FullScreenActionPage> {
 
   bool _needsUpdate(Map<String, dynamic>? qr) {
     if (qr == null) return true;
-    return _isNullOrEmpty(qr["name"]) ||
+    return
+      // _isNullOrEmpty(qr["name"]) ||
         _isNullOrEmpty(qr["address"]) ||
-        _isNullOrEmpty(qr["gender"]) ||
-        _isNullOrEmpty(qr["email"]) ||
+        // _isNullOrEmpty(qr["gender"]) ||
+        // _isNullOrEmpty(qr["email"]) ||
         _isNullOrEmpty(qr["contact_no1"]) ||
         _isNullOrEmpty(qr["contact_no2"]);
   }

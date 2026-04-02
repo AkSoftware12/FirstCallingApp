@@ -14,7 +14,7 @@ import '../../Utils/color.dart';
 
 class ProfileUpdatePage extends StatefulWidget {
   final VoidCallback? onProfileUpdated;
-  const ProfileUpdatePage({super.key,  this.onProfileUpdated,});
+  const ProfileUpdatePage({super.key, this.onProfileUpdated});
 
   @override
   State<ProfileUpdatePage> createState() => _ProfileUpdatePageState();
@@ -32,6 +32,7 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
   File? file;
   final picker = ImagePicker();
   bool _isLoading = false;
+  bool _isPinLoading = false; // PIN fetch loading indicator
   String photoUrl = '';
   String userMobile = '';
 
@@ -52,6 +53,45 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
     super.dispose();
   }
 
+  // ───────────────────────────────────────────────
+  // PIN → City / State auto-fill
+  // ───────────────────────────────────────────────
+  Future<void> _fetchCityStateFromPin(String pin) async {
+    if (pin.length != 6) return;
+
+    setState(() => _isPinLoading = true);
+
+    try {
+      final response = await http.get(
+        Uri.parse('https://api.postalpincode.in/pincode/$pin'),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data[0]['Status'] == 'Success') {
+          final postOffice = data[0]['PostOffice'][0];
+          setState(() {
+            cityController.text = postOffice['Division'] ?? '';
+            stateController.text = postOffice['State'] ?? '';
+          });
+        } else {
+          _showToast("Invalid PIN code", Colors.red);
+          cityController.clear();
+          stateController.clear();
+        }
+      } else {
+        _showToast("Could not fetch PIN details", Colors.red);
+      }
+    } catch (e) {
+      _showToast("PIN fetch error: $e", Colors.red);
+    } finally {
+      if (mounted) setState(() => _isPinLoading = false);
+    }
+  }
+
+  // ───────────────────────────────────────────────
+  // Fetch profile from API
+  // ───────────────────────────────────────────────
   Future<void> fetchProfileData() async {
     setState(() => _isLoading = true);
 
@@ -74,8 +114,6 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
           photoUrl = jsonData['picture_data'] ?? '';
           stateController.text = jsonData['state'] ?? '';
         });
-        // Save updated profile data to SharedPreferences for drawer
-        // await _saveProfileToPrefs(jsonData);
       } else {
         _showToast("Failed to load profile data", Colors.red);
       }
@@ -88,14 +126,15 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
 
   Future<void> _saveProfileToPrefs() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('user_name', nameController.text ?? '');
-    await prefs.setString('user_photo_url', photoUrl ?? '');
+    await prefs.setString('user_name', nameController.text);
+    await prefs.setString('user_photo_url', photoUrl);
   }
 
+  // ───────────────────────────────────────────────
+  // Update profile API call
+  // ───────────────────────────────────────────────
   Future<void> _updateProfile(File? file) async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
+    if (!_formKey.currentState!.validate()) return;
 
     _showLoadingDialog();
 
@@ -115,33 +154,26 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
       });
       request.headers['Authorization'] = 'Bearer $token';
       if (file != null) {
-        request.files.add(await http.MultipartFile.fromPath('image', file.path));
+        request.files
+            .add(await http.MultipartFile.fromPath('image', file.path));
       }
 
       var streamedResponse = await request.send();
       var response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 200) {
-        final jsonData = jsonDecode(response.body)['user'];
-        // Update local state with new data
-        setState(() {
-        });
-        // Save to SharedPreferences
         await _saveProfileToPrefs();
-        // Notify parent (drawer) via callback
         widget.onProfileUpdated?.call();
         _showToast("Profile updated successfully", Colors.green);
         Navigator.pop(context); // Close loading dialog
-        // Optionally, navigate back or refresh
       } else {
-        _showToast("Failed to update profile: ${response.statusCode}", Colors.red);
+        _showToast(
+            "Failed to update profile: ${response.statusCode}", Colors.red);
       }
     } catch (e) {
       _showToast("Error updating profile: $e", Colors.red);
     } finally {
-      if (mounted) {
-        Navigator.pop(context); // Ensure dialog is closed
-      }
+      if (mounted) Navigator.pop(context);
     }
   }
 
@@ -149,12 +181,11 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) =>  Center(
+      builder: (_) => Center(
         child: CupertinoActivityIndicator(
           radius: 25,
           color: AppColors.navyBlue,
         ),
-
       ),
     );
   }
@@ -185,7 +216,8 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
               padding: EdgeInsets.symmetric(vertical: 10.h),
               decoration: BoxDecoration(
                 color: Colors.grey[100],
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                borderRadius:
+                const BorderRadius.vertical(top: Radius.circular(20)),
               ),
               child: Text(
                 'Select Profile Photo',
@@ -197,22 +229,18 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
               ),
             ),
             ListTile(
-              leading:  Icon(Icons.photo_library, color: AppColors.navyBlue),
-              title: Text(
-                'Photo Library',
-                style: GoogleFonts.poppins(fontSize: 16.sp),
-              ),
+              leading: Icon(Icons.photo_library, color: AppColors.navyBlue),
+              title: Text('Photo Library',
+                  style: GoogleFonts.poppins(fontSize: 16.sp)),
               onTap: () {
                 getImage(ImageSource.gallery);
                 Navigator.pop(context);
               },
             ),
             ListTile(
-              leading:  Icon(Icons.photo_camera, color: AppColors.navyBlue),
-              title: Text(
-                'Camera',
-                style: GoogleFonts.poppins(fontSize: 16.sp),
-              ),
+              leading: Icon(Icons.photo_camera, color: AppColors.navyBlue),
+              title:
+              Text('Camera', style: GoogleFonts.poppins(fontSize: 16.sp)),
               onTap: () {
                 getImage(ImageSource.camera);
                 Navigator.pop(context);
@@ -220,13 +248,9 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
             ),
             ListTile(
               leading: const Icon(Icons.close, color: Colors.grey),
-              title: Text(
-                'Cancel',
-                style: GoogleFonts.poppins(
-                  fontSize: 16.sp,
-                  color: Colors.grey,
-                ),
-              ),
+              title: Text('Cancel',
+                  style: GoogleFonts.poppins(
+                      fontSize: 16.sp, color: Colors.grey)),
               onTap: () => Navigator.pop(context),
             ),
           ],
@@ -251,26 +275,21 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
     } catch (e) {
       _showToast("Image selection error: $e", Colors.red);
     } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
+  // ───────────────────────────────────────────────
+  // Validators
+  // ───────────────────────────────────────────────
   String? _validateName(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return 'Please enter your full name';
-    }
-    if (value.trim().length < 2) {
-      return 'Name must be at least 2 characters';
-    }
+    if (value == null || value.trim().isEmpty) return 'Please enter your full name';
+    if (value.trim().length < 2) return 'Name must be at least 2 characters';
     return null;
   }
 
   String? _validateEmail(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return 'Please enter your email';
-    }
+    if (value == null || value.trim().isEmpty) return 'Please enter your email';
     if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value.trim())) {
       return 'Please enter a valid email';
     }
@@ -278,36 +297,29 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
   }
 
   String? _validatePin(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return 'Please enter your pin code';
-    }
-    if (!RegExp(r'^\d{6}$').hasMatch(value.trim())) {
-      return 'Pin code must be 6 digits';
-    }
+    if (value == null || value.trim().isEmpty) return 'Please enter your pin code';
+    if (!RegExp(r'^\d{6}$').hasMatch(value.trim())) return 'Pin code must be 6 digits';
     return null;
   }
 
   String? _validateAddress(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return 'Please enter your address';
-    }
+    if (value == null || value.trim().isEmpty) return 'Please enter your address';
     return null;
   }
 
   String? _validateCity(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return 'Please enter your city';
-    }
+    if (value == null || value.trim().isEmpty) return 'Please enter your city';
     return null;
   }
 
   String? _validateState(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return 'Please enter your state';
-    }
+    if (value == null || value.trim().isEmpty) return 'Please enter your state';
     return null;
   }
 
+  // ───────────────────────────────────────────────
+  // Build
+  // ───────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -342,10 +354,11 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
         ],
       ),
       body: _isLoading
-          ? Center(child:CupertinoActivityIndicator(
-        radius: 25,
-        color: AppColors.navyBlue,
-      ),
+          ? Center(
+        child: CupertinoActivityIndicator(
+          radius: 25,
+          color: AppColors.navyBlue,
+        ),
       )
           : Form(
         key: _formKey,
@@ -354,13 +367,13 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Profile Image Section
+              // ── Profile Image ──
               Card(
                 color: Colors.white,
                 child: SizedBox(
                   width: double.infinity,
                   child: Padding(
-                    padding:  EdgeInsets.all(20.sp),
+                    padding: EdgeInsets.all(20.sp),
                     child: Center(
                       child: Stack(
                         alignment: Alignment.bottomRight,
@@ -377,7 +390,8 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
                                   width: 120.w,
                                   height: 120.h,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) => _buildProfileIcon(),
+                                  errorBuilder: (_, __, ___) =>
+                                      _buildProfileIcon(),
                                 )
                                     : (photoUrl.isNotEmpty
                                     ? Image.network(
@@ -385,7 +399,8 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
                                   width: 120.w,
                                   height: 120.h,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) => _buildProfileIcon(),
+                                  errorBuilder: (_, __, ___) =>
+                                      _buildProfileIcon(),
                                 )
                                     : _buildProfileIcon()),
                               ),
@@ -395,7 +410,8 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
                             bottom: 5,
                             right: 5,
                             child: GestureDetector(
-                              onTap: () => _showPicker(context: context),
+                              onTap: () =>
+                                  _showPicker(context: context),
                               child: CircleAvatar(
                                 radius: 20.r,
                                 backgroundColor: Colors.white,
@@ -417,8 +433,10 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
                   ),
                 ),
               ),
+
               SizedBox(height: 30.h),
-              // Form Fields Section
+
+              // ── Form Fields ──
               Card(
                 color: Colors.white,
                 elevation: 4,
@@ -430,12 +448,14 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
                   padding: EdgeInsets.all(10.sp),
                   child: Column(
                     children: [
+                      // Personal Info header
                       _buildFieldRow(
                         label: 'Personal Info',
                         icon: Icons.person_outline,
                         color: Colors.blue,
                       ),
                       SizedBox(height: 16.h),
+
                       _buildTextFormField(
                         label: 'Full Name',
                         controller: nameController,
@@ -457,13 +477,20 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
                         icon: Icons.call_outlined,
                         color: Colors.orange,
                       ),
+
                       SizedBox(height: 20.h),
+
+                      // Address Info header
                       _buildFieldRow(
                         label: 'Address Info',
                         icon: Icons.location_on_outlined,
                         color: Colors.purple,
                       ),
                       SizedBox(height: 16.h),
+
+                      // ── PIN Code field with auto-fill ──
+                      _buildPinField(),
+
                       _buildTextFormField(
                         label: 'Address',
                         controller: addressController,
@@ -472,6 +499,8 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
                         validator: _validateAddress,
                         color: Colors.purple,
                       ),
+
+                      // City — auto-filled, still editable
                       _buildTextFormField(
                         label: 'City',
                         controller: cityController,
@@ -479,6 +508,8 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
                         validator: _validateCity,
                         color: Colors.indigo,
                       ),
+
+                      // State — auto-filled, still editable
                       _buildTextFormField(
                         label: 'State',
                         controller: stateController,
@@ -486,18 +517,11 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
                         validator: _validateState,
                         color: Colors.teal,
                       ),
-                      _buildTextFormField(
-                        label: 'Pin Code',
-                        controller: pinController,
-                        icon: Icons.pin_drop_outlined,
-                        keyboardType: TextInputType.number,
-                        validator: _validatePin,
-                        color: Colors.red,
-                      ),
                     ],
                   ),
                 ),
               ),
+
               SizedBox(height: 100.h),
             ],
           ),
@@ -519,6 +543,82 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
     );
   }
 
+  // ───────────────────────────────────────────────
+  // PIN field widget (has onChanged + loading suffix)
+  // ───────────────────────────────────────────────
+  Widget _buildPinField() {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 16.h),
+      child: TextFormField(
+        controller: pinController,
+        validator: _validatePin,
+        keyboardType: TextInputType.number,
+        maxLength: 6,
+        onChanged: (value) {
+          final trimmed = value.trim();
+          if (trimmed.length == 6) {
+            _fetchCityStateFromPin(trimmed);
+          } else {
+            // Clear auto-filled fields when PIN is incomplete
+            cityController.clear();
+            stateController.clear();
+          }
+        },
+        decoration: InputDecoration(
+          labelText: 'Pin Code',
+          counterText: '', // hide the maxLength counter
+          labelStyle: GoogleFonts.poppins(
+            fontSize: 14.sp,
+            color: Colors.red.withOpacity(0.7),
+          ),
+          prefixIcon:
+          Icon(Icons.pin_drop_outlined, color: Colors.red.withOpacity(0.7)),
+          // Show spinner while fetching, else show location icon
+          suffixIcon: _isPinLoading
+              ? Padding(
+            padding: EdgeInsets.all(12.sp),
+            child: SizedBox(
+              width: 20.w,
+              height: 20.h,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: Colors.red,
+              ),
+            ),
+          )
+              : (cityController.text.isNotEmpty
+              ? Icon(Icons.check_circle_outline,
+              color: Colors.green, size: 20.sp)
+              : null),
+          filled: true,
+          fillColor: Colors.grey[100],
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12.r),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12.r),
+            borderSide: const BorderSide(color: Colors.red, width: 2),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12.r),
+            borderSide: const BorderSide(color: Colors.red, width: 1),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12.r),
+            borderSide: const BorderSide(color: Colors.red, width: 2),
+          ),
+          contentPadding:
+          EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+        ),
+        style: GoogleFonts.poppins(fontSize: 14.sp),
+      ),
+    );
+  }
+
+  // ───────────────────────────────────────────────
+  // Helper widgets
+  // ───────────────────────────────────────────────
   Widget _buildProfileIcon() {
     return Container(
       width: 120.w,
@@ -527,11 +627,7 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
         color: Colors.grey[300],
         shape: BoxShape.circle,
       ),
-      child: Icon(
-        Icons.person,
-        size: 60.sp,
-        color: Colors.grey[600],
-      ),
+      child: Icon(Icons.person, size: 60.sp, color: Colors.grey[600]),
     );
   }
 
@@ -593,7 +689,12 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
             borderRadius: BorderRadius.circular(12.r),
             borderSide: const BorderSide(color: Colors.red, width: 1),
           ),
-          contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12.r),
+            borderSide: BorderSide(color: color, width: 2),
+          ),
+          contentPadding:
+          EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
         ),
         style: GoogleFonts.poppins(fontSize: 14.sp),
       ),
@@ -624,7 +725,8 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
             borderRadius: BorderRadius.circular(12.r),
             borderSide: BorderSide.none,
           ),
-          contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+          contentPadding:
+          EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
         ),
         style: GoogleFonts.poppins(
           fontSize: 14.sp,

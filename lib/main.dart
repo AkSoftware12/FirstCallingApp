@@ -120,6 +120,9 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           darkTheme: ThemeData.dark(),
           supportedLocales: const [Locale('en'), Locale('hi')],
           home: SplashScreen(),
+
+          // localizationsDelegates: GlobalStreamChatLocalizations.delegates,
+          // home: const BottomNavigationBarScreen(),
         );
       },
     );

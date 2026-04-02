@@ -90,6 +90,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
           userMobile = jsonData['contact'] ?? '';
 
         });
+
         // Save updated profile data to SharedPreferences for drawer
         // await _saveProfileToPrefs(jsonData);
       } else {
@@ -129,19 +130,15 @@ class _PaymentScreenState extends State<PaymentScreen> {
     }
   }
 
-
-
   Future<void> _handlePayment() async {
     print('UserName : $userName');
     print('UserAddress : $userAddress');
 
     // ✅ Check for missing details before proceeding
-    if (userName == null || userName!.trim().isEmpty ||
-        userAddress == null || userAddress!.trim().isEmpty) {
-
+    if (userName.trim().isEmpty || userAddress.trim().isEmpty) {
       showDialog(
         context: context,
-        barrierDismissible: false, // ✨ Non-dismissible by tapping outside
+        barrierDismissible: false,
         builder: (context) => Dialog(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
@@ -159,7 +156,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     color: AppColors.navyBlue.withOpacity(0.5),
                     shape: BoxShape.circle,
                   ),
-                  child:  Icon(
+                  child: Icon(
                     Icons.person,
                     size: 50,
                     color: AppColors.navyBlue,
@@ -203,12 +200,28 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     ),
                     ElevatedButton(
                       onPressed: () {
-                        Navigator.pop(context);
+                        Navigator.pop(context); // ✅ Dialog band karo
                         Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context)=> ProfileUpdatePage(
-                              onProfileUpdated: () { fetchProfileData(); },)));
-                        },
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ProfileUpdatePage(
+                              onProfileUpdated: () async {
+                                // ✅ Fresh data fetch karo
+                                await fetchProfileData();
+
+                                // ✅ setState complete hone ke baad payment retry
+                                WidgetsBinding.instance.addPostFrameCallback((_) {
+                                  if (mounted &&
+                                      userName.trim().isNotEmpty &&
+                                      userAddress.trim().isNotEmpty) {
+                                    _handlePayment(); // 🔁 Auto retry
+                                  }
+                                });
+                              },
+                            ),
+                          ),
+                        );
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.navyBlue,
                         shape: RoundedRectangleBorder(
@@ -244,87 +257,249 @@ class _PaymentScreenState extends State<PaymentScreen> {
         _isLoading = false;
       });
 
+      final Map<String, dynamic> payload = {
+        "invoice": {
+          "name": userName,
+          "address": userAddress,
+          "qr_number": widget.qrData['qr_number'].toString(),
+          "gst_include": "EXCLUDE",
+          "total_amount": widget.productData['selling_price'],
+          "delivery_charge": 0,
+          "discount": 0,
+        },
+        "products": widget.productData,
+      };
 
-        final Map<String, dynamic>payload = {
-          "invoice": {
-            "name":userName,
-            "address": userAddress,
-            "qr_number": widget.qrData['qr_number'].toString(),
-            "gst_include": "EXCLUDE",
-            "total_amount": widget.productData['selling_price'],
-            "delivery_charge": 0,
-            "discount": 0,
+      print('Payload: $payload');
+
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final token = prefs.getString('token');
+        final response = await http.post(
+          Uri.parse(ApiRoutes.orderAgentPlaced),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $token',
           },
-          "products": widget.productData,
-        };
+          body: json.encode(payload),
+        );
 
-        print('Payload: $payload');
+        Navigator.of(context).pop(); // Hide loading
 
-        try {
-          final prefs =
-          await SharedPreferences.getInstance();
-          final token = prefs.getString('token',);
-          final response = await http
-              .post(
-            Uri.parse(
-              ApiRoutes.orderAgentPlaced,
-            ),
-            headers: {
-              'Content-Type':
-              'application/json',
-              'Authorization':
-              'Bearer $token',
-            },
-            body: json.encode(
-              payload,
-            ),
-          );
-
-          Navigator.of(
-            context,
-          ).pop(); // Hide loading
-
-          if (response.statusCode == 200) {
-
-            final data = jsonDecode(response.body);
-            if (data["success"] == true) {
-              final qr = data["qr_number"];
-              print('Qr Data $qr');
-              Navigator.push(context, MaterialPageRoute(builder: (_) => QRUpdateScreen(qrNumber: qr,)));
-
-
-            } else {
-              setState(() {
-
-              });
-            }
-
-
-
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+          if (data["success"] == true) {
+            final qr = data["qr_number"];
+            print('Qr Data $qr');
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => QRUpdateScreen(qrNumber: qr),
+              ),
+            );
           } else {
-            // messenger.showSnackBar(
-            //   SnackBar(
-            //     content: TextBuilder(
-            //       text:
-            //       'Failed to place order. Try again.',
-            //       color: Colors.white,
-            //       fontSize: 14.sp,
-            //     ),
-            //     backgroundColor:
-            //     Colors.red,
-            //   ),
-            // );
+            setState(() {});
           }
-        } catch (e) {
-          Navigator.of(
-            context,
-          ).pop(); // Hide loading
-
-
         }
-
+      } catch (e) {
+        Navigator.of(context).pop(); // Hide loading
+      }
     }
   }
+
+  // Future<void> _handlePayment() async {
+  //   print('UserName : $userName');
+  //   print('UserAddress : $userAddress');
+  //
+  //   // ✅ Check for missing details before proceeding
+  //   if (userName.trim().isEmpty || userAddress.trim().isEmpty) {
+  //
+  //     showDialog(
+  //       context: context,
+  //       barrierDismissible: false, // ✨ Non-dismissible by tapping outside
+  //       builder: (context) => Dialog(
+  //         shape: RoundedRectangleBorder(
+  //           borderRadius: BorderRadius.circular(20),
+  //         ),
+  //         elevation: 5,
+  //         backgroundColor: Colors.white,
+  //         child: Padding(
+  //           padding: const EdgeInsets.all(20),
+  //           child: Column(
+  //             mainAxisSize: MainAxisSize.min,
+  //             children: [
+  //               Container(
+  //                 padding: const EdgeInsets.all(16),
+  //                 decoration: BoxDecoration(
+  //                   color: AppColors.navyBlue.withOpacity(0.5),
+  //                   shape: BoxShape.circle,
+  //                 ),
+  //                 child:  Icon(
+  //                   Icons.person,
+  //                   size: 50,
+  //                   color: AppColors.navyBlue,
+  //                 ),
+  //               ),
+  //               const SizedBox(height: 15),
+  //               const Text(
+  //                 'Profile Incomplete',
+  //                 style: TextStyle(
+  //                   fontSize: 20,
+  //                   fontWeight: FontWeight.bold,
+  //                 ),
+  //               ),
+  //               const SizedBox(height: 10),
+  //               const Text(
+  //                 'Please update your profile before making a payment.',
+  //                 textAlign: TextAlign.center,
+  //                 style: TextStyle(
+  //                   fontSize: 15,
+  //                   color: Colors.black54,
+  //                 ),
+  //               ),
+  //               const SizedBox(height: 20),
+  //               Row(
+  //                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+  //                 children: [
+  //                   OutlinedButton(
+  //                     onPressed: () => Navigator.pop(context),
+  //                     style: OutlinedButton.styleFrom(
+  //                       shape: RoundedRectangleBorder(
+  //                         borderRadius: BorderRadius.circular(10),
+  //                       ),
+  //                       side: const BorderSide(color: Colors.grey),
+  //                       padding: const EdgeInsets.symmetric(
+  //                           horizontal: 25, vertical: 12),
+  //                     ),
+  //                     child: const Text(
+  //                       'Cancel',
+  //                       style: TextStyle(color: Colors.grey),
+  //                     ),
+  //                   ),
+  //                   ElevatedButton(
+  //                     onPressed: () {
+  //                       Navigator.pop(context);
+  //                       Navigator.push(
+  //                           context,
+  //                           MaterialPageRoute(builder: (context)=> ProfileUpdatePage(
+  //                             onProfileUpdated: () { fetchProfileData(); },)));
+  //                       },
+  //                     style: ElevatedButton.styleFrom(
+  //                       backgroundColor: AppColors.navyBlue,
+  //                       shape: RoundedRectangleBorder(
+  //                         borderRadius: BorderRadius.circular(10),
+  //                       ),
+  //                       padding: const EdgeInsets.symmetric(
+  //                           horizontal: 25, vertical: 12),
+  //                     ),
+  //                     child: const Text(
+  //                       'Update Now',
+  //                       style: TextStyle(color: Colors.white),
+  //                     ),
+  //                   ),
+  //                 ],
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //       ),
+  //     );
+  //     return; // 🚫 Stop payment process
+  //   }
+  //
+  //   setState(() {
+  //     _isLoading = true;
+  //   });
+  //
+  //   // Simulate payment processing delay
+  //   await Future.delayed(const Duration(seconds: 2));
+  //
+  //   if (mounted) {
+  //     setState(() {
+  //       _isLoading = false;
+  //     });
+  //
+  //
+  //       final Map<String, dynamic>payload = {
+  //         "invoice": {
+  //           "name":userName,
+  //           "address": userAddress,
+  //           "qr_number": widget.qrData['qr_number'].toString(),
+  //           "gst_include": "EXCLUDE",
+  //           "total_amount": widget.productData['selling_price'],
+  //           "delivery_charge": 0,
+  //           "discount": 0,
+  //         },
+  //         "products": widget.productData,
+  //       };
+  //
+  //       print('Payload: $payload');
+  //
+  //       try {
+  //         final prefs =
+  //         await SharedPreferences.getInstance();
+  //         final token = prefs.getString('token',);
+  //         final response = await http
+  //             .post(
+  //           Uri.parse(
+  //             ApiRoutes.orderAgentPlaced,
+  //           ),
+  //           headers: {
+  //             'Content-Type':
+  //             'application/json',
+  //             'Authorization':
+  //             'Bearer $token',
+  //           },
+  //           body: json.encode(
+  //             payload,
+  //           ),
+  //         );
+  //
+  //         Navigator.of(
+  //           context,
+  //         ).pop(); // Hide loading
+  //
+  //         if (response.statusCode == 200) {
+  //
+  //           final data = jsonDecode(response.body);
+  //           if (data["success"] == true) {
+  //             final qr = data["qr_number"];
+  //             print('Qr Data $qr');
+  //             Navigator.push(context, MaterialPageRoute(builder: (_) => QRUpdateScreen(qrNumber: qr,)));
+  //
+  //
+  //           } else {
+  //             setState(() {
+  //
+  //             });
+  //           }
+  //
+  //
+  //
+  //         } else {
+  //           // messenger.showSnackBar(
+  //           //   SnackBar(
+  //           //     content: TextBuilder(
+  //           //       text:
+  //           //       'Failed to place order. Try again.',
+  //           //       color: Colors.white,
+  //           //       fontSize: 14.sp,
+  //           //     ),
+  //           //     backgroundColor:
+  //           //     Colors.red,
+  //           //   ),
+  //           // );
+  //         }
+  //       } catch (e) {
+  //         Navigator.of(
+  //           context,
+  //         ).pop(); // Hide loading
+  //
+  //
+  //       }
+  //
+  //   }
+  // }
   void _hideLoading() {
     if (Navigator.canPop(context)) Navigator.pop(context);
   }

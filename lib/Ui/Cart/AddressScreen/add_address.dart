@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firstcallingapp/BaseUrl/baseurl.dart';
 import 'package:firstcallingapp/Utils/color.dart';
 import 'package:flutter/material.dart';
@@ -25,14 +27,27 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
   bool _isLoading = false;
   String? _errorMessage;
   int? _selectedAddressIndex;
-
+  Timer? _debounce;
   @override
   void initState() {
     super.initState();
     _fetchAddresses();
     _loadSelectedAddress();
+
+    _addressController.addListener(_updateButtonState);
+    _pincodeController.addListener(_updateButtonState);
+    _cityController.addListener(_updateButtonState);
+    _stateController.addListener(_updateButtonState);
+  }
+  void _updateButtonState() {
+    setState(() {});
   }
 
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    super.dispose();
+  }
   // Load the saved selected address index from SharedPreferences
   Future<void> _loadSelectedAddress() async {
     final prefs = await SharedPreferences.getInstance();
@@ -87,6 +102,64 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
         _isLoading = false;
       });
     }
+  }
+
+  Future<void> _fetchCityStateFromPincode(
+      String pincode,
+      Function setModalState,
+      ) async {
+    if (pincode.length != 6) return;
+
+    setModalState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final response = await http.get(
+        Uri.parse("https://api.postalpincode.in/pincode/$pincode"),
+      );
+
+      final data = jsonDecode(response.body);
+
+      if (data[0]["Status"] == "Success") {
+        final postOffice = data[0]["PostOffice"][0];
+
+        setModalState(() {
+          _cityController.text = postOffice["District"] ?? "";
+          _stateController.text = postOffice["State"] ?? "";
+          _isPincodeValid = true;
+        });
+      } else {
+        setModalState(() {
+          _isPincodeValid = false;
+          _cityController.clear();
+          _stateController.clear();
+        });
+      }
+    } catch (e) {
+      setModalState(() {
+        _errorMessage = "Failed to fetch location";
+      });
+    } finally {
+      setModalState(() {
+        _isLoading = false;
+      });
+    }
+  }
+  void _onPincodeChanged(String value, Function setModalState) {
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+
+    _debounce = Timer(const Duration(milliseconds: 500), () {
+      if (value.length == 6) {
+        _fetchCityStateFromPincode(value, setModalState);
+      } else {
+        setModalState(() {
+          _cityController.clear();
+          _stateController.clear();
+        });
+      }
+    });
   }
 
   Future<void> _addAddress(String address) async {
@@ -201,247 +274,215 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
     }
   }
 
-  bool _isFormValid() {
-    return _addressController.text.trim().isNotEmpty &&
-        _cityController.text.trim().isNotEmpty &&
-        _stateController.text.trim().isNotEmpty &&
-        _pincodeController.text.trim().isNotEmpty &&
-        _isPincodeValid;
-  }
 
   void _showBottomSheet() {
     _addressController.clear();
     _cityController.clear();
     _stateController.clear();
     _pincodeController.clear();
-    setState(() {
-      _isPincodeValid = true;
-      _isLoading = false;
-      _errorMessage = null;
-    });
+
+    _isPincodeValid = true;
+    _isLoading = false;
+    _errorMessage = null;
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) {
-        return SafeArea(
-          child: Container(
-            margin: const EdgeInsets.all(0),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(24),
-                topRight: Radius.circular(24),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 10,
-                  offset: const Offset(0, 5),
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            bool isFormValid() {
+              return _addressController.text.trim().isNotEmpty &&
+                  _pincodeController.text.length == 6 &&
+                  _cityController.text.trim().isNotEmpty &&
+                  _stateController.text.trim().isNotEmpty &&
+                  !_isLoading &&
+                  _isPincodeValid;
+            }
+
+            return SafeArea(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(24),
+                  ),
                 ),
-              ],
-            ),
-            child: AnimatedPadding(
-              duration: const Duration(milliseconds: 200),
-              padding: EdgeInsets.only(
-                left: 20,
-                right: 20,
-                top: 20,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-              ),
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                child: AnimatedPadding(
+                  duration: const Duration(milliseconds: 200),
+                  padding: EdgeInsets.only(
+                    left: 20,
+                    right: 20,
+                    top: 20,
+                    bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+                  ),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(
-                          "Add New Address",
-                          style: GoogleFonts.poppins(
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.black87,
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.close, color: Colors.grey),
-                          onPressed: () => Navigator.pop(context),
-                        ),
-                      ],
-                    ),
-                    if (_errorMessage != null)
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.red.shade50,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.red.shade200),
-                        ),
-                        child: Row(
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Icon(Icons.error_outline, color: Colors.red.shade700),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                _errorMessage!,
-                                style: GoogleFonts.poppins(
-                                  color: Colors.red.shade700,
-                                  fontSize: 14,
-                                ),
+                            Text(
+                              "Add New Address",
+                              style: GoogleFonts.poppins(
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.w700,
                               ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.close),
+                              onPressed: () => Navigator.pop(context),
                             ),
                           ],
                         ),
-                      ),
-                    _buildTextField(
-                      controller: _addressController,
-                      label: "Full Address",
-                      icon: Icons.home_outlined,
-                      maxLines: 3,
-                      errorText: _addressController.text.trim().isEmpty &&
-                          _addressController.text.isNotEmpty
-                          ? "Address cannot be empty"
-                          : null,
-                    ),
-                    const SizedBox(height: 16),
-                    _buildTextField(
-                      controller: _pincodeController,
-                      label: "Pincode",
-                      icon: Icons.pin_drop_outlined,
-                      keyboardType: TextInputType.number,
-                      onChanged: (value) {
-                        setState(() {
-                          _isPincodeValid = value.length == 6;
-                        });
-                      },
-                      errorText: !_isPincodeValid ? "Enter a valid 6-digit pincode" : null,
-                    ),
-                    const SizedBox(height: 16),
-                    _buildTextField(
-                      controller: _cityController,
-                      label: "City",
-                      icon: Icons.location_city_outlined,
-                    ),
-                    const SizedBox(height: 16),
-                    _buildTextField(
-                      controller: _stateController,
-                      label: "State",
-                      icon: Icons.map_outlined,
-                    ),
-                    const SizedBox(height: 24),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+
+                        if (_errorMessage != null)
+                          Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: Colors.red.shade50,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.error, color: Colors.red.shade600),
+                                const SizedBox(width: 8),
+                                Expanded(child: Text(_errorMessage!)),
+                              ],
+                            ),
                           ),
-                          backgroundColor: _isFormValid()
-                              ? AppColors.navyBlue
-                              : Colors.blue.shade200,
-                          foregroundColor: Colors.white,
-                          elevation: _isFormValid() ? 8 : 0,
-                          shadowColor: Colors.black.withOpacity(0.2),
+
+                        _buildTextField(
+                          controller: _addressController,
+                          label: "Full Address",
+                          icon: Icons.home_outlined,
+                          maxLines: 3,
+                          onChanged: (_) => setModalState(() {}),
                         ),
-                        onPressed: _isFormValid()
-                            ? () {
-                          _addAddress(
-                              "${_addressController.text.trim()}, ${_cityController.text.trim()}, ${_stateController.text.trim()}, ${_pincodeController.text.trim()}");
-                          Navigator.pop(context);
-                        }
-                            : null,
-                        child: _isLoading
-                            ? const SizedBox(
-                          height: 24,
-                          width: 24,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2.5,
-                          ),
-                        )
-                            : Text(
-                          "Save Address",
-                          style: GoogleFonts.poppins(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 0.5,
+
+                        const SizedBox(height: 16),
+
+                        _buildTextField(
+                          controller: _pincodeController,
+                          label: "Pincode",
+                          icon: Icons.pin_drop_outlined,
+                          keyboardType: TextInputType.number,
+                          onChanged: (value) {
+                            _onPincodeChanged(value, setModalState);
+                            setModalState(() {});
+                          },
+                          suffixIcon: _isLoading
+                              ? Padding(
+                            padding: EdgeInsets.all(12.sp),
+                            child: SizedBox(
+                              width: 20.w,
+                              height: 20.h,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.blue,
+                              ),
+                            ),
+                          )
+                              : null,
+                          errorText:
+                          !_isPincodeValid ? "Enter valid 6 digit pincode" : null,
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        _buildTextField(
+                          controller: _cityController,
+                          label: "City",
+                          icon: Icons.location_city_outlined,
+                          readOnly: true,
+                          onChanged: (_) => setModalState(() {}),
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        _buildTextField(
+                          controller: _stateController,
+                          label: "State",
+                          icon: Icons.map_outlined,
+                          readOnly: true,
+                          onChanged: (_) => setModalState(() {}),
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              padding:
+                              const EdgeInsets.symmetric(vertical: 16),
+                              backgroundColor: isFormValid()
+                                  ? AppColors.navyBlue
+                                  : Colors.grey.shade400,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            onPressed: isFormValid()
+                                ? () {
+                              _addAddress(
+                                "${_addressController.text.trim()}, "
+                                    "${_cityController.text.trim()}, "
+                                    "${_stateController.text.trim()}, "
+                                    "${_pincodeController.text.trim()}",
+                              );
+                              Navigator.pop(context);
+                            }
+                                : null,
+                            child: Text(
+                              "Save Address",
+                              style: GoogleFonts.poppins(
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white
+
+                              ),
+                            ),
                           ),
                         ),
-                      ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
-            ),
-          ),
+            );
+          },
         );
       },
     );
   }
-
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
     required IconData icon,
-    bool readOnly = false,
+    TextInputType? keyboardType,
     int maxLines = 1,
-    TextInputType keyboardType = TextInputType.text,
-    Function(String)? onChanged,
+    bool readOnly = false,
     String? errorText,
+    Widget? suffixIcon,
+    Function(String)? onChanged,
   }) {
-    return Semantics(
-      label: label,
-      child: TextField(
-        controller: controller,
-        readOnly: readOnly,
-        maxLines: maxLines,
-        keyboardType: keyboardType,
-        onChanged: onChanged,
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle: GoogleFonts.poppins(
-            color: Colors.grey.shade600,
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
-          prefixIcon: Icon(icon, color: AppColors.navyBlue, size: 22),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.grey.shade200),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.grey.shade200),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.blue.shade700, width: 2),
-          ),
-          errorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.red.shade600),
-          ),
-          focusedErrorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.red.shade600, width: 2),
-          ),
-          filled: true,
-          fillColor: Colors.grey.shade50,
-          errorText: errorText,
-          contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-          errorStyle: GoogleFonts.poppins(
-            color: Colors.red.shade600,
-            fontSize: 12,
-          ),
-        ),
-        style: GoogleFonts.poppins(
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-          color: Colors.black87,
+    return TextField(
+      controller: controller,
+      keyboardType: keyboardType,
+      maxLines: maxLines,
+      readOnly: readOnly,
+      onChanged: onChanged,
+      decoration: InputDecoration(
+        labelText: label,
+        errorText: errorText,
+        prefixIcon: Icon(icon),
+        suffixIcon: suffixIcon,
+        contentPadding: const EdgeInsets.symmetric(vertical: 16),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
         ),
       ),
     );
