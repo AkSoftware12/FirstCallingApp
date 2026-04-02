@@ -1,4 +1,3 @@
-
 import 'dart:convert';
 import 'package:firstcallingapp/BaseUrl/baseurl.dart';
 import 'package:flutter/cupertino.dart';
@@ -51,7 +50,8 @@ class Product {
 }
 
 class ProductListScreen extends StatefulWidget {
-  final void Function(GlobalKey, BuildContext, CartItem, bool isIncrement) onItemClick;
+  final void Function(GlobalKey, BuildContext, CartItem, bool isIncrement)
+  onItemClick;
 
   ProductListScreen({super.key, required this.onItemClick});
 
@@ -88,6 +88,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
       debugPrint("Error: $e");
     }
   }
+
   @override
   void initState() {
     super.initState();
@@ -96,67 +97,64 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return  isLoading
+    return isLoading
         ? Center(
-      child: CupertinoActivityIndicator(
-        radius: 25,
-        color: AppColors.navyBlue,
-      ),
-    )
-
-        :
-
-      SingleChildScrollView(
-      padding: EdgeInsets.all(5.sp),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          BannerSlider(),
-          SizedBox(height: 5.sp),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                "Our All Products",
-                style: TextStyle(
-                  fontFamily: 'Poppins',
-                  fontSize: 15.sp,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.black,
+            child: CupertinoActivityIndicator(
+              radius: 25,
+              color: AppColors.navyBlue,
+            ),
+          )
+        : SingleChildScrollView(
+            padding: EdgeInsets.all(5.sp),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                BannerSlider(),
+                SizedBox(height: 5.sp),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Our All Products",
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.black,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
-          SizedBox(height: 15.sp),
-          GridView.count(
-            crossAxisCount: 2,
-            shrinkWrap: true,
-            padding: EdgeInsets.zero,
-            physics: const NeverScrollableScrollPhysics(),
-            childAspectRatio: 0.8,
-            crossAxisSpacing: 8.sp,
-            mainAxisSpacing: 8.sp,
-            children: products
-                .map(
-                  (product) => ProductCard(
-                title: product.name.toString(),
-                price: product.sellingPrice.toString(),
-                originalPrice: product.mrp.toString(),
-                discount: '',
-                imageUrl: product.imageUrl.toString(),
-                packSize: '',
-                onClick: widget.onItemClick,
-                    gst:  product.gst!.toDouble(),
-                    id: product.id.toString(),
-              ),
-            )
-                .toList(),
-          ),
-        ],
-      ),
-    );
+                SizedBox(height: 15.sp),
+                GridView.count(
+                  crossAxisCount: 2,
+                  shrinkWrap: true,
+                  padding: EdgeInsets.zero,
+                  physics: const NeverScrollableScrollPhysics(),
+                  childAspectRatio: 0.8,
+                  crossAxisSpacing: 8.sp,
+                  mainAxisSpacing: 8.sp,
+                  children: products
+                      .map(
+                        (product) => ProductCard(
+                          title: product.name.toString(),
+                          price: product.sellingPrice.toString(),
+                          originalPrice: product.mrp.toString(),
+                          discount: '',
+                          imageUrl: product.imageUrl.toString(),
+                          packSize: '',
+                          onClick: widget.onItemClick,
+                          gst: product.gst!.toDouble(),
+                          id: product.id.toString(),
+                        ),
+                      )
+                      .toList(),
+                ),
+              ],
+            ),
+          );
   }
 }
 
@@ -169,7 +167,8 @@ class ProductCard extends StatelessWidget {
   final double gst;
   final String imageUrl;
   final String packSize;
-  final void Function(GlobalKey, BuildContext, CartItem, bool isIncrement) onClick;
+  final void Function(GlobalKey, BuildContext, CartItem, bool isIncrement)
+  onClick;
 
   const ProductCard({
     super.key,
@@ -200,9 +199,7 @@ class ProductCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             ClipRRect(
-              borderRadius: BorderRadius.vertical(
-                top: Radius.circular(5.sp),
-              ),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(5.sp)),
               child: Container(
                 key: widgetKey,
                 height: 150.sp,
@@ -235,145 +232,151 @@ class ProductCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Row(
-                          children: [
-                            Text(
-                              '₹$price',
-                              style: TextStyle(
-                                color: AppColors.navyBlue,
-                                fontSize: 14.sp,
-                                fontWeight: FontWeight.bold,
+                        Expanded(
+                          child: Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  '₹$price',
+                                  style: TextStyle(
+                                    color: AppColors.navyBlue,
+                                    fontSize: 12.sp,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              '₹$originalPrice',
-                              style: TextStyle(
-                                color: HexColor('#cf0c14'),
-                                fontSize: 10.sp,
-                                fontWeight: FontWeight.w600,
-                                decoration: TextDecoration.lineThrough,
+                              SizedBox(width: 4.w),
+                              Flexible(
+                                child: Text(
+                                  '₹$originalPrice',
+                                  style: TextStyle(
+                                    color: HexColor('#cf0c14'),
+                                    fontSize: 9.sp,
+                                    fontWeight: FontWeight.w600,
+                                    decoration: TextDecoration.lineThrough,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                        Container(
-                          padding: EdgeInsets.all(5.sp),
-                          margin: EdgeInsets.symmetric(horizontal: 0.0),
-                          child: SizedBox(
-                            width: 80.sp,
-                            child: Consumer<CartProvider>(
-                              builder: (context, cart, child) {
-                                final qty = cart.getQuantity(title);
-
-                                if (qty == 0) {
-                                  return Align(
-                                    alignment: Alignment.centerRight,
-                                    child: GestureDetector(
-                                      onTap: () {
-                                        cart.addItem(
-                                          CartItem(
-                                            product_name: title,
-                                            rate: price,
-                                            imageUrl: imageUrl,
-                                            product_gst:gst,
-                                            product_id: id
-                                          ),
-                                        );
-                                        final item = CartItem(
-                                            product_name: title,
-                                            rate: price,
-                                            imageUrl: imageUrl,
-                                            product_gst:gst,
-                                            product_id: id
-                                        );
-                                        onClick(widgetKey, context, item,true);
-                                      },
-                                      child: Container(
-                                        height: 22.sp,
-                                        width: 50.sp,
-                                        decoration: BoxDecoration(
-                                          color: AppColors.navyBlue,
-                                          borderRadius: BorderRadius.circular(4.0),
-                                        ),
-                                        child: const Center(
-                                          child: Text(
-                                            'ADD',
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w600,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                } else {
-                                  return Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      GestureDetector(
-                                        onTap: () {
-                                          final item = cart.items.firstWhere(
-                                                (e) => e.product_name == title,
-                                          );
-                                          if (item != null) cart.decreaseQty(item);
-
-
-                                          onClick(widgetKey, context, item,false);
-                                        },
-                                        child: Container(
-                                          height: 20.sp,
-                                          width: 20.sp,
-                                          decoration: BoxDecoration(
-                                            color: HexColor('#cf0c14'),
-                                            borderRadius: BorderRadius.circular(4.0),
-                                          ),
-                                          child: const Icon(Icons.remove, color: Colors.white, size: 14),
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: EdgeInsets.symmetric(horizontal: 4.sp),
-                                        child: Text(
-                                          "$qty",
-                                          style: const TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                      GestureDetector(
-                                        onTap: () {
-                                          final item = cart.items.firstWhere(
-                                                (e) => e.product_name == title,
-                                          );
-                                          if (item != null) cart.increaseQty(item);
-                                          onClick(widgetKey, context, item,true);
-
-                                        },
-                                        child: Container(
-                                          height: 20.sp,
-                                          width: 20.sp,
-                                          decoration: BoxDecoration(
-                                            color: AppColors.navyBlue,
-                                            borderRadius: BorderRadius.circular(4.0),
-                                          ),
-                                          child: const Icon(Icons.add, color: Colors.white, size: 14),
-                                        ),
-                                      ),
-                                    ],
-                                  );
-                                }
-                              },
-                            ),
+                            ],
                           ),
                         ),
-
+                        SizedBox(width: 4.w),
+                        Consumer<CartProvider>(
+                          builder: (context, cart, child) {
+                            final qty = cart.getQuantity(title);
+                            if (qty == 0) {
+                              return GestureDetector(
+                                onTap: () {
+                                  cart.addItem(
+                                    CartItem(
+                                      product_name: title,
+                                      rate: price,
+                                      imageUrl: imageUrl,
+                                      product_gst: gst,
+                                      product_id: id,
+                                    ),
+                                  );
+                                  final item = CartItem(
+                                    product_name: title,
+                                    rate: price,
+                                    imageUrl: imageUrl,
+                                    product_gst: gst,
+                                    product_id: id,
+                                  );
+                                  onClick(widgetKey, context, item, true);
+                                },
+                                child: Container(
+                                  height: 22.h,
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 10.w,
+                                  ),
+                                  constraints: BoxConstraints(minWidth: 44.w),
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.navyBlue,
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    'ADD',
+                                    style: TextStyle(
+                                      fontSize: 11.sp,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }
+                            return Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                GestureDetector(
+                                  onTap: () {
+                                    final item = cart.items.firstWhere(
+                                      (e) => e.product_name == title,
+                                    );
+                                    cart.decreaseQty(item);
+                                    onClick(widgetKey, context, item, false);
+                                  },
+                                  child: Container(
+                                    height: 20.h,
+                                    width: 22.w,
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                      color: HexColor('#cf0c14'),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Icon(
+                                      Icons.remove,
+                                      color: Colors.white,
+                                      size: 14.sp,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: 22.w,
+                                  child: Text(
+                                    '$qty',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 12.sp,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                GestureDetector(
+                                  onTap: () {
+                                    final item = cart.items.firstWhere(
+                                      (e) => e.product_name == title,
+                                    );
+                                    cart.increaseQty(item);
+                                    onClick(widgetKey, context, item, true);
+                                  },
+                                  child: Container(
+                                    height: 20.h,
+                                    width: 22.w,
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.navyBlue,
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Icon(
+                                      Icons.add,
+                                      color: Colors.white,
+                                      size: 14.sp,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
                       ],
                     ),
                   ],
@@ -386,11 +389,6 @@ class ProductCard extends StatelessWidget {
     );
   }
 }
-
-
-
-
-
 
 class CategoryChips extends StatefulWidget {
   final List<String> categories;

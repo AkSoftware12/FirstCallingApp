@@ -24,6 +24,7 @@ import '../../OrderHistory/order_history.dart';
 import '../../Profile/update_profile.dart';
 import '../../QRActivationScreen/qr_check_screen.dart';
 import '../../TransactionHistoryScreen/transaction_history_screen.dart';
+import '../eula_page.dart';
 import '../privacy.dart';
 
 class DrawerPageScreen extends StatefulWidget {
@@ -600,6 +601,22 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => const PrivacyPage()),
+                    );
+                  },
+                ),
+                SizedBox(height: 10.sp),
+
+                _tile(
+                  leading: _leadIcon(
+                    icon: Icons.gavel,
+                    colors: [HexColor('#0F766E'), HexColor('#0F766E')],
+                  ),
+                  title: 'EULA',
+                  subtitle: 'Emergency & license terms (App Store)',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const EulaPage()),
                     );
                   },
                 ),

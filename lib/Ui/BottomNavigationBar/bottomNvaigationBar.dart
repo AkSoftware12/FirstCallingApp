@@ -2,6 +2,7 @@ import 'package:add_to_cart_animation/add_to_cart_animation.dart';
 import 'package:firstcallingapp/Ui/Login/Login/login.dart';
 import 'package:firstcallingapp/Utils/HexColorCode/HexColor.dart';
 import 'package:firstcallingapp/Utils/color.dart';
+import 'package:firstcallingapp/Utils/ensure_camera_permission.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -155,7 +156,12 @@ class _HomePageState extends State<BottomNavigationBarScreen> {
     currentVersion = packageInfo.version;
   }
 
-
+  @override
+  void dispose() {
+    controllerScan.dispose();
+    controller.dispose();
+    super.dispose();
+  }
 
   String? extractNumberFromUrl(String url) {
     try {
@@ -306,7 +312,9 @@ class _HomePageState extends State<BottomNavigationBarScreen> {
           ),
           actions: [
             GestureDetector(
-              onTap: () {
+              onTap: () async {
+                if (!await ensureCameraPermission(context)) return;
+                if (!context.mounted) return;
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (context) => GscanKit(
@@ -519,7 +527,9 @@ class _HomePageState extends State<BottomNavigationBarScreen> {
           width: 55.sp,
           height: 55.sp,
           child: FloatingActionButton(
-            onPressed: () {
+            onPressed: () async {
+              if (!await ensureCameraPermission(context)) return;
+              if (!context.mounted) return;
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (context) => GscanKit(
