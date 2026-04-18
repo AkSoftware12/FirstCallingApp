@@ -12,6 +12,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../Utils/color.dart';
+import '../../Utils/ensure_camera_permission.dart';
 import '../QRScanScreen/TorchScreen/torch_screen.dart';
 import 'OTPQRCheck/otp_qr_check.dart';
 import 'QRPayment/qr_payment.dart';
@@ -135,6 +136,7 @@ class _QRActiveState extends State<QRActive> with TickerProviderStateMixin {
 
   @override
   void dispose() {
+    controllerScan.dispose();
     _animationController.dispose();
     _pulseController.dispose();
     _qrController.dispose();
@@ -438,8 +440,11 @@ class _QRActiveState extends State<QRActive> with TickerProviderStateMixin {
                               // prefixIcon: Icon(Icons.qr_code, color: AppColors.navyBlue),
                               suffixIcon: IconButton(
                                 icon: Icon(Icons.qr_code_scanner, color:AppColors.navyBlue),
-                                onPressed: () {
-
+                                onPressed: () async {
+                                  if (!await ensureCameraPermission(context)) {
+                                    return;
+                                  }
+                                  if (!context.mounted) return;
                                   Navigator.of(context).push(
                                     MaterialPageRoute(
                                       builder: (context) => GscanKit(

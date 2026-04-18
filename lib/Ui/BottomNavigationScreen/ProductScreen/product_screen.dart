@@ -1,4 +1,3 @@
-
 import 'dart:convert';
 import 'dart:ui';
 import 'package:firstcallingapp/BaseUrl/baseurl.dart';
@@ -10,7 +9,6 @@ import 'package:carousel_slider/carousel_options.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:firstcallingapp/Utils/HexColorCode/HexColor.dart';
 import 'package:firstcallingapp/Utils/color.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -55,7 +53,8 @@ class Product {
 }
 
 class ProductListScreen extends StatefulWidget {
-  final void Function(GlobalKey, BuildContext, CartItem, bool isIncrement) onItemClick;
+  final void Function(GlobalKey, BuildContext, CartItem, bool isIncrement)
+  onItemClick;
 
   ProductListScreen({super.key, required this.onItemClick});
 
@@ -128,6 +127,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
       // }
     }
   }
+
   @override
   void initState() {
     super.initState();
@@ -135,6 +135,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
       fetchProducts();
     });
   }
+
   void showSessionExpiredDialog(BuildContext context) {
     if (!Navigator.of(context).mounted) return;
 
@@ -157,206 +158,212 @@ class _ProductListScreenState extends State<ProductListScreen> {
           ),
         );
       },
-      pageBuilder: (ctx, _, __) =>  _SessionExpiredDialog(),
+      pageBuilder: (ctx, _, __) => _SessionExpiredDialog(),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return  isLoading
+    return isLoading
         ? Center(
-      child: CupertinoActivityIndicator(
-        radius: 25,
-        color: AppColors.navyBlue,
-      ),
-    )
-
-        :
-
-      SingleChildScrollView(
-      padding: EdgeInsets.all(5.sp),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          BannerSlider(),
-          SizedBox(height: 5.sp),
-        GestureDetector(
-          onTap: (){
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => QRActive()),
-            );
-          },
-          child: Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
+            child: CupertinoActivityIndicator(
+              radius: 25,
               color: AppColors.navyBlue,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(width: 1, color: Colors.white),
             ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(14),
-              child:  Padding(
-                padding: const EdgeInsets.all(10),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF6C63FF).withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(999),
-                  border: Border.all(
-                    color: const Color(0xFF6C63FF).withOpacity(0.3),
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 7,
-                      height: 7,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: const Color(0xFF43E8C5),
-                      ),
+          )
+        : SingleChildScrollView(
+            padding: EdgeInsets.all(5.sp),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                BannerSlider(),
+                SizedBox(height: 5.sp),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => QRActive()),
+                    );
+                  },
+                  child: Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: AppColors.navyBlue,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(width: 1, color: Colors.white),
                     ),
-                    const SizedBox(width: 7),
-                    const Text(
-                      'QR STICKER',
-                      style: TextStyle(
-                        color: Color(0xFF43E8C5),
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 1.5,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-                          const SizedBox(height: 5),
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.baseline,
-                          textBaseline: TextBaseline.alphabetic,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(14),
+                      child: Padding(
+                        padding: const EdgeInsets.all(10),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Activate ',
-                              style: TextStyle(
-                                color: Color(0xFFF0EEFF),
-                                fontSize: 20,
-                                fontWeight: FontWeight.w800,
-                                height: 1.2,
+                            Expanded(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 6,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(
+                                        0xFF6C63FF,
+                                      ).withOpacity(0.12),
+                                      borderRadius: BorderRadius.circular(999),
+                                      border: Border.all(
+                                        color: const Color(
+                                          0xFF6C63FF,
+                                        ).withOpacity(0.3),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Container(
+                                          width: 7,
+                                          height: 7,
+                                          decoration: const BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: Color(0xFF43E8C5),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 7),
+                                        const Text(
+                                          'QR STICKER',
+                                          style: TextStyle(
+                                            color: Color(0xFF43E8C5),
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w700,
+                                            letterSpacing: 1.5,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 5),
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.baseline,
+                                    textBaseline: TextBaseline.alphabetic,
+                                    children: [
+                                      const Text(
+                                        'Activate ',
+                                        style: TextStyle(
+                                          color: Color(0xFFF0EEFF),
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.w800,
+                                          height: 1.2,
+                                        ),
+                                      ),
+                                      Text(
+                                        'New QR',
+                                        style: TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.w800,
+                                          height: 1.2,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                      const Text(
+                                        ' Sticker',
+                                        style: TextStyle(
+                                          color: Color(0xFFF0EEFF),
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.w800,
+                                          height: 1.2,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    'TAP TO SCAN & ACTIVATE',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: Colors.white.withOpacity(0.4),
+                                      letterSpacing: 1.2,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            Text(
-                              'New QR',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w800,
-                                height: 1.2,
+                            const SizedBox(width: 14),
+                            Container(
+                              width: 72,
+                              height: 72,
+                              decoration: BoxDecoration(
                                 color: Colors.white,
+                                borderRadius: BorderRadius.circular(18),
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 1.5,
+                                ),
                               ),
-                            ),
-                            const Text(
-                              ' Sticker',
-                              style: TextStyle(
-                                color: Color(0xFFF0EEFF),
-                                fontSize: 20,
-                                fontWeight: FontWeight.w800,
-                                height: 1.2,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(16),
+                                child: Image.asset(
+                                  'assets/applogo.jpg',
+                                  fit: BoxFit.contain,
+                                ),
                               ),
                             ),
                           ],
                         ),
-                          const SizedBox(height: 6),
-                          Text(
-                            'TAP TO SCAN & ACTIVATE',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: Colors.white.withOpacity(0.4),
-                              letterSpacing: 1.2,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
                       ),
                     ),
-                    const SizedBox(width: 14),
-                    Container(
-                      width: 72,
-                      height: 72,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(18),
-                        border: Border.all(
-                          color: Colors.white,
-                          width: 1.5,
-                        ),
+                  ),
+                ),
+                SizedBox(height: 5.sp),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Our All Products",
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.black,
                       ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
-                        child: Image.asset(
-                          'assets/applogo.jpg',
-                          fit: BoxFit.contain,
-                        ),
-                      ),
-                    )
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ],
                 ),
-              ),
-            ),
-          ),
-        ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                "Our All Products",
-                style: TextStyle(
-                  fontFamily: 'Poppins',
-                  fontSize: 15.sp,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.black,
+                SizedBox(height: 15.sp),
+                GridView.count(
+                  crossAxisCount: 2,
+                  shrinkWrap: true,
+                  padding: EdgeInsets.zero,
+                  physics: const NeverScrollableScrollPhysics(),
+                  childAspectRatio: 0.8,
+                  crossAxisSpacing: 8.sp,
+                  mainAxisSpacing: 8.sp,
+                  children: products
+                      .map(
+                        (product) => ProductCard(
+                          title: product.name.toString(),
+                          price: product.sellingPrice.toString(),
+                          originalPrice: product.mrp.toString(),
+                          discount: '',
+                          imageUrl: product.imageUrl.toString(),
+                          packSize: '',
+                          onClick: widget.onItemClick,
+                          gst: product.gst!.toDouble(),
+                          id: product.id.toString(),
+                        ),
+                      )
+                      .toList(),
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
-          SizedBox(height: 15.sp),
-          GridView.count(
-            crossAxisCount: 2,
-            shrinkWrap: true,
-            padding: EdgeInsets.zero,
-            physics: const NeverScrollableScrollPhysics(),
-            childAspectRatio: 0.8,
-            crossAxisSpacing: 8.sp,
-            mainAxisSpacing: 8.sp,
-            children: products
-                .map(
-                  (product) => ProductCard(
-                title: product.name.toString(),
-                price: product.sellingPrice.toString(),
-                originalPrice: product.mrp.toString(),
-                discount: '',
-                imageUrl: product.imageUrl.toString(),
-                packSize: '',
-                onClick: widget.onItemClick,
-                    gst:  product.gst!.toDouble(),
-                    id: product.id.toString(),
-              ),
-            )
-                .toList(),
-          ),
-        ],
-      ),
-    );
+              ],
+            ),
+          );
   }
 }
 
@@ -369,7 +376,8 @@ class ProductCard extends StatelessWidget {
   final double gst;
   final String imageUrl;
   final String packSize;
-  final void Function(GlobalKey, BuildContext, CartItem, bool isIncrement) onClick;
+  final void Function(GlobalKey, BuildContext, CartItem, bool isIncrement)
+  onClick;
 
   const ProductCard({
     super.key,
@@ -400,9 +408,7 @@ class ProductCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             ClipRRect(
-              borderRadius: BorderRadius.vertical(
-                top: Radius.circular(5.sp),
-              ),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(5.sp)),
               child: Container(
                 key: widgetKey,
                 height: 150.sp,
@@ -435,145 +441,151 @@ class ProductCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Row(
-                          children: [
-                            Text(
-                              '₹$price',
-                              style: TextStyle(
-                                color: AppColors.navyBlue,
-                                fontSize: 14.sp,
-                                fontWeight: FontWeight.bold,
+                        Expanded(
+                          child: Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  '₹$price',
+                                  style: TextStyle(
+                                    color: AppColors.navyBlue,
+                                    fontSize: 12.sp,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              '₹$originalPrice',
-                              style: TextStyle(
-                                color: HexColor('#cf0c14'),
-                                fontSize: 10.sp,
-                                fontWeight: FontWeight.w600,
-                                decoration: TextDecoration.lineThrough,
+                              SizedBox(width: 4.w),
+                              Flexible(
+                                child: Text(
+                                  '₹$originalPrice',
+                                  style: TextStyle(
+                                    color: HexColor('#cf0c14'),
+                                    fontSize: 9.sp,
+                                    fontWeight: FontWeight.w600,
+                                    decoration: TextDecoration.lineThrough,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                        Container(
-                          padding: EdgeInsets.all(5.sp),
-                          margin: EdgeInsets.symmetric(horizontal: 0.0),
-                          child: SizedBox(
-                            width: 80.sp,
-                            child: Consumer<CartProvider>(
-                              builder: (context, cart, child) {
-                                final qty = cart.getQuantity(title);
-
-                                if (qty == 0) {
-                                  return Align(
-                                    alignment: Alignment.centerRight,
-                                    child: GestureDetector(
-                                      onTap: () {
-                                        cart.addItem(
-                                          CartItem(
-                                            product_name: title,
-                                            rate: price,
-                                            imageUrl: imageUrl,
-                                            product_gst:gst,
-                                            product_id: id
-                                          ),
-                                        );
-                                        final item = CartItem(
-                                            product_name: title,
-                                            rate: price,
-                                            imageUrl: imageUrl,
-                                            product_gst:gst,
-                                            product_id: id
-                                        );
-                                        onClick(widgetKey, context, item,true);
-                                      },
-                                      child: Container(
-                                        height: 22.sp,
-                                        width: 50.sp,
-                                        decoration: BoxDecoration(
-                                          color: AppColors.navyBlue,
-                                          borderRadius: BorderRadius.circular(4.0),
-                                        ),
-                                        child: const Center(
-                                          child: Text(
-                                            'ADD',
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w600,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                } else {
-                                  return Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      GestureDetector(
-                                        onTap: () {
-                                          final item = cart.items.firstWhere(
-                                                (e) => e.product_name == title,
-                                          );
-                                          if (item != null) cart.decreaseQty(item);
-
-
-                                          onClick(widgetKey, context, item,false);
-                                        },
-                                        child: Container(
-                                          height: 20.sp,
-                                          width: 20.sp,
-                                          decoration: BoxDecoration(
-                                            color: HexColor('#cf0c14'),
-                                            borderRadius: BorderRadius.circular(4.0),
-                                          ),
-                                          child: const Icon(Icons.remove, color: Colors.white, size: 14),
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: EdgeInsets.symmetric(horizontal: 4.sp),
-                                        child: Text(
-                                          "$qty",
-                                          style: const TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                      GestureDetector(
-                                        onTap: () {
-                                          final item = cart.items.firstWhere(
-                                                (e) => e.product_name == title,
-                                          );
-                                          if (item != null) cart.increaseQty(item);
-                                          onClick(widgetKey, context, item,true);
-
-                                        },
-                                        child: Container(
-                                          height: 20.sp,
-                                          width: 20.sp,
-                                          decoration: BoxDecoration(
-                                            color: AppColors.navyBlue,
-                                            borderRadius: BorderRadius.circular(4.0),
-                                          ),
-                                          child: const Icon(Icons.add, color: Colors.white, size: 14),
-                                        ),
-                                      ),
-                                    ],
-                                  );
-                                }
-                              },
-                            ),
+                            ],
                           ),
                         ),
-
+                        SizedBox(width: 4.w),
+                        Consumer<CartProvider>(
+                          builder: (context, cart, child) {
+                            final qty = cart.getQuantity(title);
+                            if (qty == 0) {
+                              return GestureDetector(
+                                onTap: () {
+                                  cart.addItem(
+                                    CartItem(
+                                      product_name: title,
+                                      rate: price,
+                                      imageUrl: imageUrl,
+                                      product_gst: gst,
+                                      product_id: id,
+                                    ),
+                                  );
+                                  final item = CartItem(
+                                    product_name: title,
+                                    rate: price,
+                                    imageUrl: imageUrl,
+                                    product_gst: gst,
+                                    product_id: id,
+                                  );
+                                  onClick(widgetKey, context, item, true);
+                                },
+                                child: Container(
+                                  height: 22.h,
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 10.w,
+                                  ),
+                                  constraints: BoxConstraints(minWidth: 44.w),
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.navyBlue,
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    'ADD',
+                                    style: TextStyle(
+                                      fontSize: 11.sp,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }
+                            return Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                GestureDetector(
+                                  onTap: () {
+                                    final item = cart.items.firstWhere(
+                                      (e) => e.product_name == title,
+                                    );
+                                    cart.decreaseQty(item);
+                                    onClick(widgetKey, context, item, false);
+                                  },
+                                  child: Container(
+                                    height: 20.h,
+                                    width: 22.w,
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                      color: HexColor('#cf0c14'),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Icon(
+                                      Icons.remove,
+                                      color: Colors.white,
+                                      size: 14.sp,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: 22.w,
+                                  child: Text(
+                                    '$qty',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 12.sp,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                GestureDetector(
+                                  onTap: () {
+                                    final item = cart.items.firstWhere(
+                                      (e) => e.product_name == title,
+                                    );
+                                    cart.increaseQty(item);
+                                    onClick(widgetKey, context, item, true);
+                                  },
+                                  child: Container(
+                                    height: 20.h,
+                                    width: 22.w,
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.navyBlue,
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Icon(
+                                      Icons.add,
+                                      color: Colors.white,
+                                      size: 14.sp,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
                       ],
                     ),
                   ],
@@ -586,11 +598,6 @@ class ProductCard extends StatelessWidget {
     );
   }
 }
-
-
-
-
-
 
 class CategoryChips extends StatefulWidget {
   final List<String> categories;
@@ -672,7 +679,6 @@ class _CategoryChipsState extends State<CategoryChips> {
   }
 }
 
-
 class _SessionExpiredDialog extends StatefulWidget {
   const _SessionExpiredDialog();
 
@@ -727,20 +733,23 @@ class _SessionExpiredDialogState extends State<_SessionExpiredDialog>
           return FadeTransition(
             opacity: animation,
             child: SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(0, 0.04),
-                end: Offset.zero,
-              ).animate(CurvedAnimation(
-                parent: animation,
-                curve: Curves.easeOutCubic,
-              )),
+              position:
+                  Tween<Offset>(
+                    begin: const Offset(0, 0.04),
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeOutCubic,
+                    ),
+                  ),
               child: child,
             ),
           );
         },
         transitionDuration: const Duration(milliseconds: 480),
       ),
-          (route) => false,
+      (route) => false,
     );
   }
 
@@ -757,13 +766,10 @@ class _SessionExpiredDialogState extends State<_SessionExpiredDialog>
               width: 320,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(28),
-                gradient:  LinearGradient(
+                gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [
-                    Colors.grey.shade200,
-                    Colors.grey.shade200,
-                  ],
+                  colors: [Colors.grey.shade200, Colors.grey.shade200],
                 ),
                 border: Border.all(
                   color: Colors.white.withOpacity(0.08),
@@ -802,7 +808,7 @@ class _SessionExpiredDialogState extends State<_SessionExpiredDialog>
                             height: 72,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              gradient:  RadialGradient(
+                              gradient: RadialGradient(
                                 colors: [
                                   AppColors.navyBlue,
                                   AppColors.navyBlue,
@@ -814,7 +820,7 @@ class _SessionExpiredDialogState extends State<_SessionExpiredDialog>
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color:AppColors.navyBlue.withOpacity(0.3),
+                                  color: AppColors.navyBlue.withOpacity(0.3),
                                   blurRadius: 24,
                                   spreadRadius: 2,
                                 ),
@@ -869,46 +875,48 @@ class _SessionExpiredDialogState extends State<_SessionExpiredDialog>
                               borderRadius: BorderRadius.circular(14),
                               gradient: _loading
                                   ? null
-                                  :  LinearGradient(
-                                colors: [
-                                  AppColors.navyBlue,
-                                  AppColors.navyBlue,
-                                ],
-                              ),
+                                  : LinearGradient(
+                                      colors: [
+                                        AppColors.navyBlue,
+                                        AppColors.navyBlue,
+                                      ],
+                                    ),
                               color: _loading
                                   ? Colors.white.withOpacity(0.07)
                                   : null,
                               boxShadow: _loading
                                   ? []
                                   : [
-                                BoxShadow(
-                                  color: AppColors.navyBlue
-                                      .withOpacity(0.4),
-                                  blurRadius: 20,
-                                  offset: const Offset(0, 6),
-                                ),
-                              ],
+                                      BoxShadow(
+                                        color: AppColors.navyBlue.withOpacity(
+                                          0.4,
+                                        ),
+                                        blurRadius: 20,
+                                        offset: const Offset(0, 6),
+                                      ),
+                                    ],
                             ),
                             alignment: Alignment.center,
                             child: _loading
                                 ? const SizedBox(
-                              width: 22,
-                              height: 22,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.2,
-                                valueColor: AlwaysStoppedAnimation(
-                                    Colors.white54),
-                              ),
-                            )
+                                    width: 22,
+                                    height: 22,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2.2,
+                                      valueColor: AlwaysStoppedAnimation(
+                                        Colors.white54,
+                                      ),
+                                    ),
+                                  )
                                 : const Text(
-                              'Log In Again',
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white,
-                                letterSpacing: 0.3,
-                              ),
-                            ),
+                                    'Log In Again',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.white,
+                                      letterSpacing: 0.3,
+                                    ),
+                                  ),
                           ),
                         ),
                       ],
@@ -923,8 +931,3 @@ class _SessionExpiredDialogState extends State<_SessionExpiredDialog>
     );
   }
 }
-
-
-
-
-

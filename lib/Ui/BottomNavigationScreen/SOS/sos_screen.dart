@@ -149,10 +149,7 @@ class SOSScreen extends StatelessWidget {
                       Expanded(
                         child: Text(
                           'This will connect you to local emergency services.',
-                          style: TextStyle(
-                            color: Colors.black54,
-                            fontSize: 14,
-                          ),
+                          style: TextStyle(color: Colors.black54, fontSize: 14),
                           textAlign: TextAlign.center,
                         ),
                       ),

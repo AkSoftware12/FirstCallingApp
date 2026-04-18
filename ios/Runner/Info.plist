@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Firstcallingapp</string>
+	<string>First Calling App</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -45,5 +45,36 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+
+	<!-- ========== Permissions (required by App Store / runtime) ========== -->
+	<!-- Camera: QR scan (gscankit), profile photo, video record, torch -->
+	<key>NSCameraUsageDescription</key>
+	<string>Camera is used to scan QR codes, take profile photos, and record short videos.</string>
+	<!-- Microphone: video recording with audio -->
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Microphone is used when recording video messages.</string>
+	<!-- Photo library: image_picker gallery + saving if needed -->
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Photo library access lets you choose a profile picture from your gallery.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Allows saving images to your photo library when you choose to save.</string>
+
+	<!-- Push notifications (Firebase) background delivery -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>remote-notification</string>
+	</array>
+
+	<!-- url_launcher: canLaunchUrl for tel / WhatsApp / external apps -->
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>tel</string>
+		<string>sms</string>
+		<string>mailto</string>
+		<string>https</string>
+		<string>http</string>
+		<string>whatsapp</string>
+	</array>
 </dict>
 </plist>

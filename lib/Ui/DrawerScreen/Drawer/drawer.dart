@@ -15,7 +15,6 @@ import '../../../Utils/HexColorCode/HexColor.dart';
 import '../../../Utils/color.dart';
 import '../../../Utils/textSize.dart';
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import '../../AccountDelete/account_delete.dart';
@@ -26,6 +25,7 @@ import '../../OrderHistory/order_history.dart';
 import '../../Profile/update_profile.dart';
 import '../../QRActivationScreen/qr_check_screen.dart';
 import '../../TransactionHistoryScreen/transaction_history_screen.dart';
+import '../eula_page.dart';
 import '../privacy.dart';
 
 class DrawerPageScreen extends StatefulWidget {
@@ -78,6 +78,7 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
       userContact = prefs.getString('user_contact') ?? '';
     });
   }
+
   Future<void> fetchProfileData() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -124,6 +125,7 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
       // }
     }
   }
+
   Future<void> _handleLogout() async {
     setState(() => _isLoggingOut = true);
 
@@ -165,10 +167,6 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
       pageBuilder: (ctx, _, __) => const _SessionExpiredDialog(),
     );
   }
-
-
-
-
 
   void _showLogoutDialog(BuildContext context) {
     showDialog(
@@ -232,33 +230,35 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                           onPressed: _isLoggingOut
                               ? null
                               : () async {
-                            setStateDialog(() => _isLoggingOut = true);
-                            await _handleLogout();
-                            if (mounted) {
-                              setStateDialog(() => _isLoggingOut = false);
-                            }
-                          },
+                                  setStateDialog(() => _isLoggingOut = true);
+                                  await _handleLogout();
+                                  if (mounted) {
+                                    setStateDialog(() => _isLoggingOut = false);
+                                  }
+                                },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.navyBlue,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 20, vertical: 10),
+                              horizontal: 20,
+                              vertical: 10,
+                            ),
                           ),
                           child: _isLoggingOut
                               ? const SizedBox(
-                            height: 18,
-                            width: 18,
-                            child: CupertinoActivityIndicator(radius: 10),
-                          )
+                                  height: 18,
+                                  width: 18,
+                                  child: CupertinoActivityIndicator(radius: 10),
+                                )
                               : const Text(
-                            'Logout',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.white,
-                            ),
-                          ),
+                                  'Logout',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.white,
+                                  ),
+                                ),
                         ),
                       ],
                     ),
@@ -311,10 +311,7 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
     );
   }
 
-  Widget _leadIcon({
-    required IconData icon,
-    required List<Color> colors,
-  }) {
+  Widget _leadIcon({required IconData icon, required List<Color> colors}) {
     return Container(
       height: 35.sp,
       width: 35.sp,
@@ -330,6 +327,7 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
       child: Icon(icon, color: Colors.white, size: 20.sp),
     );
   }
+
   Future<bool> checkUserLogin() async {
     final prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString("token"); // ya userId
@@ -357,6 +355,7 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
       _showLogoutDialog(context);
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -379,8 +378,11 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                       padding: EdgeInsets.only(right: 10.sp),
                       child: GestureDetector(
                         onTap: () => Navigator.of(context).pop(),
-                        child: Icon(Icons.close,
-                            color: Colors.white, size: 22.sp),
+                        child: Icon(
+                          Icons.close,
+                          color: Colors.white,
+                          size: 22.sp,
+                        ),
                       ),
                     ),
                   ],
@@ -411,26 +413,28 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                       decoration: const BoxDecoration(shape: BoxShape.circle),
                       child: userPhotoUrl.isNotEmpty
                           ? CircleAvatar(
-                        radius: 60,
-                        backgroundColor: Colors.grey[300],
-                        child: ClipOval(
-                          child: Image.network(
-                            userPhotoUrl,
-                            width: 120,
-                            height: 120,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Icon(Icons.person,
-                                  size: 60,
-                                  color: Colors.grey[700]);
-                            },
-                          ),
-                        ),
-                      )
+                              radius: 60,
+                              backgroundColor: Colors.grey[300],
+                              child: ClipOval(
+                                child: Image.network(
+                                  userPhotoUrl,
+                                  width: 120,
+                                  height: 120,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Icon(
+                                      Icons.person,
+                                      size: 60,
+                                      color: Colors.grey[700],
+                                    );
+                                  },
+                                ),
+                              ),
+                            )
                           : const CircleAvatar(
-                        radius: 60,
-                        child: Icon(Icons.person, size: 60),
-                      ),
+                              radius: 60,
+                              child: Icon(Icons.person, size: 60),
+                            ),
                     ),
                   ),
                   SizedBox(width: 10.sp),
@@ -502,7 +506,7 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                       context,
                       MaterialPageRoute(
                         builder: (context) =>
-                        const BottomNavigationBarScreen(initialIndex: 0),
+                            const BottomNavigationBarScreen(initialIndex: 0),
                       ),
                     );
                   },
@@ -517,11 +521,9 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                   title: 'Profile',
                   subtitle: 'View profile insights',
                   onTap: () async {
-
                     bool isLoggedIn = await checkUserLogin();
 
                     if (!isLoggedIn) {
-
                       final result = await Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -536,7 +538,7 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                         });
                       }
                       return;
-                    }else{
+                    } else {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -546,7 +548,6 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                         ),
                       );
                     }
-
                   },
                 ),
                 SizedBox(height: 10.sp),
@@ -559,12 +560,9 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                   title: 'Activate New QR Sticker',
                   subtitle: 'Keep Your QR Active & Updated',
                   onTap: () async {
-
-
                     bool isLoggedIn = await checkUserLogin();
 
                     if (!isLoggedIn) {
-
                       final result = await Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -579,13 +577,12 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                         });
                       }
                       return;
-                    }else{
+                    } else {
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => QRActive()),
                       );
                     }
-
                   },
                 ),
                 SizedBox(height: 10.sp),
@@ -598,12 +595,9 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                   title: 'My Orders',
                   subtitle: 'Track your past and current orders.',
                   onTap: () async {
-
-
                     bool isLoggedIn = await checkUserLogin();
 
                     if (!isLoggedIn) {
-
                       final result = await Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -618,17 +612,12 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                         });
                       }
                       return;
-                    }else{
+                    } else {
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (_) => OrderHistoryScreen()),
                       );
                     }
-
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => OrderHistoryScreen()),
-                    );
                   },
                 ),
                 SizedBox(height: 10.sp),
@@ -640,11 +629,12 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                   ),
                   title: 'Notifications',
                   subtitle: 'Stay Updated, Never Miss Out',
-                  onTap: ()  {
+                  onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => NotificationScreen()),
+                        builder: (context) => NotificationScreen(),
+                      ),
                     );
                   },
                 ),
@@ -659,8 +649,11 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                       color: Colors.blue,
                     ),
                     padding: EdgeInsets.all(5.sp),
-                    child: Icon(Icons.currency_rupee,
-                        color: Colors.white, size: 20.sp),
+                    child: Icon(
+                      Icons.currency_rupee,
+                      color: Colors.white,
+                      size: 20.sp,
+                    ),
                   ),
                   title: 'Transaction History',
                   subtitle: 'Track all your successful & failed transactions',
@@ -668,7 +661,6 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                     bool isLoggedIn = await checkUserLogin();
 
                     if (!isLoggedIn) {
-
                       final result = await Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -683,15 +675,14 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                         });
                       }
                       return;
-                    }else{
+                    } else {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (_) => TransactionHistoryScreen()),
+                          builder: (_) => TransactionHistoryScreen(),
+                        ),
                       );
                     }
-
-
                   },
                 ),
                 SizedBox(height: 10.sp),
@@ -705,8 +696,7 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                       color: Colors.blue,
                     ),
                     padding: EdgeInsets.all(5.sp),
-                    child: Icon(Icons.share,
-                        color: Colors.white, size: 20.sp),
+                    child: Icon(Icons.share, color: Colors.white, size: 20.sp),
                   ),
                   title: 'Share App',
                   subtitle: 'Invite your friends',
@@ -718,8 +708,6 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                   },
                 ),
                 SizedBox(height: 10.sp),
-
-
 
                 _tile(
                   leading: _leadIcon(
@@ -754,6 +742,22 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                 SizedBox(height: 10.sp),
 
                 _tile(
+                  leading: _leadIcon(
+                    icon: Icons.gavel,
+                    colors: [HexColor('#0F766E'), HexColor('#0F766E')],
+                  ),
+                  title: 'EULA',
+                  subtitle: 'Emergency & license terms (App Store)',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const EulaPage()),
+                    );
+                  },
+                ),
+                SizedBox(height: 10.sp),
+
+                _tile(
                   leading: Container(
                     height: 35.sp,
                     width: 35.sp,
@@ -762,15 +766,20 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                       color: HexColor('#ff0000'),
                     ),
                     padding: EdgeInsets.all(5.sp),
-                    child: Icon(Icons.bloodtype,
-                        color: Colors.white, size: 20.sp),
+                    child: Icon(
+                      Icons.bloodtype,
+                      color: Colors.white,
+                      size: 20.sp,
+                    ),
                   ),
                   title: 'Delete Account',
                   subtitle: 'Request to permanently delete your account.',
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const DeleteAccountScreen()),
+                      MaterialPageRoute(
+                        builder: (_) => const DeleteAccountScreen(),
+                      ),
                     );
                   },
                 ),
@@ -787,27 +796,26 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                 //   subColor: HexColor('#ff0000'),
                 //   onTap: () => _showLogoutDialog(context),
                 // ),
+                FutureBuilder<bool>(
+                  future: checkUserLogin(),
+                  builder: (context, snapshot) {
+                    bool isLoggedIn = snapshot.data ?? false;
 
-        FutureBuilder<bool>(
-          future: checkUserLogin(),
-          builder: (context, snapshot) {
-            bool isLoggedIn = snapshot.data ?? false;
-
-            return _tile(
-              leading: _leadIcon(
-                icon: isLoggedIn ? Icons.logout : Icons.login,
-                colors: [HexColor('#ff0000'), HexColor('#ff0000')],
-              ),
-              title: isLoggedIn ? 'Logout' : 'Login',
-              subtitle: isLoggedIn
-                  ? 'Sign out safely from your account.'
-                  : 'Login to access your account.',
-              titleColor: HexColor('#ff0000'),
-              subColor: HexColor('#ff0000'),
-              onTap: () => handleAuthTap(context),
-            );
-          },
-        ),
+                    return _tile(
+                      leading: _leadIcon(
+                        icon: isLoggedIn ? Icons.logout : Icons.login,
+                        colors: [HexColor('#ff0000'), HexColor('#ff0000')],
+                      ),
+                      title: isLoggedIn ? 'Logout' : 'Login',
+                      subtitle: isLoggedIn
+                          ? 'Sign out safely from your account.'
+                          : 'Login to access your account.',
+                      titleColor: HexColor('#ff0000'),
+                      subColor: HexColor('#ff0000'),
+                      onTap: () => handleAuthTap(context),
+                    );
+                  },
+                ),
 
                 SizedBox(height: 20.sp),
               ],
@@ -837,10 +845,6 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
     );
   }
 }
-
-
-
-
 
 class _SessionExpiredDialog extends StatefulWidget {
   const _SessionExpiredDialog();
@@ -896,20 +900,23 @@ class _SessionExpiredDialogState extends State<_SessionExpiredDialog>
           return FadeTransition(
             opacity: animation,
             child: SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(0, 0.04),
-                end: Offset.zero,
-              ).animate(CurvedAnimation(
-                parent: animation,
-                curve: Curves.easeOutCubic,
-              )),
+              position:
+                  Tween<Offset>(
+                    begin: const Offset(0, 0.04),
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeOutCubic,
+                    ),
+                  ),
               child: child,
             ),
           );
         },
         transitionDuration: const Duration(milliseconds: 480),
       ),
-          (route) => false,
+      (route) => false,
     );
   }
 
@@ -926,13 +933,10 @@ class _SessionExpiredDialogState extends State<_SessionExpiredDialog>
               width: 320,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(28),
-                gradient:  LinearGradient(
+                gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [
-                    Colors.grey.shade200,
-                    Colors.grey.shade200,
-                  ],
+                  colors: [Colors.grey.shade200, Colors.grey.shade200],
                 ),
                 border: Border.all(
                   color: Colors.white.withOpacity(0.08),
@@ -971,7 +975,7 @@ class _SessionExpiredDialogState extends State<_SessionExpiredDialog>
                             height: 72,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              gradient:  RadialGradient(
+                              gradient: RadialGradient(
                                 colors: [
                                   AppColors.navyBlue,
                                   AppColors.navyBlue,
@@ -983,7 +987,7 @@ class _SessionExpiredDialogState extends State<_SessionExpiredDialog>
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color:AppColors.navyBlue.withOpacity(0.3),
+                                  color: AppColors.navyBlue.withOpacity(0.3),
                                   blurRadius: 24,
                                   spreadRadius: 2,
                                 ),
@@ -1000,7 +1004,7 @@ class _SessionExpiredDialogState extends State<_SessionExpiredDialog>
                         const SizedBox(height: 24),
 
                         // ── Title ──
-                         Text(
+                        Text(
                           'Session Expired',
                           style: TextStyle(
                             fontFamily: 'SF Pro Display',
@@ -1038,46 +1042,48 @@ class _SessionExpiredDialogState extends State<_SessionExpiredDialog>
                               borderRadius: BorderRadius.circular(14),
                               gradient: _loading
                                   ? null
-                                  :  LinearGradient(
-                                colors: [
-                                  AppColors.navyBlue,
-                                  AppColors.navyBlue,
-                                ],
-                              ),
+                                  : LinearGradient(
+                                      colors: [
+                                        AppColors.navyBlue,
+                                        AppColors.navyBlue,
+                                      ],
+                                    ),
                               color: _loading
                                   ? Colors.white.withOpacity(0.07)
                                   : null,
                               boxShadow: _loading
                                   ? []
                                   : [
-                                BoxShadow(
-                                  color: AppColors.navyBlue
-                                      .withOpacity(0.4),
-                                  blurRadius: 20,
-                                  offset: const Offset(0, 6),
-                                ),
-                              ],
+                                      BoxShadow(
+                                        color: AppColors.navyBlue.withOpacity(
+                                          0.4,
+                                        ),
+                                        blurRadius: 20,
+                                        offset: const Offset(0, 6),
+                                      ),
+                                    ],
                             ),
                             alignment: Alignment.center,
                             child: _loading
                                 ? const SizedBox(
-                              width: 22,
-                              height: 22,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.2,
-                                valueColor: AlwaysStoppedAnimation(
-                                    Colors.white54),
-                              ),
-                            )
+                                    width: 22,
+                                    height: 22,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2.2,
+                                      valueColor: AlwaysStoppedAnimation(
+                                        Colors.white54,
+                                      ),
+                                    ),
+                                  )
                                 : const Text(
-                              'Log In Again',
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white,
-                                letterSpacing: 0.3,
-                              ),
-                            ),
+                                    'Log In Again',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.white,
+                                      letterSpacing: 0.3,
+                                    ),
+                                  ),
                           ),
                         ),
                       ],
@@ -1092,4 +1098,3 @@ class _SessionExpiredDialogState extends State<_SessionExpiredDialog>
     );
   }
 }
-
