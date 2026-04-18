@@ -83,9 +83,10 @@ class _HomePageState extends State<BottomNavigationBarScreen> {
     checkForVersion(context);
 
     final newVersion = NewVersionPlus(
-      iOSId: 'com.firstcallingapp.firstcallingapp',
+      iOSId: '6760596159',
+      iOSAppStoreCountry: 'IN',
       androidId: 'com.firstcallingapp.firstcallingapp',
-      androidPlayStoreCountry: "es_ES",
+      androidPlayStoreCountry: "in",
       androidHtmlReleaseNotes: true,
     );
 
@@ -95,17 +96,7 @@ class _HomePageState extends State<BottomNavigationBarScreen> {
     });
   }
 
-  basicStatusCheck(NewVersionPlus newVersion) async {
-    final version = await newVersion.getVersionStatus();
-    if (version != null) {
-      release = version.releaseNotes ?? "";
-      setState(() {});
-    }
-    newVersion.showAlertIfNecessary(
-      context: context,
-      launchModeVersion: LaunchModeVersion.external,
-    );
-  }
+
 
   Future<void> advancedStatusCheck(NewVersionPlus newVersion) async {
     try {
