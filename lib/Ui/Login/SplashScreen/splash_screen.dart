@@ -12,7 +12,6 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../Utils/HexColorCode/HexColor.dart';
 import '../../BottomNavigationBar/bottomNvaigationBar.dart';
-import '../Login/login.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -58,10 +57,10 @@ class _SplashScreenState extends State<SplashScreen> {
           );
         }
       } else {
-        // no login found
+        // Guest: browse products & non-account features without registration (App Store 5.1.1).
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => LoginScreen()),
+          MaterialPageRoute(builder: (_) => const BottomNavigationBarScreen()),
         );
       }
     }

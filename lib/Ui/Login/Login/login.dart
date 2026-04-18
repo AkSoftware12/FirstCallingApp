@@ -105,6 +105,17 @@ class _PhoneLoginScreenState extends State<LoginScreen> {
     setState(() {});
   }
 
+  void _handleBack() {
+    if (!mounted) return;
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+    } else {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const BottomNavigationBarScreen()),
+      );
+    }
+  }
+
   @override
   void dispose() {
     _phoneController.dispose();
@@ -113,11 +124,17 @@ class _PhoneLoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Stack(
-        children: [
-          SingleChildScrollView(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        _handleBack();
+      },
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body: Stack(
+          children: [
+            SingleChildScrollView(
             child: Stack(
               children: [
                 Container(
@@ -485,11 +502,11 @@ class _PhoneLoginScreenState extends State<LoginScreen> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
-                                  'Skip',
+                                  'Browse without signing in',
                                   style: GoogleFonts.roboto(
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold,
-                                    fontSize: 14.sp,
+                                    fontSize: 12.sp,
                                   ),
                                 ),
                                 SizedBox(width: 8.sp),
@@ -547,8 +564,25 @@ class _PhoneLoginScreenState extends State<LoginScreen> {
                 ),
               ),
             ),
-          )
+          ),
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 4,
+            left: 4,
+            child: Material(
+              color: Colors.transparent,
+              child: IconButton(
+                icon: Icon(
+                  Icons.arrow_back_ios_new,
+                  color: Colors.white,
+                  size: 20.sp,
+                ),
+                onPressed: _handleBack,
+                tooltip: 'Back',
+              ),
+            ),
+          ),
         ],
+      ),
       ),
     );
   }

@@ -73,7 +73,7 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
     final prefs = await SharedPreferences.getInstance();
     if (!mounted) return;
     setState(() {
-      userName = prefs.getString('user_name') ?? 'User';
+      userName = prefs.getString('user_name') ?? '';
       userPhotoUrl = prefs.getString('picture_data') ?? '';
       userContact = prefs.getString('user_contact') ?? '';
     });
@@ -83,6 +83,18 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
+
+      if (token == null || token.isEmpty) {
+        if (mounted) {
+          setState(() {
+            userName = '';
+            useremail = '';
+            userContact = '';
+            userPhotoUrl = '';
+          });
+        }
+        return;
+      }
 
       // if (token == null || token.isEmpty) {
       //   if (mounted) {
@@ -136,9 +148,9 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
     await prefs.clear();
 
     if (!mounted) return;
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => LoginScreen()),
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const BottomNavigationBarScreen()),
+      (route) => false,
     );
   }
 
@@ -443,7 +455,9 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          userName.isNotEmpty ? userName : "User",
+                          userName.isNotEmpty
+                              ? userName
+                              : "Guest",
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.radioCanada(
@@ -757,33 +771,47 @@ class _DrawerPageScreenState extends State<DrawerPageScreen> {
                 ),
                 SizedBox(height: 10.sp),
 
-                _tile(
-                  leading: Container(
-                    height: 35.sp,
-                    width: 35.sp,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      color: HexColor('#ff0000'),
-                    ),
-                    padding: EdgeInsets.all(5.sp),
-                    child: Icon(
-                      Icons.bloodtype,
-                      color: Colors.white,
-                      size: 20.sp,
-                    ),
-                  ),
-                  title: 'Delete Account',
-                  subtitle: 'Request to permanently delete your account.',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const DeleteAccountScreen(),
-                      ),
+                FutureBuilder<bool>(
+                  future: checkUserLogin(),
+                  builder: (context, snap) {
+                    if (snap.data != true) {
+                      return const SizedBox.shrink();
+                    }
+                    return Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _tile(
+                          leading: Container(
+                            height: 35.sp,
+                            width: 35.sp,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              color: HexColor('#ff0000'),
+                            ),
+                            padding: EdgeInsets.all(5.sp),
+                            child: Icon(
+                              Icons.bloodtype,
+                              color: Colors.white,
+                              size: 20.sp,
+                            ),
+                          ),
+                          title: 'Delete Account',
+                          subtitle:
+                              'Permanently delete your account and app data.',
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const DeleteAccountScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                        SizedBox(height: 10.sp),
+                      ],
                     );
                   },
                 ),
-                SizedBox(height: 10.sp),
 
                 // _tile(
                 //   leading: _leadIcon(
@@ -895,7 +923,7 @@ class _SessionExpiredDialogState extends State<_SessionExpiredDialog>
     Navigator.pushAndRemoveUntil(
       context,
       PageRouteBuilder(
-        pageBuilder: (_, animation, __) => const LoginScreen(),
+        pageBuilder: (_, animation, __) => const BottomNavigationBarScreen(),
         transitionsBuilder: (_, animation, __, child) {
           return FadeTransition(
             opacity: animation,

@@ -1,5 +1,7 @@
 import 'dart:convert';
+
 import 'package:firstcallingapp/BaseUrl/baseurl.dart';
+import 'package:firstcallingapp/Ui/BottomNavigationBar/bottomNvaigationBar.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -20,63 +22,147 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
   static const Color primaryBlue = Color(0xFF1565C0);
   static const Color lightBlue = Color(0xFFE3F2FD);
 
-  Future<void> sendDeleteRequest() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token');
+  @override
+  void initState() {
+    super.initState();
+    _prefillContact();
+  }
 
-    print(token);
-    if (numberController.text.isEmpty || messageController.text.isEmpty) {
+  Future<void> _prefillContact() async {
+    final prefs = await SharedPreferences.getInstance();
+    final c = prefs.getString('user_contact') ?? '';
+    if (c.isNotEmpty && mounted) {
+      numberController.text = c.replaceAll(RegExp(r'\D'), '');
+    }
+  }
+
+  Future<void> _confirmAndDelete() async {
+    if (numberController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("Please fill all fields"),
+          content: Text("Please enter the mobile number for this account."),
           backgroundColor: Colors.red,
         ),
       );
       return;
     }
 
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Delete account?"),
+        content: const Text(
+          "This permanently deletes your account and sign-in access. "
+          "You may lose order history and saved data. This cannot be undone.",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text("Delete", style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+
+    await _submitDelete();
+  }
+
+  Future<void> _submitDelete() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    if (token == null || token.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Please sign in to delete your account."),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
+    }
+
     setState(() => isLoading = true);
 
+    final message = messageController.text.trim().isEmpty
+        ? "Account deletion requested from the mobile app."
+        : messageController.text.trim();
+
     try {
-      var response = await http.post(
+      final response = await http.post(
         Uri.parse(ApiRoutes.deleteUser),
         headers: {
           "Authorization": "Bearer $token",
           "Content-Type": "application/json",
         },
         body: jsonEncode({
-          "mobile_no": numberController.text,
-          "message": messageController.text,
+          "mobile_no": numberController.text.trim(),
+          "message": message,
         }),
       );
 
-      var data = jsonDecode(response.body);
+      Map<String, dynamic> data = {};
+      try {
+        final raw = jsonDecode(response.body);
+        if (raw is Map<String, dynamic>) data = raw;
+      } catch (_) {}
 
-      if (response.statusCode == 200) {
+      if (!mounted) return;
+
+      final apiSuccess = data["success"] == true ||
+          data["success"] == 1 ||
+          data["success"] == "1";
+
+      if (response.statusCode == 200 && apiSuccess) {
+        await prefs.clear();
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(data["message"] ?? "Request Sent"),
+            content: Text(
+              data["message"]?.toString() ?? "Your account has been deleted.",
+            ),
             backgroundColor: Colors.green,
           ),
+        );
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const BottomNavigationBarScreen()),
+          (route) => false,
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(data["message"] ?? "Something went wrong"),
+            content: Text(
+              data["message"]?.toString() ??
+                  "Could not complete deletion. Please try again.",
+            ),
             backgroundColor: Colors.red,
           ),
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Server Error"),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Network error. Please try again."),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => isLoading = false);
     }
+  }
 
-    setState(() => isLoading = false);
+  @override
+  void dispose() {
+    numberController.dispose();
+    messageController.dispose();
+    super.dispose();
   }
 
   @override
@@ -97,7 +183,6 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Info Box
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(14),
@@ -107,22 +192,21 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
                 border: Border.all(color: primaryBlue.withOpacity(0.3)),
               ),
               child: const Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Icon(Icons.info_outline, color: primaryBlue, size: 20),
                   SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      "Your request will be reviewed within 24-48 hours.",
+                      "Your account is deleted through this app after you confirm. "
+                      "This cannot be undone.",
                       style: TextStyle(color: primaryBlue, fontSize: 13),
                     ),
                   ),
                 ],
               ),
             ),
-
-            const SizedBox(height: 28),
-
-            // Contact Number
+            const SizedBox(height: 20),
             const Text(
               "Contact Number",
               style: TextStyle(
@@ -136,13 +220,13 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
               controller: numberController,
               keyboardType: TextInputType.phone,
               decoration: InputDecoration(
-                hintText: "Enter your contact number",
+                hintText: "Registered mobile number",
                 hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
                 prefixIcon: const Icon(Icons.phone_outlined, color: primaryBlue),
                 filled: true,
                 fillColor: const Color(0xFFF9F9F9),
                 contentPadding:
-                const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                    const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                   borderSide: BorderSide(color: Colors.grey[300]!),
@@ -153,12 +237,9 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
                 ),
               ),
             ),
-
             const SizedBox(height: 20),
-
-            // Message
             const Text(
-              "Message",
+              "Message (optional)",
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
@@ -170,7 +251,7 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
               controller: messageController,
               maxLines: 5,
               decoration: InputDecoration(
-                hintText: "Write your reason here...",
+                hintText: "Optional feedback…",
                 hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
                 filled: true,
                 fillColor: const Color(0xFFF9F9F9),
@@ -185,15 +266,12 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
                 ),
               ),
             ),
-
             const SizedBox(height: 32),
-
-            // Submit Button
             SizedBox(
               width: double.infinity,
               height: 50,
               child: ElevatedButton(
-                onPressed: isLoading ? null : sendDeleteRequest,
+                onPressed: isLoading ? null : _confirmAndDelete,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primaryBlue,
                   disabledBackgroundColor: Colors.grey[300],
@@ -204,21 +282,21 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
                 ),
                 child: isLoading
                     ? const SizedBox(
-                  width: 22,
-                  height: 22,
-                  child: CircularProgressIndicator(
-                    color: Colors.white,
-                    strokeWidth: 2.5,
-                  ),
-                )
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2.5,
+                        ),
+                      )
                     : const Text(
-                  "Send Request",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                        "Delete my account",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
               ),
             ),
           ],

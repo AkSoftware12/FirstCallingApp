@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:ui';
 import 'package:firstcallingapp/BaseUrl/baseurl.dart';
-import 'package:firstcallingapp/Ui/Login/Login/login.dart';
+import 'package:firstcallingapp/Ui/BottomNavigationBar/bottomNvaigationBar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -84,14 +84,14 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
       var url = Uri.parse(ApiRoutes.getAllProducts);
 
-      // ✅ Token header add kiya
-      var response = await http.get(
-        url,
-        headers: {
-          "Authorization": "Bearer $token",
-          "Content-Type": "application/json",
-        },
-      );
+      final headers = <String, String>{
+        "Content-Type": "application/json",
+      };
+      if (token != null && token.isNotEmpty) {
+        headers["Authorization"] = "Bearer $token";
+      }
+
+      var response = await http.get(url, headers: headers);
 
       if (response.statusCode == 200) {
         var data = json.decode(response.body);
@@ -728,7 +728,7 @@ class _SessionExpiredDialogState extends State<_SessionExpiredDialog>
     Navigator.pushAndRemoveUntil(
       context,
       PageRouteBuilder(
-        pageBuilder: (_, animation, __) => const LoginScreen(),
+        pageBuilder: (_, animation, __) => const BottomNavigationBarScreen(),
         transitionsBuilder: (_, animation, __, child) {
           return FadeTransition(
             opacity: animation,
